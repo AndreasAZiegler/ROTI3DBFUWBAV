@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "uwb_dummy")
+set(uwb_dummy_MAINTAINER "andreasziegler <062.127@gmail.com>")
+set(uwb_dummy_DEPRECATED "")
+set(uwb_dummy_VERSION "0.0.0")
+set(uwb_dummy_BUILD_DEPENDS "rospy" "std_msgs" "message_genaration")
+set(uwb_dummy_RUN_DEPENDS "rospy" "std_msgs" "message_runtime")
+set(uwb_dummy_BUILDTOOL_DEPENDS "catkin")

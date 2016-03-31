@@ -1,0 +1,7 @@
+set(_CATKIN_CURRENT_PACKAGE "subscriber")
+set(subscriber_MAINTAINER "andreasziegler <062.127@gmail.com>")
+set(subscriber_DEPRECATED "")
+set(subscriber_VERSION "0.0.0")
+set(subscriber_BUILD_DEPENDS "roscpp" "std_msgs")
+set(subscriber_RUN_DEPENDS "roscpp" "std_msgs")
+set(subscriber_BUILDTOOL_DEPENDS "catkin")

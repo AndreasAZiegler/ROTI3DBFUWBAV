@@ -1,0 +1,8 @@
+prefix=/data/SP1/catkin_ws/install
+
+Name: uwb_dummy
+Description: Description of uwb_dummy
+Version: 0.0.0
+Cflags: -I/data/SP1/catkin_ws/install/include
+Libs: -L/data/SP1/catkin_ws/install/lib 
+Requires: message_runtime

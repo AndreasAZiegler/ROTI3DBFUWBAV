@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Arch Linux)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: thesis.aux
+The style file: acmsiggraph.bst
+Database file #1: graphics.bib
+Warning--empty organization in Zwicker04Perspective
+You've used 2 entries,
+            2873 wiz_defined-function locations,
+            629 strings with 5009 characters,
+and the built_in function-call counts, 7432 in all, are:
+= -- 805
+> -- 37
+< -- 0
++ -- 33
+- -- 13
+* -- 795
+:= -- 903
+add.period$ -- 8
+call.type$ -- 2
+change.case$ -- 14
+chr.to.int$ -- 2
+cite$ -- 3
+duplicate$ -- 49
+empty$ -- 792
+format.name$ -- 14
+if$ -- 1618
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 2
+newline$ -- 15
+num.names$ -- 6
+pop$ -- 22
+preamble$ -- 1
+purify$ -- 12
+quote$ -- 0
+skip$ -- 19
+stack$ -- 0
+substring$ -- 2182
+swap$ -- 12
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 16
+warning$ -- 1
+while$ -- 23
+width$ -- 3
+write$ -- 29
+(There was 1 warning)

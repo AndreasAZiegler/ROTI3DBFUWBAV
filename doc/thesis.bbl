@@ -1,0 +1,20 @@
+\begin{thebibliography}{\protect\citename{Zwicker et~al\mbox{.} }2004}
+
+\bibitem[\protect\citename{Altman }1989]{Altman89QuaternionScandal}
+{\sc Altman, S.~L.}
+\newblock 1989.
+\newblock
+  {\href{http://www.google.com/search?q=Hamilton,+grassmann,+rodrigues,+and+the+quaternion+scandal---what+went+wrong+with+one+of+the+major+mathematical+discoveries+of+the+nineteenth+century?}{Hamilton,
+  grassmann, rodrigues, and the quaternion scandal---what went wrong with one
+  of the major mathematical discoveries of the nineteenth century?}}
+\newblock {\em A Mathematical Association of America journal\/} (dec).
+
+\bibitem[\protect\citename{Zwicker et~al\mbox{.} }2004]{Zwicker04Perspective}
+{\sc Zwicker, M., R\"as\"anen, J., Botsch, M., Dachsbacher, C., and Pauly, M.}
+\newblock 2004.
+\newblock
+  {\href{http://www.google.com/search?q=Perspective+accurate+splatting}{Perspective
+  accurate splatting}}.
+\newblock In {\em Proceedings of Graphics Interface}, 247--254.
+
+\end{thebibliography}

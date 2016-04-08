@@ -1,0 +1,4 @@
+<launch>
+  <node name="vision_tracker_node" pkg="vision_tracker" type="vision_tracker_node" output="screen" args="--para_enable_tracking_loss -v">
+  </node>
+</launch>

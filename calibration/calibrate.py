@@ -107,6 +107,12 @@ if __name__ == '__main__':
 
     print("Calculate camera distortion")
     # calculate camera distortion
+    """
+    fx = 1
+    fy = 1
+    camera_matrix_init = np.array([[fx, 0, 0], [0, fy, 0], [0, 0, 1]], dtype=float)
+    [rms, camera_matrix, dist_coefs, rvecs, tvecs] = cv2.calibrateCamera(obj_points, img_points, (w, h), camera_matrix_init, None, None, None, cv2.CALIB_USE_INTRINSIC_GUESS)
+    """
     [rms, camera_matrix, dist_coefs, rvecs, tvecs] = cv2.calibrateCamera(obj_points, img_points, (w, h), None, None)
 
     print("\nRMS:", rms)

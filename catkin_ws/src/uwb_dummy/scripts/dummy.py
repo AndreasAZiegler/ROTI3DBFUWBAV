@@ -40,16 +40,19 @@ import rospy
 from rospy.numpy_msg import numpy_msg
 #from std_msgs.msg import String
 #from std_msgs.msg import Int32MultiArray
-from uwb_dummy.msg import Coordinates
+from uwb.msg import UWBTracker
 
 def uwb_dummy():
-    pub = rospy.Publisher('uwb_coordinates', Coordinates, queue_size=10)
+    #pub = rospy.Publisher('uwb_coordinates', Coordinates, queue_size=10)
+    pub = rospy.Publisher('UWB_Tracker', UWBTracker, queue_size=10)
     rospy.init_node('uwb_dummy', anonymous=True)
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
-        array = Coordinates()
-        for i in range(0, 11):
-            array.coordinates.append(i)
+        array = UWBTracker()
+        for i in range(0, 5):
+            array.state.append(i)
+        for i in range(0, 35):
+            array.covariance.append(i)
         
         #hello_str = "hello world %s" % rospy.get_time()
         #rospy.loginfo(hello_str)

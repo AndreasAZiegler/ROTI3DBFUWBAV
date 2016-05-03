@@ -64,7 +64,7 @@
 #include "tracker_debug.hpp"
 #include "dsst_tracker.hpp"
 #include "image_acquisition.hpp"
-#include "uwb_dummy/Coordinates.h"
+#include "uwb/UWBTracker.h"
 
 struct Parameters{
     std::string sequencePath;
@@ -88,7 +88,7 @@ public:
     bool start(int argc, char** argv, bool* stop_flag);
     void setTrackerDebug(cf_tracking::TrackerDebug* debug);
 
-    void getUWBMessages(const uwb_dummy::Coordinates::ConstPtr& msg);
+    void getUWBMessages(const uwb::UWBTracker::ConstPtr& msg);
 
 private:
     Parameters parseCmdArgs(int argc, char** argv);

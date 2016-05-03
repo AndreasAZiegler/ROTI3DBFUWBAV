@@ -5,9 +5,9 @@
 #include "../../3rdparty/cv_ext/tracker_run.hpp"
 #include <ros/ros.h>
 #include <iostream>
-#include "uwb_dummy/Coordinates.h"
+#include "uwb/UWBTracker.h"
 
-void TrackerRun::getUWBMessages(const uwb_dummy::Coordinates::ConstPtr &msg) {
+void TrackerRun::getUWBMessages(const uwb::UWBTracker::ConstPtr &msg) {
   std::cout << "Message received." << std::endl;
-  ROS_INFO("I heard: [%d]", msg->coordinates[0]);
+  ROS_INFO("I heard: [%d]", msg->state[1]);
 }

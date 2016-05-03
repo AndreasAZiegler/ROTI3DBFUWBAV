@@ -1,8 +1,8 @@
 #include "ros/ros.h"
-#include "uwb_dummy/Coordinates.h"
+#include "uwb/UWBTracker.h"
 
-void subscriberCallback(const uwb_dummy::Coordinates::ConstPtr& msg) {
-  ROS_INFO("I heard: [%d]", msg->coordinates[0]);
+void subscriberCallback(const uwb::UWBTracker::ConstPtr& msg) {
+  ROS_INFO("I heard: [%f]", msg->state[1]);
 }
 
 int main(int argc, char **argv) {
@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
 
   ros::NodeHandle n;
 
-  ros::Subscriber sub = n.subscribe("uwb_coordinates", 1000, subscriberCallback);
+  ros::Subscriber sub = n.subscribe("UWB_Tracker", 1000, subscriberCallback);
 
   ros::spin();
 

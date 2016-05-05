@@ -65,6 +65,8 @@
 #include "dsst_tracker.hpp"
 #include "image_acquisition.hpp"
 #include "uwb/UWBTracker.h"
+#include <tf2_msgs/TFMessage.h>
+#include <tf/tfMessage.h>
 
 struct Parameters{
     std::string sequencePath;
@@ -83,6 +85,7 @@ struct Parameters{
 class TrackerRun
 {
 public:
+    TrackerRun(std::string windowTitle, ros::NodeHandle * node);
     TrackerRun(std::string windowTitle);
     virtual ~TrackerRun();
     bool start(int argc, char** argv, bool* stop_flag);
@@ -111,8 +114,11 @@ private:
     TCLAP::CmdLine _cmd;
     cf_tracking::TrackerDebug* _debug;
 
-    ros::NodeHandle nh_;
-    ros::Subscriber sub;
+    ros::NodeHandle* _nh;
+    ros::Publisher _pub;
+    //tf2_msgs::TFMessage _msg;
+    tf::tfMessage _msg;
+    geometry_msgs::TransformStamped _trans;
     int _frameIdx;
     bool _isPaused = false;
     bool _isStep = false;

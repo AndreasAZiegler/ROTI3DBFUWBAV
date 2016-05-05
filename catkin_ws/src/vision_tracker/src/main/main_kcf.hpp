@@ -39,6 +39,11 @@
 class KcfTrackerRun : public TrackerRun
 {
 public:
+    KcfTrackerRun(ros::NodeHandle * node)
+    : TrackerRun("KCFcpp", node)
+    {
+    }
+
     KcfTrackerRun() : TrackerRun("KCFcpp")
     {
     }

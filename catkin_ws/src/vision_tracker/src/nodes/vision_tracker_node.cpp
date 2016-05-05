@@ -18,10 +18,11 @@ int main(int argc, char **argv){
 
   ros::init(argc, argv, "vision_tracker");
 
-  KcfTrackerRun mainObj;
-
   ros::NodeHandle n;
-  ros::Subscriber sub = n.subscribe("uwb_coordinates", 1, &TrackerRun::getUWBMessages, dynamic_cast<TrackerRun*>(&mainObj));
+
+  KcfTrackerRun mainObj(&n);
+
+  ros::Subscriber sub = n.subscribe("UWB_Tracker", 1, &TrackerRun::getUWBMessages, dynamic_cast<TrackerRun*>(&mainObj));
   //UWBTracker uwb;
 
   /*

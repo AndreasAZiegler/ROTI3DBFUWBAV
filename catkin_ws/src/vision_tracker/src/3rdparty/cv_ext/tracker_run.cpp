@@ -54,22 +54,33 @@
 
 #include "tracker_run.hpp"
 
+#include <ros/ros.h>
 #include <iostream>
 #include <ctype.h>
 
 #include "init_box_selector.hpp"
 #include "cf_tracker.hpp"
+#include "mat_consts.hpp"
+#include <sstream>
 
 using namespace cv;
 using namespace std;
 using namespace TCLAP;
 using namespace cf_tracking;
 
-TrackerRun::TrackerRun(string windowTitle) :
-_windowTitle(windowTitle),
-_cmd(_windowTitle.c_str(), ' ', "0.1"),
-_debug(0)//,
-//nh_("~")
+TrackerRun::TrackerRun(string windowTitle, ros::NodeHandle *node)
+ : _windowTitle(windowTitle),
+   _cmd(_windowTitle.c_str(), ' ', "0.1"),
+   _debug(0),
+   _nh(node)
+{
+    _tracker = 0;
+}
+
+TrackerRun::TrackerRun(string windowTitle)
+ : _windowTitle(windowTitle),
+   _cmd(_windowTitle.c_str(), ' ', "0.1"),
+   _debug(0)
 {
     _tracker = 0;
 }
@@ -159,11 +170,10 @@ bool TrackerRun::start(int argc, char** argv, bool* stop_flag)
 {
 
     _stop_flag = stop_flag;
-    /*
-    sub = nh_.subscribe("uwb_coordinates", 1, &TrackerRun::getUWBMessages, this);
-    std::cout << "Reached constructor" << std::endl;
-    ros::spin();
-     */
+
+    //_pub = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
+    _pub = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
+    ros::Rate loop_rate(10);
 
     _paras = parseCmdArgs(argc, argv);
 
@@ -326,7 +336,6 @@ bool TrackerRun::update()
             std::cout << "UpdateAt_: " << _boundingBox << std::endl;
             tStart = getTickCount();
             _targetOnFrame = _tracker->updateAt(_image, _boundingBox);
-            tDuration = getTickCount() - tStart;
 
             if (!_targetOnFrame)
                 std::cout << "Target not found!" << std::endl;
@@ -336,117 +345,142 @@ bool TrackerRun::update()
             tStart = getTickCount();
             _targetOnFrame = _tracker->update(_image, _boundingBox);
             tDuration = getTickCount() - tStart;
+
+            // Publish positions
+            //Point pos(_boundingBox.x + _boundingBox.width * consts::c0_5, tDuration = getTickCount() - tStart;
+
+            _trans.header.seq = 1;
+            _trans.header.stamp = ros::Time::now();
+            _trans.header.frame_id = string("Frame");
+            _trans.child_frame_id = string("Child frame");
+            _trans.transform.translation.x = _boundingBox.x + _boundingBox.width * 0.5;
+            _trans.transform.translation.y = _boundingBox.y + _boundingBox.width * 0.5;
+            _trans.transform.translation.z = 1;
+            _trans.transform.rotation.x = 0;
+            _trans.transform.rotation.y = 0;
+            _trans.transform.rotation.z = 0;
+            _trans.transform.rotation.w = 0;
+            _msg.transforms.clear();
+            _msg.transforms.push_back(_trans);
+            ROS_INFO("%f", _msg.transforms[0]);
+            /*
+            std::stringstream ss;
+            ss << "hello";
+            _msg.data = ss.str();
+            ROS_INFO("%s", _msg.data.c_str());
+            */
+            _pub.publish(_msg);
         }
-    }
+}
 
-    double fps = static_cast<double>(getTickFrequency() / tDuration);
-    printResults(_boundingBox, _targetOnFrame, fps);
+double fps = static_cast<double>(getTickFrequency() / tDuration);
+printResults(_boundingBox, _targetOnFrame, fps);
 
-    if (_paras.showOutput)
-    {
-        Mat hudImage;
-        _image.copyTo(hudImage);
-        rectangle(hudImage, _boundingBox, Scalar(0, 0, 255), 2);
-        Point_<double> center;
-        center.x = _boundingBox.x + _boundingBox.width / 2;
-        center.y = _boundingBox.y + _boundingBox.height / 2;
-        circle(hudImage, center, 3, Scalar(0, 0, 255), 2);
+if (_paras.showOutput)
+{
+Mat hudImage;
+_image.copyTo(hudImage);
+rectangle(hudImage, _boundingBox, Scalar(0, 0, 255), 2);
+Point_<double> center;
+center.x = _boundingBox.x + _boundingBox.width / 2;
+center.y = _boundingBox.y + _boundingBox.height / 2;
+circle(hudImage, center, 3, Scalar(0, 0, 255), 2);
 
-        stringstream ss;
-        ss << "FPS: " << fps;
-        putText(hudImage, ss.str(), Point(20, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
+stringstream ss;
+ss << "FPS: " << fps;
+putText(hudImage, ss.str(), Point(20, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
 
-        ss.str("");
-        ss.clear();
-        ss << "#" << _frameIdx;
-        putText(hudImage, ss.str(), Point(hudImage.cols - 60, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
+ss.str("");
+ss.clear();
+ss << "#" << _frameIdx;
+putText(hudImage, ss.str(), Point(hudImage.cols - 60, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
 
-        if (_debug != 0)
-            _debug->printOnImage(hudImage);
+if (_debug != 0)
+_debug->printOnImage(hudImage);
 
-        if (!_targetOnFrame)
-        {
-            cv::Point_<double> tl = _boundingBox.tl();
-            cv::Point_<double> br = _boundingBox.br();
+if (!_targetOnFrame)
+{
+cv::Point_<double> tl = _boundingBox.tl();
+cv::Point_<double> br = _boundingBox.br();
 
-            line(hudImage, tl, br, Scalar(0, 0, 255));
-            line(hudImage, cv::Point_<double>(tl.x, br.y),
-                cv::Point_<double>(br.x, tl.y), Scalar(0, 0, 255));
-        }
+line(hudImage, tl, br, Scalar(0, 0, 255));
+line(hudImage, cv::Point_<double>(tl.x, br.y),
+cv::Point_<double>(br.x, tl.y), Scalar(0, 0, 255));
+}
 
-        imshow(_windowTitle.c_str(), hudImage);
+imshow(_windowTitle.c_str(), hudImage);
 
-        if (!_paras.imgExportPath.empty())
-        {
-            stringstream ssi;
-            ssi << setfill('0') << setw(5) << _frameIdx << ".png";
-            std::string imgPath = _paras.imgExportPath + ssi.str();
+if (!_paras.imgExportPath.empty())
+{
+stringstream ssi;
+ssi << setfill('0') << setw(5) << _frameIdx << ".png";
+std::string imgPath = _paras.imgExportPath + ssi.str();
 
-            try
-            {
-                imwrite(imgPath, hudImage);
-            }
-            catch (runtime_error& runtimeError)
-            {
-                cerr << "Could not write output images: " << runtimeError.what() << endl;
-            }
-        }
+try
+{
+imwrite(imgPath, hudImage);
+}
+catch (runtime_error& runtimeError)
+{
+cerr << "Could not write output images: " << runtimeError.what() << endl;
+}
+}
 
-        char c = (char)waitKey(10);
+char c = (char)waitKey(10);
 
-        if (c == 27)
-        {
-            _exit = true;
-            *_stop_flag = true;
-            return false;
-        }
+if (c == 27)
+{
+_exit = true;
+*_stop_flag = true;
+return false;
+}
 
-        switch (c)
-        {
-        case 'p':
-            _isPaused = !_isPaused;
-            break;
-        case 'c':
-            _isStep = true;
-            break;
-        case 'r':
-            _hasInitBox = false;
-            _isTrackerInitialzed = false;
-            break;
-        case 't':
-            _updateAtPos = true;
-            break;
-        default:
-            ;
-        }
-    }
+switch (c)
+{
+case 'p':
+_isPaused = !_isPaused;
+break;
+case 'c':
+_isStep = true;
+break;
+case 'r':
+_hasInitBox = false;
+_isTrackerInitialzed = false;
+break;
+case 't':
+_updateAtPos = true;
+break;
+default:
+;
+}
+}
 
-    return true;
+return true;
 }
 
 void TrackerRun::printResults(const cv::Rect_<double>& boundingBox, bool isConfident, double fps)
 {
-    if (_resultsFile.is_open())
-    {
-        if (boundingBox.width > 0 && boundingBox.height > 0 && isConfident)
-        {
-            _resultsFile << boundingBox.x << ","
-                << boundingBox.y << ","
-                << boundingBox.width << ","
-                << boundingBox.height << ","
-                << fps << std::endl;
-        }
-        else
-        {
-            _resultsFile << "NaN, NaN, NaN, NaN, " << fps << std::endl;
-        }
+if (_resultsFile.is_open())
+{
+if (boundingBox.width > 0 && boundingBox.height > 0 && isConfident)
+{
+_resultsFile << boundingBox.x << ","
+<< boundingBox.y << ","
+<< boundingBox.width << ","
+<< boundingBox.height << ","
+<< fps << std::endl;
+}
+else
+{
+_resultsFile << "NaN, NaN, NaN, NaN, " << fps << std::endl;
+}
 
-        if (_debug != 0)
-            _debug->printToFile();
-    }
+if (_debug != 0)
+_debug->printToFile();
+}
 }
 
 void TrackerRun::setTrackerDebug(cf_tracking::TrackerDebug* debug)
 {
-    _debug = debug;
+_debug = debug;
 }

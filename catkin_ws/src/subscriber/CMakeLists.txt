@@ -7,6 +7,7 @@ project(subscriber)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
+  uwb
 )
 
 ## System dependencies are found with CMake's conventions

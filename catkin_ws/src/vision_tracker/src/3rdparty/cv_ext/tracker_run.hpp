@@ -65,6 +65,7 @@
 #include "dsst_tracker.hpp"
 #include "image_acquisition.hpp"
 #include "uwb/UWBTracker.h"
+#include <geometry_msgs/TransformStamped.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf/tfMessage.h>
 

@@ -7,6 +7,7 @@
 
 
 #include <ros/ros.h>
+#include "uwb/UWBTracker.h"
 #include "../main/main_kcf.hpp"
 #include <stdio.h>
 #include <thread>

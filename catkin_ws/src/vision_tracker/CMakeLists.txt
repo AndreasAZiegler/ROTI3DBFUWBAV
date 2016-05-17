@@ -8,6 +8,9 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   cmake_modules
   std_msgs
+  uwb
+  cv_bridge
+  image_geometry
   #message_generation
 )
 
@@ -28,6 +31,11 @@ find_package(OpenCV REQUIRED HINTS ${OPENCV_DIR_HINT})
 set(CF_TCLAP_DIR "src/3rdparty/tclap")
 set(CF_CV_EXT_DIR "src/3rdparty/cv_ext")
 set(CF_PIOTR_DIR "src/3rdparty/piotr")
+
+set(Boost_USE_STATIC_LIBS OFF)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(Boost REQUIRED COMPONENTS regex)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -140,6 +148,7 @@ include_directories(
   ${CF_CV_EXT_DIR}
   ${CF_PIOTR_DIR}
   ${CF_PIOTR_DIR}/src
+  ${Boost_INCLUDE_DIRS}
   src/main
   src/cf_libs/kcf
   src/cf_libs/dsst
@@ -203,7 +212,7 @@ add_dependencies(vision_tracker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(vision_tracker_node
-  ${catkin_LIBRARIES} ${OpenCV_LIBS}
+  ${catkin_LIBRARIES} ${OpenCV_LIBS} ${OpenCV_LIBRARIES} ${Boost_LIBRARIES}
 )
 
 #############

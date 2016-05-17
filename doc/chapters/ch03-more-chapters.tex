@@ -24,14 +24,14 @@ where
 
 and
 \begin{equation}
-	\vec v(k-1) \sim \mathcal{N}(\vec 0, \textbf{Q})
+	\vec v(k-1) \sim \mathcal{N}(\vec 0, \textbf{Q}(k-1))
 \end{equation}
 where
 \begin{align}
-	\textbf{Q} =
+	\textbf{Q}(k-1) =
 	\begin{pmatrix}
 		\textbf{0} & \textbf{0}\\
-		\textbf{0} & \textbf{q}_v
+		\textbf{0} & \textbf{q}_v(k-1)
 	\end{pmatrix}
 \end{align}
 and $\textbf{q}_v \in \mathbb{R}^{3\times3}$ is the velocity covariance of the process noise.
@@ -58,7 +58,7 @@ There are two steps which have to be performed in an iterative fashion when runn
 \subsubsection{Step 1: Prior update/Prediction step}
 In the first step, a prediction for the mean of the states $\hat{\vec x}_p(k)$ and the co-variance matrix $\textbf{P}_p(k)$ is calculated from the linearized system model.
 \begin{align}
-	\hat{\vec x}_p(k) &= \vec x(k)\\
+	\hat{\vec x}_p(k) &= \textbf{A}\vec x(k-1)\\
 	\textbf{P}_p(k) &= \textbf{A}(k-1) \textbf{P}_m(k-1) \textbf{A}^T(k-1) + \textbf{L}(k-1) \textbf{Q}(k-1) \textbf{L}^T(k-1) \label{eq:ekf_s1}
 \end{align}
 where
@@ -68,7 +68,7 @@ where
 	\textbf{L}(k-1) & = \frac{\partial}{\partial \vec v} \big( \textbf{A} \vec x(k-1) + \vec v(k-1)\big)\\
 	& = \textbf{I}_6
 \end{align}
-and with the initial values $\hat{\vec x}(0) = x_0$ and $\textbf{P}_m(0) = \textbf{0}$.
+and with the initial values $\hat{\vec x}_m(0) = x_0$ and $\textbf{P}_m(0) = \textbf{0}$.
 Therefore equation \ref{eq:ekf_s1} becomes
 $$\textbf{P}_p(k) = \textbf{P}_m(k-1) + \textbf{Q}(k-1) = \textbf{P}_m(k-1) + \textbf{Q}$$
 
@@ -77,25 +77,25 @@ In the second step, the information gained from the measurements are used to per
 \begin{align}
 	\textbf{K}(k) = \textbf{P}_p(k) \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{P}_p(k) \textbf{H}^T(k) + \textbf{M}(k) \textbf{R}(k) \textbf{M}^T(k)\Big)^{-1} \label{eq:ekf_s2}\\
 	\hat{\vec x}_m(k) = \hat{\vec x}_p(k) + \textbf{K}(k) \Big( \vec z(k) - \begin{bmatrix}
-	\textbf{H}_1 \vec x(k)\\
-	\textbf{H}_2(\vec x)
+	\textbf{H}_1 \hat{\vec x}(k)\\
+	\textbf{H}_2(\hat{\vec x}(k))
 	\end{bmatrix} \Big)\\
 	\textbf{P}_m(k) = \big( \textbf{I} - \textbf{K}(k)\textbf{H}(k)\big) \textbf{P}_p(k)
 \end{align}
 where
 \begin{align}
 	\textbf{H}(k) &= \begin{bmatrix}
-		\frac{\partial}{\partial \vec x} \big( \textbf{H}_1 \vec x(k) + \vec \omega_1(k) \big)\\
-		\frac{\partial}{\partial \vec x} \big( \textbf{H}_2(\vec x(k)) + \vec \omega_2(k) \big)
+		\frac{\partial}{\partial \vec x} \big( \textbf{H}_1 \hat{\vec x}(k) + \vec \omega_1(k) \big)\\
+		\frac{\partial}{\partial \vec x} \big( \textbf{H}_2(\hat{\vec x}(k)) + \vec \omega_2(k) \big)
 	\end{bmatrix}\\
 	&= \begin{bmatrix}
 		\textbf{I}_6\\
-		\frac{1}{x_3} & 0 & -\frac{x_1}{x^2_3} & 0 & 0 & 0\\
-		0 & \frac{1}{x_3} & -\frac{x_1}{x^2_3} & 0 & 0 & 0
+		\frac{1}{\hat{x}_3} & 0 & -\frac{\hat{x}_1}{\hat{x}^2_3} & 0 & 0 & 0\\
+		0 & \frac{1}{\hat{x}_3} & -\frac{\hat{x}_2}{\hat{x}^2_3} & 0 & 0 & 0
 	\end{bmatrix}\\
 	\textbf{M}(k) &= \begin{bmatrix}
-		\frac{\partial}{\partial \vec \omega} \big( \textbf{H}_1 \vec x(k) + \vec \omega_1(k) \big)\\
-		\frac{\partial}{\partial \vec \omega} \big( \textbf{H}_2(\vec x(k)) + \vec \omega_2(k) \big)
+		\frac{\partial}{\partial \vec \omega} \big( \textbf{H}_1 \hat{\vec x}(k) + \vec \omega_1(k) \big)\\
+		\frac{\partial}{\partial \vec \omega} \big( \textbf{H}_2(\hat{\vec x}(k)) + \vec \omega_2(k) \big)
 	\end{bmatrix}\\
 	&= \textbf{I}_8
 \end{align}

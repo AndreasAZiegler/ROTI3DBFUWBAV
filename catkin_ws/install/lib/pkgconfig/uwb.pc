@@ -1,8 +1,0 @@
-prefix=/data/SP1/catkin_ws/install
-
-Name: uwb
-Description: Description of uwb
-Version: 0.0.1
-Cflags: -I/data/SP1/catkin_ws/install/include
-Libs: -L/data/SP1/catkin_ws/install/lib 
-Requires: message_runtime

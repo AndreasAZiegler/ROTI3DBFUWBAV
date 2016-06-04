@@ -30,7 +30,7 @@ def writeToFile(string):
 
 def rosInit():
     rospy.init_node('record_worldcoordinates', anonymous=True)
-    rospy.Subscriber("UWB_Tracker", UWBTracker, callback)
+    rospy.Subscriber("/uwb/tracker", UWBTracker, callback)
 
 # Callback function used when UWVTracker messages was received. Adds the x, y, z coordinates and the according variances with a time stamp
 def callback(data):
@@ -45,8 +45,9 @@ def callback(data):
 def getCoordinatesFromMarker():
     # load board and camera parameters
     camparam = aruco.CameraParameters()
-    camparam.readFromXMLFile("/data/SP1/catkin_ws/src/record_worldcoordinates/camera.yml")
-    #camparam.readFromXMLFile("logitech.yml")
+    #camparam.readFromXMLFile("/data/SP1/catkin_ws/src/record_worldcoordinates/camera.yml")
+    camparam.readFromXMLFile("../config/camera.yml")
+    #camparam.readFromXMLFile("../config/logitech.yml")
 
     # create detector and set parameters
     markerdetector = aruco.MarkerDetector()
@@ -66,7 +67,8 @@ def getCoordinatesFromMarker():
 
     while ret:
         # Detect marker
-        markers = markerdetector.detect(frame, camparam, 200)
+        markers = markerdetector.detect(frame, camparam, 0.142)
+        #markers = markerdetector.detect(frame, camparam, 400)
 
         print(str(len(markers)) + " markers detected")
 
@@ -128,6 +130,10 @@ def getCoordinatesFromMarker():
             wcPoint = np.matmul(np.linalg.inv(intrinsics), (uvPoint - tvec)) # intrinsics^-1 * (uvPoint - tvec)
             wcPoint = np.matmul(np.linalg.inv(rotationsMatrix), wcPoint) # rotationsMatrix^-1 * (intrinsics^-1 * (uvPoint - tvec))
 
+            wcPoint[0] = tvec[0]
+            wcPoint[1] = tvec[1]
+            wcPoint[2] = tvec[2]
+
             # Write world coordinates with time stamp to file
             #string = (datetime.datetime.now().strftime("%I:%M:%S") + ',' + str(wcPoint[0])[1:-1] + ',' + str(wcPoint[1])[1:-1] + ',' + str(wcPoint[2])[1:-1] + ',' + str(0) + ',' + str(0) + ',' + str(0) + '\n')
             #writeToFile(string)
@@ -174,7 +180,7 @@ if __name__ == '__main__':
     arucoThread.join()
 
     # Open file and write header
-    file = h5py.File("/data/SP1/catkin_ws/src/record_worldcoordinates/aruco_output.hdf5", "w")
+    file = h5py.File("/data/SP1/catkin_ws/src/record_worldcoordinates/aruco_uwb_output.hdf5", "w")
 
     # Wirte date sets to file
     #dset = file.create_dataset("mydataset", (100,), dtype='i')

@@ -8,7 +8,7 @@ Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh 
 
 \subsection{System Model}
 
-The state $\vec x = [\vec r, \vec v]^T$ of our model consists of a position $\vec r \in \mathbb{R}^3$ and a velocity $\vec v \in \mathbb{R}^3$.
+The state $\vec x = [\vec r, \dot{\vec{r}}]^T$ of our model consists of a position $\vec r \in \mathbb{R}^3$ and a velocity $\vec v \in \mathbb{R}^3$.
 The discrete process model with timestep $\Delta T$ is given by
 \begin{equation}
 	\vec x(k) = \textbf{A} \vec x(k-1) + \vec v(k-1)
@@ -24,14 +24,14 @@ where
 
 and
 \begin{equation}
-	\vec v(k-1) \sim \mathcal{N}(\vec 0, \textbf{Q}(k-1))
+	\vec v(k-1) \sim \mathcal{N}(\vec 0, \textbf{Q})
 \end{equation}
 where
 \begin{align}
-	\textbf{Q}(k-1) =
+	\textbf{Q} =
 	\begin{pmatrix}
 		\textbf{0} & \textbf{0}\\
-		\textbf{0} & \textbf{q}_v(k-1)
+		\textbf{0} & \textbf{q}_v
 	\end{pmatrix}
 \end{align}
 and $\textbf{q}_v \in \mathbb{R}^{3\times3}$ is the velocity covariance of the process noise.
@@ -59,18 +59,18 @@ There are two steps which have to be performed in an iterative fashion when runn
 In the first step, a prediction for the mean of the states $\hat{\vec x}_p(k)$ and the co-variance matrix $\textbf{P}_p(k)$ is calculated from the linearized system model.
 \begin{align}
 	\hat{\vec x}_p(k) &= \textbf{A}\vec x(k-1)\\
-	\textbf{P}_p(k) &= \textbf{A}(k-1) \textbf{P}_m(k-1) \textbf{A}^T(k-1) + \textbf{L}(k-1) \textbf{Q}(k-1) \textbf{L}^T(k-1) \label{eq:ekf_s1}
+	\textbf{P}_p(k) &= \tilde{\textbf{A}}(k-1) \textbf{P}_m(k-1) \tilde{\textbf{A}}^T(k-1) + \textbf{L}(k-1) \textbf{Q} \textbf{L}^T(k-1) \label{eq:ekf_s1}
 \end{align}
 where
 \begin{align}
-	\textbf{A}(k-1) & =  \frac{\partial}{\partial \vec x} \big(\textbf{A} \vec x(k-1) + \vec v(k-1)\big)\\
-	& = \textbf{I}_6\\
+	\tilde{\textbf{A}}(k-1) & =  \frac{\partial}{\partial \vec x} \big(\textbf{A} \vec x(k-1) + \vec v(k-1)\big)\\
+	& = \textbf{A}(k-1)\\
 	\textbf{L}(k-1) & = \frac{\partial}{\partial \vec v} \big( \textbf{A} \vec x(k-1) + \vec v(k-1)\big)\\
 	& = \textbf{I}_6
 \end{align}
 and with the initial values $\hat{\vec x}_m(0) = x_0$ and $\textbf{P}_m(0) = \textbf{0}$.
 Therefore equation \ref{eq:ekf_s1} becomes
-$$\textbf{P}_p(k) = \textbf{P}_m(k-1) + \textbf{Q}(k-1) = \textbf{P}_m(k-1) + \textbf{Q}$$
+$$\textbf{P}_p(k) = \textbf{A}(k-1)\textbf{P}_m(k-1)\textbf{A}^{T}(k-1) + \textbf{Q}$$
 
 \subsubsection{Step 2: A posteriori update/Measurement update step}
 In the second step, the information gained from the measurements are used to perform an a posteriori update, resulting in a updated mean of the states $\hat{\vec x}_m(k)$and an updated co-variance matrix $\textbf{P}_m(k)$.

@@ -13,11 +13,23 @@ from uwb.msg import UWBTracker
 
 class Fusing:
 
+  class NewValue:
+    newValue = False
+    newUWB = False
+    newVision = False
+
   def __init__(self):
+    # ROS init
+    rospy.init_node('fusing', anonymous=True)
+
     # Coordinates received from the UWB
     self.x_uwb = 0.0
     self.y_uwb = 0.0
     self.z_uwb = 0.0
+    # Velocities recived from the UWB
+    self.vx_uwb = 0.0
+    self.vy_uwb = 0.0
+    self.vz_uwb = 0.0
 
     # Coordinates received from the vision tracker
     self.x_visionTracker = 0.0
@@ -28,14 +40,15 @@ class Fusing:
     self.state = np.array([[1.0], [1.0], [1.0], [0.0], [0.0], [0.0]])
 
     # EKF
+    self.newValue = self.NewValue()
+    self.lastTimeStamp = rospy.Time.now()
     self.deltaT = 0.0035
     # Initial values
     self.vecXm = [0, 0]
     #self.matPm = np.zeros((6,6))
     self.matPm = 10*np.identity(6)
     # Constant matrices used by the EKF
-    #self.matA = [[np.identity(3), self.deltaT * np.identity(3)], [np.zeros((3,3)), np.identity(3)]]
-    self.matA = np.vstack((np.hstack((np.identity(3), self.deltaT * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
+    #self.matA = np.vstack((np.hstack((np.identity(3), self.deltaT * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
 
 
     # Prototyping
@@ -46,13 +59,23 @@ class Fusing:
 
   def uwb_callback(self, data):
     self.x_uwb = data.state[0]
-    self.y_uwb = data.state[0]
+    self.y_uwb = data.state[1]
+    self.z_uwb = data.state[2]
+    self.vx_uwb = data.state[3]
+    self.vy_uwb = data.state[4]
+    self.vz_uwb = data.state[5]
+
+    self.newValue.newValue = True
+    self.newValue.newUWB = True
 
   def ekf_iteration(self, matQ, matR1, matR2, vecZ):
     # Step 1
     #vecState_p = np.dot(self.matA, self.vecX)
-    vecState_p = np.dot(self.matA, self.state)
-    matP_p = self.matPm + matQ
+    deltaT = rospy.Time.now() - self.lastTimeStamp
+    self.lastTimeStamp = rospy.Time.now()
+    matA = np.vstack((np.hstack((np.identity(3), deltaT.to_sec() * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
+    vecState_p = np.dot(matA, self.state)
+    matP_p = np.dot(matA, np.dot(self.matPm, matA.transpose())) + matQ # A*Pm*A^T + Q
 
     # Step 2
     #matH = np.array([[np.identity(6)], [1/vecState_p[2], 0, -vecState_p[0]/vecState_p[3]**2, 0, 0, 0],\
@@ -68,6 +91,32 @@ class Fusing:
     matK = np.dot(matK_t1, np.linalg.inv(matK_t2 + matR))
 
     vecStatem_t1 = np.array([[vecState_p[0][0]/vecState_p[2][0]], [vecState_p[1][0]/vecState_p[2][0]]])
+
+    vecZ = np.zeros((8,1))
+    if (self.newValue.newUWB==True and self.newValue.newVision==True):
+      vecZ[0][0] = self.x_uwb
+      vecZ[1][0] = self.y_uwb
+      vecZ[2][0] = self.z_uwb
+      vecZ[3][0] = self.vx_uwb
+      vecZ[4][0] = self.vy_uwb
+      vecZ[5][0] = self.vz_uwb
+      vecZ[6][0] = self.x_visionTracker
+      vecZ[7][0] = self.y_visionTracker
+      vecStatem_t2 = vecZ - np.vstack(((vecState_p, vecStatem_t1))) # z - [H1*x; H2(x)]
+    elif (self.newValue.newUWB==True and self.newValue.newVision==False):
+      vecZ[0][0] = self.x_uwb
+      vecZ[1][0] = self.y_uwb
+      vecZ[2][0] = self.z_uwb
+      vecZ[3][0] = self.vx_uwb
+      vecZ[4][0] = self.vy_uwb
+      vecZ[5][0] = self.vz_uwb
+      vecStatem_t2 = vecZ - np.vstack(((vecState_p, np.zeros((2, 1))))) # z - [H1*x; H2(x)]
+    elif(self.newValue.newUWB==False and self.newValue.newVision==True)
+      vecZ[6][0] = self.x_visionTracker
+      vecZ[7][0] = self.y_visionTracker
+      vecStatem_t2 = vecZ - np.vstack(((np.zeros((6, 1)), vecStatem_t1))) # z - [H1*x; H2(x)]
+
+
     vecStatem_t2 = vecZ - np.vstack(((vecState_p, vecStatem_t1))) # z - [H1*x; H2(x)]
     vecStatem_t3 = np.dot(matK, vecStatem_t2) # K*(z - [H1*x; H2(x)])
     self.state = vecState_p + vecStatem_t3
@@ -76,7 +125,7 @@ class Fusing:
     self.matPm = np.dot(np.identity(6) - matPm_t, matP_p) # (I - K*H)*Pp
 
   def simulateInput(self):
-    self.lv = self.lv + 0.01
+    self.lv = self.lv + 0.6
     self.realState.append(np.array([[self.lv], [self.lv], [1], [5*random.random()], [5*random.random()], [5*random.random()]]))
     matQ = np.vstack((np.zeros((3,6)), np.hstack((np.zeros((3,3)), 10*np.identity(3)))))
     matR1 = np.identity(6)
@@ -87,11 +136,22 @@ class Fusing:
     vecZ = np.array([[self.realState[-1][0][0] + 1*random.random()], [self.realState[-1][1][0] + 1*random.random()], [self.realState[-1][2][0] + 1*random.random()], \
                      [self.realState[-1][3][0] + 1*random.random()], [self.realState[-1][4][0] + 1*random.random()], [self.realState[-1][5][0] + 1*random.random()], \
                      [self.realState[-1][0][0] + 1*random.random()], [self.realState[-1][1][0] + 1*random.random()]])
+
+    self.x_uwb = vecZ[0][0]
+    self.y_uwb = vecZ[1][0]
+    self.z_uwb = vecZ[2][0]
+    self.vx_uwb = vecZ[3][0]
+    self.vy_uwb = vecZ[4][0]
+    self.vz_uwb = vecZ[5][0]
+    self.x_visionTracker = vecZ[6][0]
+    self.y_visionTracker = vecZ[7][0]
+
+    self.newValue.newValue = True
+    self.newValue.newUWB = True
+    self.newValue.newVision = True
     return(matQ, matR1, matR2, vecZ)
 
   def fuse(self):
-    rospy.init_node('fusing', anonymous=True)
-
     tfBuffer = tf2_ros.Buffer()
     list1 = tf2_ros.TransformListener(tfBuffer)
     sub = rospy.Subscriber('UWB_Tracker', UWBTracker, self.uwb_callback)
@@ -115,7 +175,23 @@ class Fusing:
       """
 
       [matQ, matR1, matR2, vecZ] = self.simulateInput()
-      self.ekf_iteration(matQ, matR1, matR2, vecZ)
+
+      if self.newValue.newValue==True:
+        vecZ = np.zeros((8,1))
+        """
+        if self.newValue.newUWB==True:
+          vecZ[0][0] = self.x_uwb
+          vecZ[1][0] = self.y_uwb
+          vecZ[2][0] = self.z_uwb
+          vecZ[3][0] = self.vx_uwb
+          vecZ[4][0] = self.vy_uwb
+          vecZ[5][0] = self.vz_uwb
+        if self.newValue.newVision==True:
+          vecZ[6][0] = self.x_visionTracker
+          vecZ[7][0] = self.y_visionTracker
+        """
+
+        self.ekf_iteration(matQ, matR1, matR2, vecZ)
 
       #self.allX.append(self.state[0][0])
       #self.allY.append(self.state[1][0])

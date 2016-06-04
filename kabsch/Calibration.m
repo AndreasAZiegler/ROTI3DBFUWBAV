@@ -1,10 +1,10 @@
 clear;
 clc;
 
-TOL = 10; % tolerance in milliseconds
+TOL = 5; % tolerance in milliseconds
 
-aruco_coordinates = h5read('aruco_output.hdf5', '/aruco_coordinates');
-uwb_coordinates = h5read('aruco_output.hdf5', '/uwb_coordinates');
+aruco_coordinates = h5read('aruco_uwb_output.hdf5', '/aruco_coordinates');
+uwb_coordinates = h5read('aruco_uwb_output.hdf5', '/uwb_coordinates');
 
 pos = 1;
 offset = 2;
@@ -26,3 +26,41 @@ for i=1:length(uwb_coordinates)
 end
 
 max_diff = max(abs(uwb(1,:) - aruco(1,:)))
+
+aruco(1:3,:) = aruco(2:4,:);
+index = true(1, size(aruco,1));
+index(4) = false;
+aruco = aruco(index, :);
+uwb(1:3,:) = uwb(2:4,:);
+index = true(1, size(uwb,1));
+index(4) = false;
+uwb = uwb(index, :);
+
+% Exchange x and z axis to fit to aruco coordinates
+tmp = uwb(1,:);
+uwb(1,:) = uwb(3,:);
+uwb(3,:) = tmp;
+
+% Calculate mean and std. deviation
+mean_uwb = mean(uwb(1:3,:), 2);
+mean_aruco = mean(aruco(1:3,:), 2);
+std_uwb = std(uwb(1:3,:),0,2);
+std_aruco = std(aruco(1:3,:),0,2);
+
+
+% calculate scale
+scale = (std_uwb./std_aruco);
+t = [mean_uwb - 8.*mean_aruco];
+
+% normalize data
+%aruco = scale.*(aruco(1:3,:) - mean_aruco*ones(1,length(aruco)));
+aruco(1,:) = scale(1).*(aruco(1,:) - mean_aruco(1)*ones(1,length(aruco(1,:))));
+aruco(2,:) = scale(2).*(aruco(2,:) - mean_aruco(2)*ones(1,length(aruco(1,:))));
+aruco(3,:) = scale(3).*(aruco(3,:) - mean_aruco(3)*ones(1,length(aruco(1,:))));
+%uwb = uwb(1:3,:) - mean_uwb*ones(1,length(uwb));
+uwb(1,:) = uwb(1,:) - mean_uwb(1)*ones(1,length(uwb(1,:)));
+uwb(2,:) = uwb(2,:) - mean_uwb(2)*ones(1,length(uwb(2,:)));
+uwb(3,:) = uwb(3,:) - mean_uwb(3)*ones(1,length(uwb(3,:)));
+
+
+[U, r, lrms] = Kabsch(aruco, uwb);

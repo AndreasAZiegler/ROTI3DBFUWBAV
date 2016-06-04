@@ -71,6 +71,8 @@ public:
 
     void open(ImgAcqParas paras);
 
+    void init();
+
     void set(int key, int value);
 
     double get(int key);
@@ -85,6 +87,14 @@ private:
     cv::VideoCapture _cvCap;
     ImgAcqParas _paras;
     VideoCaptureMock _mockCap;
+
+    cv::Mat _cameraMatrix;
+    cv::Mat _distortionCoefficients;
+    cv::Mat _newCameraMatrix;
+    cv::Mat _mapX;
+    cv::Mat _mapY;
+
+    cv::Mat _distortedImage;
 };
 
 #endif

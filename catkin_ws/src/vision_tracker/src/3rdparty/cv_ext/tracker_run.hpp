@@ -66,6 +66,7 @@
 #include "image_acquisition.hpp"
 #include "uwb/UWBTracker.h"
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/PointStamped.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf/tfMessage.h>
 
@@ -120,6 +121,8 @@ private:
     //tf2_msgs::TFMessage _msg;
     tf::tfMessage _msg;
     geometry_msgs::TransformStamped _trans;
+    geometry_msgs::PointStamped _point;
+    int _headerSeq;
     int _frameIdx;
     bool _isPaused = false;
     bool _isStep = false;

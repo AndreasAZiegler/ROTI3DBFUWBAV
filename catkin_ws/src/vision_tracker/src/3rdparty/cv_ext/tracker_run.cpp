@@ -72,7 +72,8 @@ TrackerRun::TrackerRun(string windowTitle, ros::NodeHandle *node)
  : _windowTitle(windowTitle),
    _cmd(_windowTitle.c_str(), ' ', "0.1"),
    _debug(0),
-   _nh(node)
+   _nh(node),
+   _headerSeq(0)
 {
     _tracker = 0;
 }
@@ -172,7 +173,8 @@ bool TrackerRun::start(int argc, char** argv, bool* stop_flag)
     _stop_flag = stop_flag;
 
     //_pub = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
-    _pub = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
+    //_pub = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
+    _pub = _nh->advertise<geometry_msgs::PointStamped>("vision_coordinates", 10);
     ros::Rate loop_rate(10);
 
     _paras = parseCmdArgs(argc, argv);
@@ -208,6 +210,7 @@ bool TrackerRun::init()
         cerr << "Could not open device/sequence/video!" << endl;
         exit(-1);
     }
+    _cap.init();
 
     int startIdx = _paras.startFrame - 1;
 
@@ -347,12 +350,11 @@ bool TrackerRun::update()
             tDuration = getTickCount() - tStart;
 
             // Publish positions
-            //Point pos(_boundingBox.x + _boundingBox.width * consts::c0_5, tDuration = getTickCount() - tStart;
-
-            _trans.header.seq = 1;
+            _trans.header.seq = _headerSeq;
+            _headerSeq++;
             _trans.header.stamp = ros::Time::now();
-            _trans.header.frame_id = string("Frame");
-            _trans.child_frame_id = string("Child frame");
+            _trans.header.frame_id = string("vision");
+            _trans.child_frame_id = string("vision_tracker");
             _trans.transform.translation.x = _boundingBox.x + _boundingBox.width * 0.5;
             _trans.transform.translation.y = _boundingBox.y + _boundingBox.width * 0.5;
             _trans.transform.translation.z = 1;
@@ -360,16 +362,20 @@ bool TrackerRun::update()
             _trans.transform.rotation.y = 0;
             _trans.transform.rotation.z = 0;
             _trans.transform.rotation.w = 0;
+
+            _point.header.seq = _headerSeq;
+            _point.header.stamp = ros::Time::now();
+            _point.header.frame_id = string("vision");
+            //_point.point.x = _boundingBox.x + _boundingBox.width * 0.5;
+            //_point.point.y = _boundingBox.y + _boundingBox.width * 0.5;
+            _point.point.x = (_boundingBox.x + _boundingBox.width * 0.5) / 1000.0;
+            _point.point.y = (_boundingBox.y + _boundingBox.width * 0.5) / 1000.0;
+            _point.point.z = 1;
+
             _msg.transforms.clear();
             _msg.transforms.push_back(_trans);
-            ROS_INFO("%f", _msg.transforms[0]);
-            /*
-            std::stringstream ss;
-            ss << "hello";
-            _msg.data = ss.str();
-            ROS_INFO("%s", _msg.data.c_str());
-            */
-            _pub.publish(_msg);
+            ROS_INFO("%f", _point);
+            _pub.publish(_point);
         }
 }
 

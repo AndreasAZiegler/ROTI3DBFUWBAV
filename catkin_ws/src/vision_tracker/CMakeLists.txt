@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   cmake_modules
   std_msgs
+  geometry_msgs
   uwb
   cv_bridge
   image_geometry

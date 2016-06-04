@@ -29,6 +29,8 @@
 // the use of this software, even if advised of the possibility of such damage.
 */
 
+#include <iostream>
+#include <opencv2/imgproc.hpp>
 #include "image_acquisition.hpp"
 
 ImageAcquisition::ImageAcquisition()
@@ -37,10 +39,14 @@ ImageAcquisition::ImageAcquisition()
 
 ImageAcquisition& ImageAcquisition::operator>>(CV_OUT cv::Mat& image)
 {
-    if (_paras.isMock)
+    if (_paras.isMock) {
         _mockCap >> image;
-    else
-        _cvCap >> image;
+    }
+    else {
+        _cvCap >> _distortedImage;
+        cv::remap(_distortedImage, image, _mapX, _mapY, cv::INTER_LINEAR);
+    }
+
 
     return *this;
 }
@@ -85,6 +91,19 @@ void ImageAcquisition::open(ImgAcqParas paras)
             _cvCap.open(sequenceExpansion);
         }
     }
+}
+
+void ImageAcquisition::init() {
+    cv::FileStorage fs("/data/SP1/catkin_ws/src/vision_tracker/config/camera.yml", cv::FileStorage::READ);
+    fs["camera_matrix"] >> _cameraMatrix;
+    fs["distortion_coefficients"] >> _distortionCoefficients;
+    fs.release();
+
+    cv::Mat image;
+    _cvCap >> image;
+    _mapX = cv::Mat(image.size(), CV_32FC1);
+    _mapY = cv::Mat(image.size(), CV_32FC1);
+    cv::initUndistortRectifyMap(_cameraMatrix, _distortionCoefficients, cv::Mat(), _newCameraMatrix, image.size(), CV_32FC1, _mapX, _mapY);
 }
 
 ImageAcquisition::~ImageAcquisition()

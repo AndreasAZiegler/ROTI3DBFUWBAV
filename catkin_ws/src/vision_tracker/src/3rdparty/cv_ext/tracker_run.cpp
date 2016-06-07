@@ -68,12 +68,15 @@ using namespace std;
 using namespace TCLAP;
 using namespace cf_tracking;
 
+const bool ROS_RECORD_OR_PLAY = true;              // false = For recording with rosbag, true = For play with rosbag
+
 TrackerRun::TrackerRun(string windowTitle, ros::NodeHandle *node)
  : _windowTitle(windowTitle),
    _cmd(_windowTitle.c_str(), ' ', "0.1"),
    _debug(0),
    _nh(node),
-   _headerSeq(0)
+   _headerSeq(0),
+   _it(*_nh)
 {
     _tracker = 0;
 }
@@ -81,7 +84,8 @@ TrackerRun::TrackerRun(string windowTitle, ros::NodeHandle *node)
 TrackerRun::TrackerRun(string windowTitle)
  : _windowTitle(windowTitle),
    _cmd(_windowTitle.c_str(), ' ', "0.1"),
-   _debug(0)
+   _debug(0),
+  _it(*_nh)
 {
     _tracker = 0;
 }
@@ -95,6 +99,17 @@ TrackerRun::~TrackerRun()
     {
         delete _tracker;
         _tracker = 0;
+    }
+}
+
+void TrackerRun::imageCb(const sensor_msgs::ImageConstPtr &msg) {
+    cv_bridge::CvImageConstPtr cv_ptr;
+    try{
+        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        _rosimage = cv_ptr->image;
+    }catch(cv_bridge::Exception& e) {
+       ROS_ERROR("cv_bridge exception: %s", e.what());
+       return;
     }
 }
 
@@ -172,11 +187,6 @@ bool TrackerRun::start(int argc, char** argv, bool* stop_flag)
 
     _stop_flag = stop_flag;
 
-    //_pub = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
-    //_pub = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
-    _pub = _nh->advertise<geometry_msgs::PointStamped>("vision_coordinates", 10);
-    ros::Rate loop_rate(10);
-
     _paras = parseCmdArgs(argc, argv);
 
     while (true)
@@ -198,6 +208,17 @@ bool TrackerRun::start(int argc, char** argv, bool* stop_flag)
 
 bool TrackerRun::init()
 {
+    // ROS init stuff
+    //_pub = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
+    //_pub = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
+    _pub = _nh->advertise<geometry_msgs::PointStamped>("vision_coordinates", 10);
+    if(false == ROS_RECORD_OR_PLAY){
+      _image_pub = _it.advertise("/vision_tracker/video", 1);
+    }else{
+      _image_sub = _it.subscribe("/vision_tracker/video", 1, &TrackerRun::imageCb, this);
+    }
+    ros::Rate loop_rate(10);
+
     ImgAcqParas imgAcqParas;
     imgAcqParas.device = _paras.device;
     imgAcqParas.expansionStr = _paras.expansion;
@@ -286,10 +307,18 @@ bool TrackerRun::update()
 
     if (!_isPaused || _frameIdx == 0 || _isStep)
     {
-        _cap >> _image;
+        if(false == ROS_RECORD_OR_PLAY){
+          _cap >> _image;
+        }else{
+          _image = _rosimage;
+        }
 
         if (_image.empty())
             return false;
+
+        if(false == ROS_RECORD_OR_PLAY) {
+            _image_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", _image).toImageMsg());
+        }
 
         ++_frameIdx;
     }

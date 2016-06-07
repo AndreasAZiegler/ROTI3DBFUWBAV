@@ -69,6 +69,9 @@
 #include <geometry_msgs/PointStamped.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf/tfMessage.h>
+#include <image_transport/image_transport.h>
+#include <cv_bridge/cv_bridge.h>
+#include <sensor_msgs/image_encodings.h>
 
 struct Parameters{
     std::string sequencePath;
@@ -102,11 +105,14 @@ private:
     bool update();
     void printResults(const cv::Rect_<double>& boundingBox, bool isConfident, double fps);
 
+    void imageCb(const sensor_msgs::ImageConstPtr& msg);
+
 protected:
     virtual cf_tracking::CfTracker* parseTrackerParas(TCLAP::CmdLine& cmd, int argc, char** argv) = 0;
 
 private:
     cv::Mat _image;
+    cv::Mat _rosimage;
     cf_tracking::CfTracker* _tracker;
     std::string _windowTitle;
     Parameters _paras;
@@ -132,6 +138,11 @@ private:
     bool _targetOnFrame = false;
     bool _updateAtPos = false;
     bool* _stop_flag;
+
+    // Used for rosbag
+    image_transport::ImageTransport _it;
+    image_transport::Subscriber _image_sub;
+    image_transport::Publisher _image_pub;
 };
 
 #endif

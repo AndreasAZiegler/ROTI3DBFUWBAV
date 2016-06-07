@@ -12,6 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   uwb
   cv_bridge
   image_geometry
+  sensor_msgs
+  image_transport
   #message_generation
 )
 

@@ -33,8 +33,8 @@ if __name__ == '__main__':
     [args, img_mask] = getopt.getopt(sys.argv[1:], '', ['debug=', 'square_size='])
     args = dict(args)
     args.setdefault('--debug', './output/')
-    #args.setdefault('--square_size', 41.0)
-    args.setdefault('--square_size', 24.0)
+    args.setdefault('--square_size', 41.0)
+    #args.setdefault('--square_size', 24.0)
     if not img_mask:
         img_mask = '../data/left*.jpg'  # default
     else:
@@ -46,8 +46,8 @@ if __name__ == '__main__':
         os.mkdir(debug_dir)
     square_size = float(args.get('--square_size'))
 
-    #pattern_size = (4, 4)
-    pattern_size = (7, 7)
+    pattern_size = (4, 4)
+    #pattern_size = (7, 7)
     pattern_points = np.zeros((np.prod(pattern_size), 3), np.float32)
     pattern_points[:, :2] = np.indices(pattern_size).T.reshape(-1, 2)
     pattern_points *= square_size
@@ -69,8 +69,8 @@ if __name__ == '__main__':
         #print('processing %s... ' % fn, end='')
         #img = cv2.imread(fn, 0)
         #[ret, img] = cap.read()
-        #file_name = "./input/chessboard_" + str(fn) + ".png"
-        file_name = "./input/chessboard_logitech_" + str(fn) + ".jpg"
+        file_name = "./input/chessboard_" + str(fn) + ".png"
+        #file_name = "./input/chessboard_logitech_" + str(fn) + ".jpg"
         img = cv2.imread(file_name)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         if img is None:

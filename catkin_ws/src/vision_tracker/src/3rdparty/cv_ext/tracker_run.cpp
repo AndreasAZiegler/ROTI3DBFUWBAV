@@ -211,7 +211,7 @@ bool TrackerRun::init()
     // ROS init stuff
     //_pub = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
     //_pub = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
-    _pub = _nh->advertise<geometry_msgs::PointStamped>("vision_coordinates", 10);
+    _pub = _nh->advertise<geometry_msgs::PointStamped>("/vision_tracker/vision_coordinates", 1);
     if(false == ROS_RECORD_OR_PLAY){
       _image_pub = _it.advertise("/vision_tracker/video", 1);
     }else{
@@ -377,35 +377,35 @@ bool TrackerRun::update()
             tStart = getTickCount();
             _targetOnFrame = _tracker->update(_image, _boundingBox);
             tDuration = getTickCount() - tStart;
-
-            // Publish positions
-            _trans.header.seq = _headerSeq;
-            _headerSeq++;
-            _trans.header.stamp = ros::Time::now();
-            _trans.header.frame_id = string("vision");
-            _trans.child_frame_id = string("vision_tracker");
-            _trans.transform.translation.x = _boundingBox.x + _boundingBox.width * 0.5;
-            _trans.transform.translation.y = _boundingBox.y + _boundingBox.width * 0.5;
-            _trans.transform.translation.z = 1;
-            _trans.transform.rotation.x = 0;
-            _trans.transform.rotation.y = 0;
-            _trans.transform.rotation.z = 0;
-            _trans.transform.rotation.w = 0;
-
-            _point.header.seq = _headerSeq;
-            _point.header.stamp = ros::Time::now();
-            _point.header.frame_id = string("vision");
-            //_point.point.x = _boundingBox.x + _boundingBox.width * 0.5;
-            //_point.point.y = _boundingBox.y + _boundingBox.width * 0.5;
-            _point.point.x = (_boundingBox.x + _boundingBox.width * 0.5) / 1000.0;
-            _point.point.y = (_boundingBox.y + _boundingBox.width * 0.5) / 1000.0;
-            _point.point.z = 1;
-
-            _msg.transforms.clear();
-            _msg.transforms.push_back(_trans);
-            ROS_INFO("%f", _point);
-            _pub.publish(_point);
         }
+
+        // Publish positions
+        _trans.header.seq = _headerSeq;
+        _headerSeq++;
+        _trans.header.stamp = ros::Time::now();
+        _trans.header.frame_id = string("vision");
+        _trans.child_frame_id = string("vision_tracker");
+        _trans.transform.translation.x = _boundingBox.x + _boundingBox.width * 0.5;
+        _trans.transform.translation.y = _boundingBox.y + _boundingBox.width * 0.5;
+        _trans.transform.translation.z = 1;
+        _trans.transform.rotation.x = 0;
+        _trans.transform.rotation.y = 0;
+        _trans.transform.rotation.z = 0;
+        _trans.transform.rotation.w = 0;
+
+        _point.header.seq = _headerSeq;
+        _point.header.stamp = ros::Time::now();
+        _point.header.frame_id = string("vision");
+        //_point.point.x = _boundingBox.x + _boundingBox.width * 0.5;
+        //_point.point.y = _boundingBox.y + _boundingBox.width * 0.5;
+        _point.point.x = (_boundingBox.x + _boundingBox.width * 0.5) / 1000.0;
+        _point.point.y = (_boundingBox.y + _boundingBox.width * 0.5) / 1000.0;
+        _point.point.z = 1;
+
+        _msg.transforms.clear();
+        _msg.transforms.push_back(_trans);
+        ROS_INFO("%f", _point);
+        _pub.publish(_point);
 }
 
 double fps = static_cast<double>(getTickFrequency() / tDuration);

@@ -12,7 +12,7 @@ function [U, r, lrms] = MyKabsch(P, Q, m)
 %
 % When calling [U, r] = MyKabsch(P, Q), the vertices of P can be aligned
 % with the vertices of Q by computing
-% P' = P * U + repmat(r, [size(P, 1), 1]);
+% Q ~= P * U + repmat(r, [size(P, 1), 1]);
 %
 
     if nargin < 3

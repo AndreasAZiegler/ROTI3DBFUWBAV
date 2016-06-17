@@ -37,8 +37,6 @@ def callback(data):
     rospy.loginfo(rospy.get_caller_id() + "I heard %f", data.state[1])
 
     # Write world coordinates with time stamp to file
-    #string = (datetime.datetime.now().strftime("%I:%M:%S") + ',' + str(data.state[0])[1:-1] + ',' + str(data.state[1])[1:-1] + ',' + str(data.state[2])[1:-1] + ',' + str(data.covariance[0])[1:-1] + ',' + str(data.covariance[7])[1:-1] + ',' + str(data.covariance[14])[1:-1] + '\n')
-    #writeToFile(string)
     uwbCoordinates.append([timedelta(), data.state[0], data.state[1], data.state[2]])
     uwbVariances.append([timedelta(), data.covariance[0], data.covariance[7], data.covariance[14]])
 
@@ -97,8 +95,9 @@ def getCoordinatesFromMarker():
             """
 
             #print("Marker id: " + str(markers[i].id) + " Coordinates: " + str(markers[i].getCenter()))
-            print("Marker Coordinates: " + str(m.getCenter()) + " Tvec: " + str(m.Tvec))
+            #print("Marker Coordinates: " + str(m.getCenter()) + " Tvec: " + str(m.Tvec))
 
+            """
             # Get rvec, tvec, pixel coordinates
             rvec = m.Rvec
             tvec = m.Tvec
@@ -112,7 +111,6 @@ def getCoordinatesFromMarker():
             #intrinsics = np.array([camparam.CameraMatrix[0], camparam.CameraMatrix[1], camparam.CameraMatrix[2]])
             intrinsics = camparam.CameraMatrix
 
-            """
             zConst = 5
             s = 0
             #tempMat = rotationsMatrix.inv() * intrinsics.inv() * coordinates
@@ -124,23 +122,19 @@ def getCoordinatesFromMarker():
             wcPoint = np.linalg.inv(rotationsMatrix) * (s * np.linalg.inv(intrinsics) * uvPoint - tvec)
 
             realPoint = [wcPoint[0,0], wcPoint[1,0], wcPoint[2,0]]
-            """
 
             # Calculate world coordinates
             wcPoint = np.matmul(np.linalg.inv(intrinsics), (uvPoint - tvec)) # intrinsics^-1 * (uvPoint - tvec)
             wcPoint = np.matmul(np.linalg.inv(rotationsMatrix), wcPoint) # rotationsMatrix^-1 * (intrinsics^-1 * (uvPoint - tvec))
+            """
 
-            wcPoint[0] = tvec[0]
-            wcPoint[1] = tvec[1]
-            wcPoint[2] = tvec[2]
+            wcPoint = m.Tvec
 
             # Write world coordinates with time stamp to file
-            #string = (datetime.datetime.now().strftime("%I:%M:%S") + ',' + str(wcPoint[0])[1:-1] + ',' + str(wcPoint[1])[1:-1] + ',' + str(wcPoint[2])[1:-1] + ',' + str(0) + ',' + str(0) + ',' + str(0) + '\n')
-            #writeToFile(string)
             arucoCoordinates.append([timedelta(), wcPoint[0], wcPoint[1], wcPoint[2]])
 
-            print("World coordinates: " + str(wcPoint))
-            print('\n')
+            #print("World coordinates: " + str(wcPoint))
+            #print('\n')
 
             # Draw marker frame on input image
             m.draw(frame, np.array([255, 255, 255]), 2)

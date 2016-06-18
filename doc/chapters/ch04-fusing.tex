@@ -40,11 +40,11 @@ and $\textbf{q}_v \in \mathbb{R}^{3\times3}$ is the velocity covariance of the p
 
 There are two possible measurements. The first measurement is a direct measurement of the state $\vec x$ from ultra-wideband (UWB) trilateration:
 \begin{equation}
-	\vec z_1(k) = \vec h_k_1(\vec x(k), \vec w_1(k))
+	\vec z_1(k) = \vec h_{k,1}(\vec x(k), \vec w_1(k))
 \end{equation}
 with
 \begin{equation}
-  \vec h_k_1(x(k), w_1(k)) = \textbf{H}_1 \vec x(k) + \vec w_1(k)
+  \vec h_{k,1}(x(k), w_1(k)) = \textbf{H}_1 \vec x(k) + \vec w_1(k)
 \end{equation}
 where
 $$\textbf{H}_1 = \textbf{I}_6$$
@@ -53,11 +53,11 @@ $$\vec \omega_1(k) \sim \mathcal{N}(\vec 0, \textbf{R}_1)$$
 where $\textbf{R}_1 \in \mathbb{R}^{6\times6}$ is the covariance of the UWB measurement.
 The second measurement is a projection of the position $\vec r$ as seen by a camera:
 \begin{equation}
-	\vec z_2(k) = \vec h_k_2(\vec x(k), \vec w_2(k))
+	\vec z_2(k) = \vec h_{k,2}(\vec x(k), \vec w_2(k))
 \end{equation}
 with
 \begin{equation}
-  \vec h_k_2(\vec x(k), \vec w_2(k)) = \textbf{H}_2(\vec x(k)) + \vec w_2(k)
+  \vec h_{k,2}(\vec x(k), \vec w_2(k)) = \textbf{H}_2(\vec x(k)) + \vec w_2(k)
 \end{equation}
 where
 \begin{equation}
@@ -97,8 +97,8 @@ In the second step, the information gained from the measurements are used to per
 \begin{align}
 	\textbf{K}(k) = \textbf{P}_p(k) \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{P}_p(k) \textbf{H}^T(k) + \textbf{M}(k) \textbf{R}(k) \textbf{M}^T(k)\Big)^{-1} \label{eq:ekf_s2}\\
 	\hat{\vec x}_m(k) = \hat{\vec x}_p(k) + \textbf{K}(k) \Big( \vec z(k) - \begin{bmatrix}
-	\vec h_k_1(\vec x(k), \vec w_1(k))\\
-	\vec h_k_2(\vec x(k), \vec w_2(k)))
+	\vec h_{k,1}(\vec x(k), \vec w_1(k))\\
+	\vec h_{k,2}(\vec x(k), \vec w_2(k)))
 	\end{bmatrix} \Big)\\
 	\textbf{P}_m(k) = \big( \textbf{I} - \textbf{K}(k)\textbf{H}(k)\big) \textbf{P}_p(k)
 \end{align}
@@ -130,60 +130,3 @@ $$\textbf{K}(k) = \textbf{Q} \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{Q} \tex
 	\textbf{R}_1 & \textbf{0}\\
 	\textbf{0} &\textbf{R}_2
 \end{bmatrix} \Big)^{-1}$$
-
-\subsection{Another Subsection}
-
-\begin{table}
-    \centering
-    \begin{tabular}{|l|p{0.4\linewidth}|}
-    \hline
-    \emph{Quant.} & \emph{Ingredient}\\
-    \hline
-		200g &Wei{\ss}mehl\\
-		1/4  &Packung Frischhefe\\
-		4EL  &lauwarme Milch\\
-		4EL  &Öl\\
-		1TL  &Zucker\\
-		1TL  &Salz\\
-		&lauwarmes Wasser\\
-    \hline
-    \end{tabular}
-    \caption[Flammkuchenteig]{Flammkuchenteig. The ingredients have to be carefully chosen.\label{tab:mytable}}
-\end{table}
-%
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat, see Table~\ref{tab:mytable}. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam,
-see Figure~\ref{fig:voldiff}~(a).
-%
-\begin{figure}
-    \centering
-    \setlength{\tabcolsep}{0.0130\linewidth}
-    \begin{tabular}{@{}cc@{}}
-    \includegraphics[width=0.487\linewidth]{figures/IgeaNarrowBand}&
-    \includegraphics[width=0.487\linewidth]{figures/voldiff_ui}\\
-    (a)&(b)\\
-    \end{tabular}
-    \caption[Volumetric diffusion]{Volumetric diffusion.
-    	  \textup{(a)} Slices of the distance volume reveal the narrow band.
-			  \textup{(b)} The user interface of the automatic hole filling
-        tool allows to fine-tune the algorithm.
-        The volumetric representation can be previewed before
-        surface reconstruction.%
-      \label{fig:voldiff}}
-\end{figure}
-%
-Isn't it?
-
-\begin{figure}[!htb]
-	\centering
-	\subfigure[Caption first.]{\label{fig:test1}\includegraphics[width=0.3\textwidth]{figures/IgeaNarrowBand}} \hfill
-	\subfigure[Caption second.]{\label{fig:test2}\includegraphics[width=0.3\textwidth]{figures/voldiff_ui}}
-	\caption[Caption both]{Caption of both \subref{fig:test1}, \subref{fig:test2}.}
-	\label{fig:bothfigures}
-\end{figure}
-
-
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam 
-
-\section{Second Section}
-
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero et accumsan et iusto odio dignissim qui blandit

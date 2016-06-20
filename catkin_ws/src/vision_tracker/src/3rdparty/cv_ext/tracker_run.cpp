@@ -358,7 +358,8 @@ bool TrackerRun::update()
             if (!InitBoxSelector::selectBox(_image, box))
                 return false;
 
-            _boundingBox = Rect_<double>(static_cast<double>(box.x),
+            _boundingBox = Rect_<double>(
+                static_cast<double>(box.x),
                 static_cast<double>(box.y),
                 static_cast<double>(box.width),
                 static_cast<double>(box.height));
@@ -398,8 +399,11 @@ bool TrackerRun::update()
         _point.header.frame_id = string("vision");
         //_point.point.x = _boundingBox.x + _boundingBox.width * 0.5;
         //_point.point.y = _boundingBox.y + _boundingBox.width * 0.5;
-        _point.point.x = (_boundingBox.x + _boundingBox.width * 0.5) / 1000.0;
-        _point.point.y = (_boundingBox.y + _boundingBox.width * 0.5) / 1000.0;
+        //_point.point.x = (_boundingBox.x + _boundingBox.width * 0.5) / 1000.0;
+        //_point.point.y = (_boundingBox.y + _boundingBox.width * 0.5) / 1000.0;
+        _point.point.x = _boundingBox.x + _boundingBox.width / 2;
+        _point.point.y = _boundingBox.y + _boundingBox.width / 2;
+        std::cout << "Point x: " << _point.point.x << " y: " << _point.point.y << std::endl;
         _point.point.z = 1;
 
         _msg.transforms.clear();

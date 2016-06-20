@@ -1,4 +1,4 @@
-\chapter{Fusing of the two measurement sources}
+\chapter{Fusing of the two measurement sources}\label{ch:fusing}
 
 The position of the object is estimated with an Extended Kalman Filter (EKF), using a model of the system and the measurements from the UWB as well as from the vision tracker.
 
@@ -130,3 +130,6 @@ $$\textbf{K}(k) = \textbf{Q} \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{Q} \tex
 	\textbf{R}_1 & \textbf{0}\\
 	\textbf{0} &\textbf{R}_2
 \end{bmatrix} \Big)^{-1}$$
+
+\subsection{Implementation}
+The implementation of the EKF was done in Python within a ROS environment.

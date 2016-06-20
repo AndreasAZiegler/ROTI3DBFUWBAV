@@ -4,11 +4,53 @@
 \setcounter{chapter}{2}
 
 \chapter{Setup}
+To be able to fuse the positions provided by the UWB system and by the vision tracker, the whole setup needed to be calibrated and the two different coordination system needed to be matched. This chapter describes, how the camera was calibrated and with which approach the two coordination systems were matched together and with the help of which frameworks. 
 
 \section{Camera calibration}
+As it is well known, that webcam's, as the one used in this semester project, suffer from distortion (radial as well as tangential) \cite{Szeliski:2010:CVA:1941882}, \cite{opencv_library}, the required constants to remove this distortions as well as the camera matrix, needed for the unit conversion, are determined by the camera calibration.
 
-\section{ArUco}
+In this semester project, the camera calibration framework of the OpenCV library \cite{opencv_library} was used, as it is easy to handle and well known to work properly.
 
 \section{Matching frames}
+The coordination systems of the UWB setup and the one of the camera are not the same. As the goal of this semester project is to fuse the locations provided by the UWB system and by the vision tracker, the locations must be transformed from one to the other. To achieve this, the location of the object in 3D must be available from both systems (UWB and vision). For the vision system, the ArUco \cite{Aruco2014} library and an ArUco marker was used to get 3D coordinates of the object. The translation as well as the rotation between the two coordination systems were then determined by the Kabsch algorithm \cite{Kabsch:a12999}.
+
+\subsection{ArUco}
+ArUco \cite{Aruco2014} is a minimal library for augmented reality applications based on OpenCV.
+
+To get 3D vision coordinates, an ArUco marker was mounted on the object and an application was written which uses the ArUco library to read out the 3D coordination of detected ArUco markers and saves them for the later usage by the main matching proceeder. 
 
 \subsection{Kabsch}
+With the Kabsch algorithm \cite{Kabsch:a12999}, the optimal (in the sense of the root mean squared error) rotation matrix and translation vector is calculated.
+
+\subsection{Matching proceeder}
+For the matching proceeder, a Matlab script was written, shown in \autoref{lst:matching}, which calculates the mean of the UWB- and the vision (ArUco) coordinates, normalizes the coordinates of both, calculates the scale, scales the vision (ArUco) coordinates and executes Kabsch to calculate the rotation matrix $U$, the translation $r$ and the least root mean squared error $\text{lrms}$.
+
+\lstset{language=Matlab}
+\begin{lstlisting}[frame=single, caption=Matching proceeder, label=lst:matching]
+% Calculate mean
+mean_uwb = mean(uwb(1:3,:), 2);
+mean_aruco = mean(aruco(1:3,:), 2);
+	
+% normalize data	
+aruco_centred(1,:) = (aruco(1,:) - ...
+		mean_aruco(1)*ones(1,length(aruco(1,:))));
+aruco_centred(2,:) = (aruco(2,:) - ...
+		mean_aruco(2)*ones(1,length(aruco(1,:))));
+aruco_centred(3,:) = (aruco(3,:) - ...
+		mean_aruco(3)*ones(1,length(aruco(1,:))));
+
+uwb_centred(1,:) = uwb(1,:) - ...
+		mean_uwb(1)*ones(1,length(uwb(1,:)));
+uwb_centred(2,:) = uwb(2,:) - ...
+		mean_uwb(2)*ones(1,length(uwb(2,:)));
+uwb_centred(3,:) = uwb(3,:) - ...
+		mean_uwb(3)*ones(1,length(uwb(3,:)));
+	
+% calculate scale
+scale = norm(uwb_centred)/norm(aruco_centred);
+	
+aruco = scale .* aruco;
+	
+	
+[U, r, lrms] = Kabsch(aruco, uwb);
+\end{lstlisting}

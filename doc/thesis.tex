@@ -8,6 +8,27 @@
 \usepackage[font={small,sl},hang,labelfont=bf]{caption} % configure captions
 \usepackage{booktabs} % publication quality tables for LaTeX
 %\usepackage{showkeys} % shows the labels above the references for easier development
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+\lstset{language=Matlab,%
+	frame=top,frame=bottom,
+	%basicstyle=\color{red},
+	breaklines=true,%
+	morekeywords={matlab2tikz},
+	keywordstyle=\color{blue},%
+	morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+	identifierstyle=\color{black},%
+	stringstyle=\color{mylilas},
+	commentstyle=\color{mygreen},%
+	showstringspaces=false,%without this there will be a symbol in the places where there is a space
+	numbers=left,%
+	numberstyle={\tiny \color{black}},% size of the numbers
+	numbersep=9pt, % this defines how far the numbers are from the text
+	emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+	%emph=[2]{word1,word2}, emphstyle=[2]{style},    
+}
 
 \ifpdfoutput{%
 	\usepackage[pdftex]{graphicx}
@@ -71,6 +92,8 @@
 
 \renewcommand{\arraystretch}{1.5}
 \renewcommand{\baselinestretch}{1}
+
+\newcommand{\todo}{\textcolor{red}{\textbf{!!TODO!!}}}
 
 \input{./chapters/preamble}
 \input{./chapters/bibpre}
@@ -164,6 +187,11 @@
 \phantomsection
 \addcontentsline{toc}{chapter}{List of Tables}
 \listoftables
+
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{List of Listings}
+\lstlistoflistings
 \cleardoublepage
 
 \pagenumbering{arabic}

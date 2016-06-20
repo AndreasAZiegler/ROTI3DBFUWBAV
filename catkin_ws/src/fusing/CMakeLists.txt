@@ -5,8 +5,16 @@ project(fusing)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-uwb
+    rospy
+    OpenCV REQUIRED
+    uwb
+    cv_bridge
+    std_msgs
+    sensor_msgs
 )
+
+set(OpenCV_STATIC OFF)
+find_package(OpenCV REQUIRED HINTS ${OPENCV_DIR_HINT})
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

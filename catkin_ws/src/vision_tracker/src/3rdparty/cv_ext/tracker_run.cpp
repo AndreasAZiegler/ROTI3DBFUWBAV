@@ -215,7 +215,8 @@ bool TrackerRun::init()
     if(false == ROS_RECORD_OR_PLAY){
       _image_pub = _it.advertise("/vision_tracker/video", 1);
     }else{
-      _image_sub = _it.subscribe("/vision_tracker/video", 1, &TrackerRun::imageCb, this);
+      //_image_sub = _it.subscribe("/vision_tracker/video", 1, &TrackerRun::imageCb, this);
+      _image_sub = _it.subscribe("/camera/video", 1, &TrackerRun::imageCb, this);
     }
     ros::Rate loop_rate(10);
 

@@ -1,4 +1,6 @@
 <launch>
+  <node name="republish" pkg="image_transport" type="republish" output="screen" args="compressed in:=/camera/video raw out:=/camera/video">
+  </node>
   <node name="vision_tracker_node" pkg="vision_tracker" type="vision_tracker_node" output="screen" args="--para_enable_tracking_loss -v">
   </node>
 </launch>

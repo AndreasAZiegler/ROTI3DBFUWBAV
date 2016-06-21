@@ -97,23 +97,23 @@ class Fusing:
 
   ## Callback function to receive the UWB messages from ROS.
   def uwb_callback(self, data):
-    #uwb_x = -data.state[1] + 0.0570
-    #uwb_x = data.state[1] + 0.0570
-    uwb_x = data.state[1] + 0.0595
-    uwb_y = data.state[2] + 0.0388
-    uwb_z = data.state[0] + 0.0359
+    uwb_x = data.state[0] + 0.7252
+    uwb_y = data.state[1] - 0.4815
+    uwb_z = data.state[2] - 0.2744
 
     self.mutex_uwb.acquire(1)
-    self.vx_uwb = -data.state[4]
-    self.vy_uwb = data.state[5]
-    self.vz_uwb = data.state[3]
+    self.vx_uwb = data.state[3]
+    self.vy_uwb = data.state[4]
+    self.vz_uwb = data.state[5]
 
-    self.x_uwb = 0.9834*( 0.9956*uwb_x + 0.0861*uwb_y + 0.0380*uwb_z)
-    self.y_uwb = 0.9834*(-0.0885*uwb_x + 0.9938*uwb_y + 0.0674*uwb_z)
-    self.z_uwb = 0.9834*(-0.0320*uwb_x - 0.0704*uwb_y + 0.9970*uwb_z)
+    self.x_uwb = 1.2041*(-0.4656*uwb_x - 0.8831*uwb_y + 0.0583*uwb_z)
+    self.y_uwb = 1.2041*(-0.1582*uwb_x + 0.0182*uwb_y - 0.9872*uwb_z)
+    self.z_uwb = 1.2041*( 0.8707*uwb_x - 0.4689*uwb_y - 0.1482*uwb_z)
 
-    self.x_uwb_transf = 593.16120354*self.x_uwb/self.z_uwb + 308.67164248
-    self.y_uwb_transf = 589.605859*self.y_uwb/self.z_uwb + 245.3659398
+    #self.x_uwb_transf = 593.16120354*self.x_uwb/self.z_uwb + 308.67164248
+    #self.y_uwb_transf = 589.605859*self.y_uwb/self.z_uwb + 245.3659398
+    self.x_uwb_transf = 593.16120354*self.x_uwb + 308.67164248*self.z_uwb
+    self.y_uwb_transf = 589.605859*self.y_uwb + 245.3659398*self.z_uwb
 
     self.x_uwb_list.append(self.x_uwb)
     self.y_uwb_list.append(self.y_uwb)
@@ -147,10 +147,16 @@ class Fusing:
   ## Callback function to receive the image messages from ROS
   def image_callback(self, data):
     self.mutex_image.acquire(1)
+    # For uncompressed images
+    """
     try:
       self.cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
       print(e)
+    """
+    # For compressed images
+    np_arr = np.fromstring(data.data, np.uint8)
+    self.cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
     self.mutex_image.release()
 
   ## Performs one iteration of the EKF.
@@ -256,7 +262,8 @@ class Fusing:
   def initROS(self):
     self.sub_uwb = rospy.Subscriber('/uwb/tracker', uwb.msg.UWBTracker, self.uwb_callback)
     self.sub_vision = rospy.Subscriber('/vision_tracker/vision_coordinates', geometry_msgs.msg.PointStamped, self.vision_tracker_callback)
-    self.sub_img = rospy.Subscriber('/vision_tracker/video', sensor_msgs.msg.Image, self.image_callback)
+    #self.sub_img = rospy.Subscriber('/vision_tracker/video', sensor_msgs.msg.Image, self.image_callback)
+    self.sub_img = rospy.Subscriber('/camera/video/compressed', sensor_msgs.msg.CompressedImage, self.image_callback)
 
     self.pub = rospy.Publisher('/tf', tf2_msgs.msg.TFMessage, queue_size=1)
 
@@ -366,11 +373,11 @@ class Fusing:
           if self.cv_image is not None:
             self.mutex_image.acquire(1)
             self.mutex_uwb.acquire(1)
-            print("uwb: x= {0}, y= {1}".format(int(self.x_uwb_transf) + 120, int(self.y_uwb_transf) - 100))
-            cv2.circle(self.cv_image, (int(self.x_uwb_transf) + 120, int(self.y_uwb_transf) - 100), 10, (0, 0, 255), -1)
+            #print("uwb: x= {0}, y= {1}".format(int(self.x_uwb_transf), int(self.y_uwb_transf)))
+            cv2.circle(self.cv_image, (int(self.x_uwb_transf), int(self.y_uwb_transf)), 10, (0, 0, 255), -1)
             self.mutex_uwb.release()
             self.mutex_vision.acquire(1)
-            print("vision: x= {0}, y= {1}".format(int(self.x_visionTracker), int(self.y_visionTracker)))
+            #print("vision: x= {0}, y= {1}".format(int(self.x_visionTracker), int(self.y_visionTracker)))
             cv2.circle(self.cv_image, (int(self.x_visionTracker), int(self.y_visionTracker)), 10, (255, 0, 0), -1)
             self.mutex_vision.release()
             cv2.imshow("frame", self.cv_image)

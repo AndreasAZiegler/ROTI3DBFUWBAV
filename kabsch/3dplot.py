@@ -84,9 +84,14 @@ uwb_x8 = uwb_x - 0.4582
 uwb_y8 = uwb_y - 0.5466
 uwb_z8 = uwb_z + 0.3030
 
-uwb_x = uwb_x8
-uwb_y = uwb_y8
-uwb_z = uwb_z8
+# uwb_9: 20160621_1133
+uwb_x9 = uwb_x + 0.7252
+uwb_y9 = uwb_y - 0.4815
+uwb_z9 = uwb_z - 0.2744
+
+uwb_x = uwb_x9
+uwb_y = uwb_y9
+uwb_z = uwb_z9
 
 
 # uwb_transf_7: 20160620_2347
@@ -99,9 +104,15 @@ uwb_transf_x8 = 1.1672*( 0.6970*uwb_x - 0.7082*uwb_y + 0.1124*uwb_z)
 uwb_transf_y8 = 1.1672*( 0.1812*uwb_x + 0.3257*uwb_y + 0.9280*uwb_z)
 uwb_transf_z8 = 1.1672*(-0.6938*uwb_x - 0.9264*uwb_y + 0.3553*uwb_z)
 
-uwb_transf_x = uwb_transf_x8
-uwb_transf_y = uwb_transf_y8
-uwb_transf_z = uwb_transf_z8
+# uwb_transf_9: 20160621_1133
+uwb_transf_x9 = 1.2041*(-0.4656*uwb_x - 0.8831*uwb_y + 0.0583*uwb_z)
+uwb_transf_y9 = 1.2041*(-0.1582*uwb_x + 0.0182*uwb_y - 0.9872*uwb_z)
+uwb_transf_z9 = 1.2041*( 0.8707*uwb_x - 0.4689*uwb_y - 0.1482*uwb_z)
+
+
+uwb_transf_x = uwb_transf_x9
+uwb_transf_y = uwb_transf_y9
+uwb_transf_z = uwb_transf_z9
 
 
 print('Aruco x difference: {0}m'.format(abs(max(aruco_x) - min(aruco_x))))

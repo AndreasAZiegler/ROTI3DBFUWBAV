@@ -62,17 +62,17 @@ def uwb_callback(data):
   uwbCoordinates.append([timedelta(), data.state[0], data.state[1], data.state[2]])
   uwbVariances.append([timedelta(), data.covariance[0], data.covariance[7], data.covariance[14]])
 
-  uwb_x_tmp = data.state[0] - 0.8244
-  uwb_y_tmp = data.state[1] + 0.1260
-  uwb_z_tmp = data.state[2] + 0.1454
+  uwb_x_tmp = data.state[0] + 0.7252
+  uwb_y_tmp = data.state[1] - 0.4815
+  uwb_z_tmp = data.state[2] - 0.2744
 
   vx_uwb = data.state[3]
   vy_uwb = data.state[4]
   vz_uwb = data.state[5]
 
-  x_uwb = 1.1361*( 0.0159*uwb_x_tmp + 0.3724*uwb_y_tmp + 0.9279*uwb_z_tmp)
-  y_uwb = 1.1361*(-0.0141*uwb_x_tmp + 0.9280*uwb_y_tmp - 0.3722*uwb_z_tmp)
-  z_uwb = 1.1361*(-0.9998*uwb_x_tmp - 0.0072*uwb_y_tmp + 0.0200*uwb_z_tmp)
+  x_uwb = 1.2041*(-0.4656*uwb_x_tmp - 0.8831*uwb_y_tmp + 0.0583*uwb_z_tmp)
+  y_uwb = 1.2041*(-0.1582*uwb_x_tmp + 0.0182*uwb_y_tmp - 0.9872*uwb_z_tmp)
+  z_uwb = 1.2041*( 0.8707*uwb_x_tmp - 0.4689*uwb_y_tmp - 0.1482*uwb_z_tmp)
 
   mutex_uwb.acquire(1)
   """

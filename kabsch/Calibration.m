@@ -38,13 +38,13 @@ uwb = uwb(index, :);
 
 % Exchange x and z axis to fit to aruco coordinates, exchange x and y axis
 % too.
-tmp = uwb(1,:);
-tmp2 = uwb(2,:);
-uwb(2,:) = uwb(3,:);
-uwb(3,:) = tmp;
-uwb(1,:) = -tmp2;
-
-aruco(2,:) = -aruco(2,:);
+% tmp = uwb(1,:);
+% tmp2 = uwb(2,:);
+% uwb(2,:) = uwb(1,:);
+% uwb(3,:) = tmp;
+% uwb(1,:) = -tmp;
+%  
+% aruco(2,:) = -aruco(2,:);
 
 % Modify aruco data to check if rotation and translation is correct
 % aruco = (sqrt(2)/2).*[1, -1, 0; 1, 1, 0; 0, 0, 1] * aruco;

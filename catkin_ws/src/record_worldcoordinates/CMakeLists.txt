@@ -8,9 +8,10 @@ set( aruco_DIR /usr/local/lib/cmake)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
-  OpenCV REQUIRED
   aruco REQUIRED
 )
+
+find_package( OpenCV REQUIRED )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)

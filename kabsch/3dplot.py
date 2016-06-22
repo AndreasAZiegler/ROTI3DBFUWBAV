@@ -74,45 +74,56 @@ uwb_x = uwb[:,1]
 uwb_y = uwb[:,2]
 uwb_z = uwb[:,3]
 
-# uwb_7: 20160620_2347
-uwb_x7 = uwb_x - 0.8244
-uwb_y7 = uwb_y + 0.1260
-uwb_z7 = uwb_z + 0.1454
+# uwb_1: video_uwb_1: lrms=0.1093
+uwb_x1 = uwb_x + 0.1151
+uwb_y1 = uwb_y - 0.0139
+uwb_z1 = uwb_z + 0.0304
 
-# uwb_8: 20160621_0731
-uwb_x8 = uwb_x - 0.4582
-uwb_y8 = uwb_y - 0.5466
-uwb_z8 = uwb_z + 0.3030
+# uwb_2: video_uwb_2: lrms=0.1718
+uwb_x2 = uwb_x + 0.0943
+uwb_y2 = uwb_y - 0.0380
+uwb_z2 = uwb_z - 0.0572
 
-# uwb_9: 20160621_1133
-uwb_x9 = uwb_x + 0.7252
-uwb_y9 = uwb_y - 0.4815
-uwb_z9 = uwb_z - 0.2744
+# uwb_3: video_uwb_3: lrms=0.1712
+uwb_x3 = uwb_x + 0.0907
+uwb_y3 = uwb_y - 0.0377
+uwb_z3 = uwb_z - 0.0185
 
-uwb_x = uwb_x9
-uwb_y = uwb_y9
-uwb_z = uwb_z9
-
-
-# uwb_transf_7: 20160620_2347
-uwb_transf_x7 = 1.1361*( 0.0159*uwb_x + 0.3724*uwb_y + 0.9279*uwb_z)
-uwb_transf_y7 = 1.1361*(-0.0141*uwb_x + 0.9280*uwb_y - 0.3722*uwb_z)
-uwb_transf_z7 = 1.1361*(-0.9998*uwb_x - 0.0072*uwb_y + 0.0200*uwb_z)
-
-# uwb_transf_8: 20160621_0731
-uwb_transf_x8 = 1.1672*( 0.6970*uwb_x - 0.7082*uwb_y + 0.1124*uwb_z)
-uwb_transf_y8 = 1.1672*( 0.1812*uwb_x + 0.3257*uwb_y + 0.9280*uwb_z)
-uwb_transf_z8 = 1.1672*(-0.6938*uwb_x - 0.9264*uwb_y + 0.3553*uwb_z)
-
-# uwb_transf_9: 20160621_1133
-uwb_transf_x9 = 1.2041*(-0.4656*uwb_x - 0.8831*uwb_y + 0.0583*uwb_z)
-uwb_transf_y9 = 1.2041*(-0.1582*uwb_x + 0.0182*uwb_y - 0.9872*uwb_z)
-uwb_transf_z9 = 1.2041*( 0.8707*uwb_x - 0.4689*uwb_y - 0.1482*uwb_z)
+# uwb_4: video_uwb_4: lrms=0.1563
+uwb_x4 = uwb_x + 0.0164
+uwb_y4 = uwb_y + 0.0026
+uwb_z4 = uwb_z - 0.1414
 
 
-uwb_transf_x = uwb_transf_x9
-uwb_transf_y = uwb_transf_y9
-uwb_transf_z = uwb_transf_z9
+uwb_x = uwb_x4
+uwb_y = uwb_y4
+uwb_z = uwb_z4
+
+
+# uwb_1: video_uwb_1: lrms=0.1093
+uwb_transf_x1 = 0.9819*( 0.3072*uwb_x - 0.9216*uwb_y - 0.0086*uwb_z)
+uwb_transf_y1 = 0.9819*( 0.1335*uwb_x + 0.0521*uwb_y - 0.9897*uwb_z)
+uwb_transf_z1 = 0.9819*( 0.9422*uwb_x + 0.3029*uwb_y + 0.1430*uwb_z)
+
+# uwb_2: video_uwb_2: lrms=0.1718
+uwb_transf_x2 = 1.0135*( 0.3019*uwb_x - 0.9532*uwb_y + 0.0152*uwb_z)
+uwb_transf_y2 = 1.0135*( 0.1027*uwb_x + 0.0166*uwb_y - 0.9946*uwb_z)
+uwb_transf_z2 = 1.0135*( 0.9478*uwb_x + 0.3018*uwb_y + 0.1029*uwb_z)
+
+# uwb_3: video_uwb_3: lrms=0.1712
+uwb_transf_x3 = 1.0136*( 0.3184*uwb_x - 0.9388*uwb_y - 0.1317*uwb_z)
+uwb_transf_y3 = 1.0136*( 0.0785*uwb_x + 0.1645*uwb_y - 0.9832*uwb_z)
+uwb_transf_z3 = 1.0136*( 0.9447*uwb_x + 0.3027*uwb_y + 0.1261*uwb_z)
+
+# uwb_4: video_uwb_4: lrms=0.1563
+uwb_transf_x4 = 1.0002*(-0.1462*uwb_x - 0.9845*uwb_y + 0.0964*uwb_z)
+uwb_transf_y4 = 1.0002*(-0.2051*uwb_x + 0.1255*uwb_y + 0.9707*uwb_z)
+uwb_transf_z4 = 1.0002*(-0.9677*uwb_x + 0.1222*uwb_y - 0.2203*uwb_z)
+
+
+uwb_transf_x = uwb_transf_x2
+uwb_transf_y = uwb_transf_y2
+uwb_transf_z = uwb_transf_z2
 
 
 print('Aruco x difference: {0}m'.format(abs(max(aruco_x) - min(aruco_x))))

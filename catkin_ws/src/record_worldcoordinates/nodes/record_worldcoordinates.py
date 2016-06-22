@@ -104,6 +104,9 @@ def getCoordinatesFromMarker():
             uvPoint[0] = coordinates[0]
             uvPoint[1] = coordinates[1]
 
+            print("t = {0}".format(tvec))
+            print("u = {0}, v = {1}". format(uvPoint[0], uvPoint[1]))
+
             # Get rotations matrix and camera intrinsics matrix
             [rotationsMatrix, jacobian] = cv2.Rodrigues(rvec)
             #intrinsics = np.array([camparam.CameraMatrix[0], camparam.CameraMatrix[1], camparam.CameraMatrix[2]])
@@ -124,10 +127,10 @@ def getCoordinatesFromMarker():
             """
 
             # Calculate world coordinates
-            wcPoint = np.matmul(np.linalg.inv(intrinsics), (uvPoint - tvec)) # intrinsics^-1 * (uvPoint - tvec)
-            wcPoint = np.matmul(np.linalg.inv(rotationsMatrix), wcPoint) # rotationsMatrix^-1 * (intrinsics^-1 * (uvPoint - tvec))
+            #wcPoint = np.matmul(np.linalg.inv(intrinsics), (uvPoint - tvec)) # intrinsics^-1 * (uvPoint - tvec)
+            #wcPoint = np.matmul(np.linalg.inv(rotationsMatrix), wcPoint) # rotationsMatrix^-1 * (intrinsics^-1 * (uvPoint - tvec))
 
-            #wcPoint = m.Tvec
+            wcPoint = m.Tvec
 
             # Write world coordinates with time stamp to file
             arucoCoordinates.append([timedelta(), wcPoint[0], wcPoint[1], wcPoint[2]])

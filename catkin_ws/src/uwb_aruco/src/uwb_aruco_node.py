@@ -62,17 +62,17 @@ def uwb_callback(data):
   uwbCoordinates.append([timedelta(), data.state[0], data.state[1], data.state[2]])
   uwbVariances.append([timedelta(), data.covariance[0], data.covariance[7], data.covariance[14]])
 
-  uwb_x_tmp = data.state[0] + 0.7252
-  uwb_y_tmp = data.state[1] - 0.4815
-  uwb_z_tmp = data.state[2] - 0.2744
+  uwb_x_tmp = data.state[0] + 0.0907
+  uwb_y_tmp = data.state[1] - 0.0377
+  uwb_z_tmp = data.state[2] - 0.0185
 
   vx_uwb = data.state[3]
   vy_uwb = data.state[4]
   vz_uwb = data.state[5]
 
-  x_uwb = 1.2041*(-0.4656*uwb_x_tmp - 0.8831*uwb_y_tmp + 0.0583*uwb_z_tmp)
-  y_uwb = 1.2041*(-0.1582*uwb_x_tmp + 0.0182*uwb_y_tmp - 0.9872*uwb_z_tmp)
-  z_uwb = 1.2041*( 0.8707*uwb_x_tmp - 0.4689*uwb_y_tmp - 0.1482*uwb_z_tmp)
+  x_uwb = 1.0136*( 0.3184*uwb_x_tmp - 0.9388*uwb_y_tmp - 0.0964*uwb_z_tmp)
+  y_uwb = 1.0136*( 0.0785*uwb_x_tmp + 0.1255*uwb_y_tmp - 0.9707*uwb_z_tmp)
+  z_uwb = 1.0136*( 0.9447*uwb_x_tmp + 0.1222*uwb_y_tmp + 0.2203*uwb_z_tmp)
 
   mutex_uwb.acquire(1)
   """
@@ -83,10 +83,10 @@ def uwb_callback(data):
   x_uwb_transf = uwb[0]
   y_uwb_transf = uwb[1]
   """
-  #x_uwb_transf = 593.16120354*x_uwb/z_uwb + 308.67164248
-  #y_uwb_transf = 589.605859*y_uwb/z_uwb + 245.3659398
-  x_uwb_transf = 593.16120354*x_uwb + 308.67164248*z_uwb + t[0]
-  y_uwb_transf = 589.605859*y_uwb + 245.3659398*z_uwb + t[1]
+  x_uwb_transf = 593.16120354*x_uwb/z_uwb + 308.67164248
+  y_uwb_transf = 589.605859*y_uwb/z_uwb + 245.3659398
+  #x_uwb_transf = 593.16120354*x_uwb + 308.67164248*z_uwb + t[0]
+  #y_uwb_transf = 589.605859*y_uwb + 245.3659398*z_uwb + t[1]
   mutex_uwb.release()
 
 def rosInit():
@@ -187,7 +187,14 @@ def getCoordinatesFromMarker():
 
             #print("R = {0}".format(rotationsMatrix))
             #print("t = {0}".format(tvec))
+            #print("u = {0}, v = {1}". format(uvPoint[0], uvPoint[1]))
+
+            """
+            tvec_proj = np.array([tvec[0] / tvec[2], tvec[1] / tvec[2], 1])
+            uv_proj = np.dot(intrinsics, tvec_proj)
+            print("uv_proj = {}".format(uv_proj))
             #print("intrinsics = {0}".format(intrinsics))
+            """
 
             """
             zConst = 1
@@ -204,10 +211,10 @@ def getCoordinatesFromMarker():
             """
 
             # Calculate world coordinates
-            wcPoint = np.matmul(np.linalg.inv(intrinsics), (uvPoint - tvec)) # intrinsics^-1 * (uvPoint - tvec)
+            #wcPoint = np.matmul(np.linalg.inv(intrinsics), (uvPoint - tvec)) # intrinsics^-1 * (uvPoint - tvec)
             #wcPoint = np.matmul(np.linalg.inv(rotationsMatrix), wcPoint) # rotationsMatrix^-1 * (intrinsics^-1 * (uvPoint - tvec))
 
-            #wcPoint = m.Tvec
+            wcPoint = m.Tvec
 
             # Write world coordinates with time stamp to file
             arucoCoordinates.append([timedelta(), wcPoint[0], wcPoint[1], wcPoint[2]])
@@ -223,12 +230,12 @@ def getCoordinatesFromMarker():
             mutex_image.acquire(1)
             #m.draw(cv_image, np.array([255, 255, 255]), 2)
             cv2.circle(cv_image, (uvPoint[0], uvPoint[1]), 10, (255, 0, 0), -1)
-            print("ArUco: x = {0}, y = {1}, z = {2}".format(wcPoint[0], wcPoint[1], wcPoint[2]))
+            #print("ArUco: x = {0}, y = {1}, z = {2}".format(wcPoint[0], wcPoint[1], wcPoint[2]))
             #print("ArUco: u = {0}, v = {1}".format(uvPoint[0], uvPoint[1]))
             #print("world coordinates - uv: x = {0}, y = {1}, z = {2}".format(abs()))
             mutex_uwb.acquire(1)
             cv2.circle(cv_image, (int(x_uwb_transf), int(y_uwb_transf)), 10, (0, 0, 255), -1)
-            print("UWB: x = {0}, y = {1}, z = {2}".format(x_uwb, y_uwb, z_uwb))
+            #print("UWB: x = {0}, y = {1}, z = {2}".format(x_uwb, y_uwb, z_uwb))
             #print("UWB: u = {0}, v = {1}".format(x_uwb_transf, y_uwb_transf))
             mutex_uwb.release()
             mutex_image.release()
@@ -269,8 +276,8 @@ if __name__ == '__main__':
     # Wait for aruco thread
     arucoThread.join()
 
-    """
     # Open file and write header
+    """
     file = h5py.File("/data/SP1/catkin_ws/src/record_worldcoordinates/aruco_uwb_output.hdf5", "w")
 
     # Wirte date sets to file

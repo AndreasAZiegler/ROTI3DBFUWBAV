@@ -105,9 +105,9 @@ class Fusing:
 
   ## Callback function to receive the UWB messages from ROS.
   def uwb_callback(self, data):
-    uwb_x = data.state[0] - 0.0169
-    uwb_y = data.state[1] - 0.0175
-    uwb_z = data.state[2] - 0.2107
+    uwb_x = data.state[0] + 0.2049
+    uwb_y = data.state[1] - 0.0568
+    uwb_z = data.state[2] - 0.0149
 
     uwb_vx = data.state[3]
     uwb_vy = data.state[4]
@@ -129,13 +129,13 @@ class Fusing:
                             data.covariance[33], data.covariance[34], data.covariance[35]]])
     #print("UWB cov: {0}".format((self.matR1)))
 
-    self.uwb_x_wc = 1.0355 * ( 0.1520 * uwb_x - 0.9866 * uwb_y + 0.0598 * uwb_z)
-    self.uwb_y_wc = 1.0355 * (-0.2253 * uwb_x - 0.0935 * uwb_y - 0.9698 * uwb_z)
-    self.uwb_z_wc = 1.0355 * ( 0.9624 * uwb_x + 0.1339 * uwb_y - 0.4077 * uwb_z)
+    self.uwb_x_wc = 0.9356 * ( 0.3046 * uwb_x - 0.9441 * uwb_y + 0.1257 * uwb_z)
+    self.uwb_y_wc = 0.9356 * ( 0.2016 * uwb_x - 0.0650 * uwb_y - 0.9773 * uwb_z)
+    self.uwb_z_wc = 0.9356 * ( 0.9309 * uwb_x + 0.3231 * uwb_y + 0.1705 * uwb_z)
 
-    self.uwb_vx_wc = 1.0355 * ( 0.1520 * uwb_vx - 0.9866 * uwb_vy + 0.0598 * uwb_vz)
-    self.uwb_vy_wc = 1.0355 * (-0.2253 * uwb_vx - 0.0935 * uwb_vy - 0.9698 * uwb_vz)
-    self.uwb_vz_wc = 1.0355 * ( 0.9624 * uwb_vx + 0.1339 * uwb_vy - 0.4077 * uwb_vz)
+    self.uwb_vx_wc = 0.9356 * ( 0.3046 * uwb_vx - 0.9441 * uwb_vy + 0.1257 * uwb_vz)
+    self.uwb_vy_wc = 0.9356 * ( 0.2016 * uwb_vx - 0.0650 * uwb_vy - 0.9773 * uwb_vz)
+    self.uwb_vz_wc = 0.9356 * ( 0.9309 * uwb_vx + 0.3231 * uwb_vy + 0.1705 * uwb_vz)
 
     self.uwb_x_uv = 593.16120354*self.uwb_x_wc/self.uwb_z_wc + 308.67164248
     self.uwb_y_uv = 589.605859*self.uwb_y_wc/self.uwb_z_wc + 245.3659398

@@ -1,6 +1,6 @@
 % Observer/Estimator
 % Author: Dominik Haumann
-\documentclass[landscape,a5paper,11pt]{article}
+\documentclass[]{article}
 \usepackage[utf8x]{inputenc} % utf8 encoding
 \usepackage[T1]{fontenc} % use T1 fonts
 \usepackage{amsmath} % nice math symbols
@@ -26,6 +26,10 @@ minimum height=3em, minimum width=6em]
 
 \renewcommand{\vec}[1]{\ensuremath{\boldsymbol{#1}}} % bold vectors
 \def \myneq {\skew{-2}\not =} % \neq alone skews the dash
+
+\usepackage[active,tightpage]{preview}  %generates a tightly fitting border around the work
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{2mm}
 
 \begin{document}
 	\begin{tikzpicture}[auto, node distance=2cm,>=latex']

@@ -39,7 +39,7 @@ To get 3D vision coordinates, an ArUco marker was mounted on the object, as show
 \begin{figure}[h]\centering
 	\includegraphics[width=0.5\textwidth]{figures/Box_cut.jpg}
 	\caption{ArUco marker and UWB target.}\label{fig:target}
-\end{figure} 
+\end{figure}
 
 \subsection{Kabsch}
 The Kabsch algorithm \cite{Kabsch:a12999} calculates the optimal rotation matrix and translation vector that minimizes the root mean squared deviation between two paired sets of points. In this semester project, the Kabsch algorithm determines the optimal rotation matrix and translation vector between the coordination systems of the UWB system an the one of the camera.
@@ -76,6 +76,11 @@ aruco = scale .* aruco;
 	
 [U, r, lrms] = Kabsch(aruco, uwb);
 \end{lstlisting}
+
+\begin{figure}[h]\centering
+	\includegraphics[width=1.0\textwidth]{figures/matching}
+	\caption{Matching of the position set of ArUco and UWB.}\label{fig:matching}
+\end{figure} 
 
 \section{ROS setup}
 In this semester project three different ROS setups were used to perform the tasks of recording the video from the camera as well as recording the measurements from the UWB systems, collecting the data required for the matching proceeder and for the object tracking task.

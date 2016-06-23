@@ -40,15 +40,15 @@ minimum height=3em, minimum width=6em]
 		\node [point] (p1) [right = 4.0cm of vision_tracker]{};
 		\node [point] (p2) [below = 0.8cm of p1]{};
 		
-		\node [branch] (p3) [right = 3cm of rosbag] {};
+		\node [branch] (p3) [right = 1.0cm of rosbag] {};
 		%\node [block] (camera) [below = 1cm of rosbag] {Camera};	
 		\node [point] (p4) [below = 1.25cm of p3]{};
 		
 		\node [block] (fusing) [below right =-0.04cm and 12cm of rosbag] {fusing};
-		\node [point] (state) [right = 4.5cm of fusing] {};
+		\node [point] (state) [right = 4.0cm of fusing] {};
 		
-		\draw [-] (rosbag) -- node[name=u] {/camera/video} (p3);
-		\draw [-] (p3) -- node[name=u,below = 1.6cm,anchor=west] {/uwb/tracker} (vision_tracker);
+		\draw [-] (rosbag) -- node[name=u] {} (p3);
+		\draw [-] (p3) -- node[name=u] {/camera/video} (vision_tracker);
 		\draw [-] (p3) -- node[name=u] {} (p4);
 		\draw [-] (vision_tracker) -- node[name=u, right = 1cm, above] {/vision\_tracker/vision\_coordinates} (p1);
 		\draw [-] (p1) -- node[name=u] {} (p2);
@@ -56,7 +56,7 @@ minimum height=3em, minimum width=6em]
 		%\draw [-] (p5) -- node[name=u] {} (p6);
 		
 		\draw [->] (p2) -- node[name=u] {} (p2-|fusing.west);
-		\draw [->] (p4) -- node[name=u] {} (p4-|fusing.west);
+		\draw [->] (p4) -- node[name=u, below] {/uwb/tracker} (p4-|fusing.west);
 		
 		
 		\draw [->] (fusing) -- node[name=u] {/fusing/coordinates} (state);

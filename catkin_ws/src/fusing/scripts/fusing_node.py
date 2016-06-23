@@ -50,6 +50,10 @@ class Fusing:
     self.vision_y_wc = 0.0
     self.vision_z_wc = 0.0
 
+    self.vision_x_uv = 0.0
+    self.vision_y_uv = 0.0
+    self.vision_z_uv = 0.0
+
     # Fused coordinates from the states of the EKF
     #self.state = np.array([[320.0], [160.0], [1.0], [0.0], [0.0], [0.0]])
     self.state = np.array([[0.1], [0.03], [1.0], [0.0], [0.0], [0.0]])
@@ -90,6 +94,8 @@ class Fusing:
 
     self.bridge = CvBridge()
 
+    self.cv_image = None
+
     #plt.ion()
     #plt.axis([-1.5, 1.5, -1.5, 1.5])
     #plt.axis('equal')
@@ -99,9 +105,9 @@ class Fusing:
 
   ## Callback function to receive the UWB messages from ROS.
   def uwb_callback(self, data):
-    uwb_x = data.state[0] + 0.0907
-    uwb_y = data.state[1] - 0.0377
-    uwb_z = data.state[2] - 0.0185
+    uwb_x = data.state[0] - 0.0169
+    uwb_y = data.state[1] - 0.0175
+    uwb_z = data.state[2] - 0.2107
 
     uwb_vx = data.state[3]
     uwb_vy = data.state[4]
@@ -123,13 +129,13 @@ class Fusing:
                             data.covariance[33], data.covariance[34], data.covariance[35]]])
     #print("UWB cov: {0}".format((self.matR1)))
 
-    self.uwb_x_wc = 1.0136 * ( 0.3184 * uwb_x - 0.9388 * uwb_y - 0.1317 * uwb_z)
-    self.uwb_y_wc = 1.0136 * ( 0.0785 * uwb_x + 0.1645 * uwb_y - 0.9832 * uwb_z)
-    self.uwb_z_wc = 1.0136 * ( 0.9447 * uwb_x + 0.3027 * uwb_y + 0.1261 * uwb_z)
+    self.uwb_x_wc = 1.0355 * ( 0.1520 * uwb_x - 0.9866 * uwb_y + 0.0598 * uwb_z)
+    self.uwb_y_wc = 1.0355 * (-0.2253 * uwb_x - 0.0935 * uwb_y - 0.9698 * uwb_z)
+    self.uwb_z_wc = 1.0355 * ( 0.9624 * uwb_x + 0.1339 * uwb_y - 0.4077 * uwb_z)
 
-    self.uwb_vx_wc = 1.0136 * ( 0.3184 * uwb_vx - 0.9388 * uwb_vy - 0.1317 * uwb_vz)
-    self.uwb_vy_wc = 1.0136 * ( 0.0785 * uwb_vx + 0.1645 * uwb_vy - 0.9832 * uwb_vz)
-    self.uwb_vz_wc = 1.0136 * ( 0.9447 * uwb_vx + 0.3027 * uwb_vy + 0.1261 * uwb_vz)
+    self.uwb_vx_wc = 1.0355 * ( 0.1520 * uwb_vx - 0.9866 * uwb_vy + 0.0598 * uwb_vz)
+    self.uwb_vy_wc = 1.0355 * (-0.2253 * uwb_vx - 0.0935 * uwb_vy - 0.9698 * uwb_vz)
+    self.uwb_vz_wc = 1.0355 * ( 0.9624 * uwb_vx + 0.1339 * uwb_vy - 0.4077 * uwb_vz)
 
     self.uwb_x_uv = 593.16120354*self.uwb_x_wc/self.uwb_z_wc + 308.67164248
     self.uwb_y_uv = 589.605859*self.uwb_y_wc/self.uwb_z_wc + 245.3659398
@@ -418,31 +424,23 @@ class Fusing:
         """
 
         # Check im image exists
-        try:
-          self.cv_image
-        except:
-          x_exists = False
-        else:
-          x_exists = True
-
         # Display image if it exists, the vision tracker position and the projection of the UWB
-        if x_exists == True:
-          if self.cv_image is not None:
-            self.mutex_image.acquire(1)
-            self.mutex_uwb.acquire(1)
-            #print("uwb: x = {0}, y = {1}, z = {2}".format(self.uwb_x_wc, self.uwb_y_wc, self.uwb_z_wc))
-            cv2.circle(self.cv_image, (int(self.uwb_x_uv), int(self.uwb_y_uv)), 10, (0, 0, 255), -1)
-            self.mutex_uwb.release()
-            self.mutex_vision.acquire(1)
-            #print("vision: x= {0}, y= {1}".format(self.vision_x_wc, self.vision_y_wc))
-            cv2.circle(self.cv_image, (int(self.vision_x_uv), int(self.vision_y_uv)), 10, (255, 0, 0), -1)
-            #print("Vision: x = {0}, y = {1}".format(self.vision_x_uv, self.vision_y_uv))
-            self.mutex_vision.release()
-            cv2.circle(self.cv_image, (int(self.state_x_uv), int(self.state_y_uv)), 10, (0, 255, 0), -1)
-            #print("State: x = {0}, y = {1}, z = {2}".format(self.state[0], self.state[1], self.state[2]))
-            cv2.imshow("frame", self.cv_image)
-            self.mutex_image.release()
-            cv2.waitKey(1)
+        if self.cv_image is not None:
+          self.mutex_image.acquire(1)
+          self.mutex_uwb.acquire(1)
+          print("uwb: x = {0}, y = {1}, z = {2}".format(self.uwb_x_wc, self.uwb_y_wc, self.uwb_z_wc))
+          cv2.circle(self.cv_image, (int(self.uwb_x_uv), int(self.uwb_y_uv)), 10, (0, 0, 255), -1)
+          self.mutex_uwb.release()
+          self.mutex_vision.acquire(1)
+          print("vision: x= {0}, y= {1}".format(self.vision_x_wc, self.vision_y_wc))
+          cv2.circle(self.cv_image, (int(self.vision_x_uv), int(self.vision_y_uv)), 10, (255, 0, 0), -1)
+          #print("Vision: x = {0}, y = {1}".format(self.vision_x_uv, self.vision_y_uv))
+          self.mutex_vision.release()
+          cv2.circle(self.cv_image, (int(self.state_x_uv), int(self.state_y_uv)), 10, (0, 255, 0), -1)
+          print("State: x = {0}, y = {1}, z = {2}".format(self.state[0], self.state[1], self.state[2]))
+          cv2.imshow("frame", self.cv_image)
+          self.mutex_image.release()
+          cv2.waitKey(1)
 
 if __name__ == '__main__':
     try:

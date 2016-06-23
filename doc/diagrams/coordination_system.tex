@@ -70,9 +70,9 @@
 	%--------------------
 	
 	%draw the main coordinate system axes
-	\draw[thick,blue,->] (0,0,0) -- (-1,0,0) node[anchor=south east]{$x$};
-	\draw[thick,green,->] (0,0,0) -- (0,1,0) node[anchor=north west]{$y$};
-	\draw[thick,red,->] (0,0,0) -- (0,0,1) node[anchor=south]{$z$};
+	\draw[thick,blue,->] (0,0,0) -- (-1,0,0) node[anchor=south east]{$\mathit{UWB}_x$};
+	\draw[thick,green,->] (0,0,0) -- (0,1,0) node[anchor=north west]{$\mathit{UWB}_y$};
+	\draw[thick,red,->] (0,0,0) -- (0,0,1) node[anchor=south]{$\mathit{UWB}_z$};
 	
 	%draw a vector from origin to point (P) 
 	\draw[-stealth,color=black] (O) -- (P) node[anchor=north, pos=0.8]{$\vec t$};
@@ -108,9 +108,9 @@
 	\tdplotsetrotatedcoordsorigin{(P)}
 	
 	%use the tdplot_rotated_coords style to work in the rotated, translated coordinate frame
-	\draw[thick,tdplot_rotated_coords,red,->] (0,0,0) -- (.5,0,0) node[anchor=north west]{$z'$};
-	\draw[thick,tdplot_rotated_coords,green,->] (0,0,0) -- (0,.5,0) node[anchor=west]{$y'$};
-	\draw[thick,tdplot_rotated_coords,blue,->] (0,0,0) -- (0,0,.5) node[anchor=south]{$x'$};
+	\draw[thick,tdplot_rotated_coords,red,->] (0,0,0) -- (.5,0,0) node[anchor=south west]{$\mathit{Vision}_z$};
+	\draw[thick,tdplot_rotated_coords,green,->] (0,0,0) -- (0,.5,0) node[anchor=west]{$\mathit{Vision}_y$};
+	\draw[thick,tdplot_rotated_coords,blue,->] (0,0,0) -- (0,0,.5) node[anchor=north west]{$\mathit{Vision}_x$};
 	
 	%WARNING:  coordinates defined by the \coordinate command (eg. (O), (P), etc.)
 	%cannot be used in rotated coordinate frames.  Use only literal coordinates.  

@@ -39,12 +39,11 @@ minimum height=3em, minimum width=6em]
 		
 		\node [block] (camera) [below = 1cm of uwb] {Camera};	
 		\node [block] (visionTracker) [right=2cm of camera] {Vision Tracker};
-		\node [point] (p3) [right= 2.0cm of visionTracker]{};
+		\node [point] (p3) [right = 2.0cm of visionTracker]{};
 		\node [point] (p4) [above = 0.8cm of p3]{};
 		
-		
-		
 		\node [block] (ekf) [below right =-0.04cm and 8cm of uwb] {EKF};
+		\node [point] (state) [right = 4.5cm of ekf] {};
 		
 		\draw [-] (uwb) -- node[name=u] {$\vec r, \dot{\vec r}$} (p1);
 		\draw [-] (p1) -- node[name=u] {} (p2);
@@ -56,6 +55,8 @@ minimum height=3em, minimum width=6em]
 		\draw [->] (p4) -- node[name=u] {} (p4-|ekf.west);
 		
 		\draw [->] (camera) -- node[name=u] {image} (visionTracker);
+		
+		\draw [->] (ekf) -- node[name=u] {$\vec r_{\mathit{estimated}}, \dot{\vec r}_{\mathit{estimated}}$} (state);
 	
 	%\node [block, above right of=visionTracker, name=ekf , above right=0.7cm and 4cm of uwb] {EKF};
 %	

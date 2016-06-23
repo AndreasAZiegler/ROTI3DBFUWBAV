@@ -94,10 +94,20 @@ uwb_x4 = uwb_x + 0.0164
 uwb_y4 = uwb_y + 0.0026
 uwb_z4 = uwb_z - 0.1414
 
+# uwb_5: video_uwb_5: lrms=0.1071
+uwb_x5 = uwb_x + 0.0836
+uwb_y5 = uwb_y - 0.0774
+uwb_z5 = uwb_z - 0.2849
 
-uwb_x = uwb_x4
-uwb_y = uwb_y4
-uwb_z = uwb_z4
+# uwb_6: video_uwb_6: lrms=0.0701
+uwb_x6 = uwb_x - 0.0169
+uwb_y6 = uwb_y - 0.0175
+uwb_z6 = uwb_z - 0.2107
+
+
+uwb_x = uwb_x6
+uwb_y = uwb_y6
+uwb_z = uwb_z6
 
 
 # uwb_1: video_uwb_1: lrms=0.1093
@@ -115,15 +125,25 @@ uwb_transf_x3 = 1.0136*( 0.3184*uwb_x - 0.9388*uwb_y - 0.1317*uwb_z)
 uwb_transf_y3 = 1.0136*( 0.0785*uwb_x + 0.1645*uwb_y - 0.9832*uwb_z)
 uwb_transf_z3 = 1.0136*( 0.9447*uwb_x + 0.3027*uwb_y + 0.1261*uwb_z)
 
-# uwb_4: video_uwb_4: lrms=0.1563
+# uwb_4: video_uwb_4: lrms=0.1563  INVERTED Z-AXIS!!!!!
 uwb_transf_x4 = 1.0002*(-0.1462*uwb_x - 0.9845*uwb_y + 0.0964*uwb_z)
 uwb_transf_y4 = 1.0002*(-0.2051*uwb_x + 0.1255*uwb_y + 0.9707*uwb_z)
 uwb_transf_z4 = 1.0002*(-0.9677*uwb_x + 0.1222*uwb_y - 0.2203*uwb_z)
 
+# uwb_5: video_uwb_5: lrms=0.1071  INVERTED Z-AXIS!!!!!
+uwb_transf_x5 = 1.0850*(-0.2063*uwb_x - 0.8790*uwb_y + 0.4299*uwb_z)
+uwb_transf_y5 = 1.0850*(-0.3519*uwb_x + 0.4766*uwb_y + 0.8056*uwb_z)
+uwb_transf_z5 = 1.0850*(-0.9130*uwb_x + 0.0149*uwb_y - 0.4077*uwb_z)
 
-uwb_transf_x = uwb_transf_x2
-uwb_transf_y = uwb_transf_y2
-uwb_transf_z = uwb_transf_z2
+# uwb_6: video_uwb_6: lrms=0.0701
+uwb_transf_x6 = 1.0355*( 0.1520*uwb_x - 0.9866*uwb_y + 0.0598*uwb_z)
+uwb_transf_y6 = 1.0355*(-0.2253*uwb_x - 0.0935*uwb_y - 0.9698*uwb_z)
+uwb_transf_z6 = 1.0355*( 0.9624*uwb_x + 0.1339*uwb_y - 0.2365*uwb_z)
+
+
+uwb_transf_x = uwb_transf_x6
+uwb_transf_y = uwb_transf_y6
+uwb_transf_z = uwb_transf_z6
 
 
 print('Aruco x difference: {0}m'.format(abs(max(aruco_x) - min(aruco_x))))

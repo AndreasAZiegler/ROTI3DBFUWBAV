@@ -33,31 +33,26 @@ minimum height=3em, minimum width=6em]
 
 \begin{document}
 	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
-		\node [block] (uwb) {UWB};
-		\node [point] (p1) [right= 6.72cm of uwb]{};
-		\node [point] (p2) [below= 0.8cm of p1]{};
+		\node [block] (publish_image) {publish\_image};
+		\node [point] (p1) [right= 4.0cm of publish_image]{};
+		\node [point] (p2) [below= 0.55cm of p1]{};
 		
-		\node [block] (camera) [below = 1cm of uwb] {Camera};	
-		\node [block] (visionTracker) [right=2cm of camera] {Vision Tracker};
-		\node [point] (p3) [right = 2.0cm of visionTracker]{};
-		\node [point] (p4) [above = 0.8cm of p3]{};
+		\node [block] (uwb) [below = 1.5cm of publish_image.west, anchor=west] {uwb};	
+		\node [point] (p3) [right = 4.41cm of uwb]{};
+		\node [point] (p4) [above = 0.5cm of p3]{};
 		
-		\node [block] (ekf) [below right =-0.04cm and 8cm of uwb] {EKF};
-		\node [point] (state) [right = 4.5cm of ekf] {};
+		\node [block] (rosbag) [below right =-0.3cm and 5cm of publish_image] {rosbag};
 		
-		\draw [-] (uwb) -- node[name=u] {$\vec r, \dot{\vec r}$} (p1);
+		\draw [-] (publish_image) -- node[name=u] {/camera/video} (p1);
 		\draw [-] (p1) -- node[name=u] {} (p2);
-		
-		\draw [-] (visionTracker) -- node[name=u] {$[\frac{x_1}{x_3}, \frac{x_2}{x_3}]^T$} (p3);
 		\draw [-] (p3) -- node[name=u] {} (p4);
 		
-		\draw [->] (p2) -- node[name=u] {} (p2-|ekf.west);
-		\draw [->] (p4) -- node[name=u] {} (p4-|ekf.west);
+		\draw [-] (uwb) -- node[name=u] {/uwb/tracker} (p3);
 		
-		\draw [->] (camera) -- node[name=u] {image} (visionTracker);
 		
-		\draw [->] (ekf) -- node[name=u] {$\vec r_{\mathit{estimated}}, \dot{\vec r}_{\mathit{estimated}}$} (state);
-	
+		\draw [->] (p2) -- node[name=u] {} (p2-|rosbag.west);
+		\draw [->] (p4) -- node[name=u] {} (p4-|rosbag.west);
+			
 	%\node [block, above right of=visionTracker, name=ekf , above right=0.7cm and 4cm of uwb] {EKF};
 %	
 %	\node [input, name=input] {};

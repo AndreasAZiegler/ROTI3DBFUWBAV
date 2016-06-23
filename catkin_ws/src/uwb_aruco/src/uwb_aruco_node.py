@@ -228,16 +228,16 @@ def getCoordinatesFromMarker():
             uvPoint[0] = coordinates[0]
             uvPoint[1] = coordinates[1]
             mutex_image.acquire(1)
-            #m.draw(cv_image, np.array([255, 255, 255]), 2)
-            cv2.circle(cv_image, (uvPoint[0], uvPoint[1]), 10, (255, 0, 0), -1)
+            m.draw(cv_image, np.array([255, 255, 255]), 2)
+            #cv2.circle(cv_image, (uvPoint[0], uvPoint[1]), 10, (255, 0, 0), -1)
             #print("ArUco: x = {0}, y = {1}, z = {2}".format(wcPoint[0], wcPoint[1], wcPoint[2]))
             #print("ArUco: u = {0}, v = {1}".format(uvPoint[0], uvPoint[1]))
             #print("world coordinates - uv: x = {0}, y = {1}, z = {2}".format(abs()))
-            mutex_uwb.acquire(1)
-            cv2.circle(cv_image, (int(x_uwb_transf), int(y_uwb_transf)), 10, (0, 0, 255), -1)
+            #mutex_uwb.acquire(1)
+            #cv2.circle(cv_image, (int(x_uwb_transf), int(y_uwb_transf)), 10, (0, 0, 255), -1)
             #print("UWB: x = {0}, y = {1}, z = {2}".format(x_uwb, y_uwb, z_uwb))
             #print("UWB: u = {0}, v = {1}".format(x_uwb_transf, y_uwb_transf))
-            mutex_uwb.release()
+            #mutex_uwb.release()
             mutex_image.release()
 
         # show frame
@@ -245,7 +245,7 @@ def getCoordinatesFromMarker():
         cv2.imshow("frame", cv_image)
         mutex_image.release()
         # Terminate ROS when 'q' is pressed
-        if cv2.waitKey(10) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             rospy.signal_shutdown("terminate")
             break
 
@@ -277,7 +277,6 @@ if __name__ == '__main__':
     arucoThread.join()
 
     # Open file and write header
-    """
     file = h5py.File("/data/SP1/catkin_ws/src/record_worldcoordinates/aruco_uwb_output.hdf5", "w")
 
     # Wirte date sets to file
@@ -286,4 +285,3 @@ if __name__ == '__main__':
     dset = file.create_dataset("aruco_coordinates", data = arucoCoordinates, compression = "gzip", compression_opts = 9)
     file.flush()
     file.close()
-    """

@@ -101,8 +101,8 @@ In the second step, the information gained from the measurements are used to per
 \begin{align}
 	\textbf{K}(k) = \textbf{P}_p(k) \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{P}_p(k) \textbf{H}^T(k) + \textbf{M}(k) \textbf{R}(k) \textbf{M}^T(k)\Big)^{-1} \label{eq:ekf_s2}\\
 	\hat{\vec x}_m(k) = \hat{\vec x}_p(k) + \textbf{K}(k) \Big( \vec z(k) - \begin{bmatrix}
-	\vec h_{k,1}(\vec x(k), 0)\\
-	\vec h_{k,2}(\vec x(k), 0))
+	\vec h_{k,1}(\hat{\vec x}_p(k), 0)\\
+	\vec h_{k,2}(\hat{\vec x}_p(k), 0))
 	\end{bmatrix} \Big)\\
 	\textbf{P}_m(k) = \big( \textbf{I} - \textbf{K}(k)\textbf{H}(k)\big) \textbf{P}_p(k)
 \end{align}

@@ -70,8 +70,8 @@ class Fusing:
     self.vecXm = [0, 0]
     self.matPm = np.zeros((6,6))
     #self.matPm = 5*np.identity(6)
-    #self.matQ = np.vstack((np.zeros((3,6)), np.hstack((np.zeros((3,3)), 30*np.identity(3)))))
-    self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3)))))
+    #self.matQ = np.vstack((np.zeros((3,6)), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of model with only variances for the velocity
+    self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
     self.matR1 = np.identity(6)
     self.matR2 = 10**(-7)*np.identity(2)
     # Constant matrices used by the EKF
@@ -429,7 +429,6 @@ class Fusing:
           self.ekf_iteration()
 
           # Display of state trajectory
-          """
           self.allStatesX = np.append(self.allStatesX, self.state[0])
           self.allStatesY = np.append(self.allStatesY, self.state[1])
           self.allStatesZ = np.append(self.allStatesZ, self.state[2])
@@ -447,7 +446,6 @@ class Fusing:
           self.ax.set_zlabel('Y')
           plt.draw()
           plt.pause(0.01)
-          """
 
           # Display of vision and the projection of uwb
           """
@@ -473,7 +471,7 @@ class Fusing:
         plt.pause(0.05)  # Display of vision and the projection of uwb
         """
 
-          # Display of state trajectory
+          # Display of state trajectory  OLD
           """
         #self.hl.set_xdata(np.append(self.hl.get_xdata(), self.state[0][0]))
         #self.hl.set_ydata(np.append(self.hl.get_ydata(), self.state[1][0]))
@@ -507,6 +505,7 @@ class Fusing:
         self.pub.publish(tfm)
         """
 
+          """
           # Check im image exists
           # Display image if it exists, the vision tracker position and the projection of the UWB
           if self.cv_image is not None:
@@ -527,6 +526,7 @@ class Fusing:
             cv2.imshow("frame", self.cv_image)
             self.mutex_image.release()
             cv2.waitKey(1)
+          """
 
     plt.show()
     plt.pause(0.01)

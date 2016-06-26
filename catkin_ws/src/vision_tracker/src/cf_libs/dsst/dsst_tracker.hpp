@@ -50,7 +50,7 @@ References:
 in Proc. BMVC, 2014.
 
 [2] D. Bolme, et al.,
-“Visual Object Tracking using Adaptive Correlation Filters,”
+ï¿½Visual Object Tracking using Adaptive Correlation Filters,ï¿½
 in Proc. CVPR, 2010.
 */
 
@@ -340,6 +340,10 @@ namespace cf_tracking
         virtual const std::string getId()
         {
             return _ID;
+        }
+
+        virtual void updatePosition(const cv::Point& newPos) {
+            _pos = newPos;
         }
 
     private:

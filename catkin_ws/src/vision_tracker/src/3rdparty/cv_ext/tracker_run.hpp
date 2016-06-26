@@ -58,6 +58,7 @@
 
 #include <tclap/CmdLine.h>
 #include <fstream>
+#include <mutex>
 #include <opencv2/highgui/highgui.hpp>
 #include <ros/ros.h>
 #include "cf_tracker.hpp"
@@ -67,6 +68,7 @@
 #include "uwb/UWBTracker.h"
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/PointStamped.h>
+#include <std_msgs/Bool.h>
 #include <tf2_msgs/TFMessage.h>
 #include <tf/tfMessage.h>
 #include <image_transport/image_transport.h>
@@ -108,6 +110,8 @@ private:
 
     void imageCb(const sensor_msgs::ImageConstPtr& msg);
 
+    void ekfCallback(const geometry_msgs::PointStamped& msg);
+
 protected:
     virtual cf_tracking::CfTracker* parseTrackerParas(TCLAP::CmdLine& cmd, int argc, char** argv) = 0;
 
@@ -124,7 +128,7 @@ private:
     cf_tracking::TrackerDebug* _debug;
 
     ros::NodeHandle* _nh;
-    ros::Publisher _pub;
+    ros::Publisher _pub_coordinates;
     //tf2_msgs::TFMessage _msg;
     tf::tfMessage _msg;
     geometry_msgs::TransformStamped _trans;
@@ -139,6 +143,15 @@ private:
     bool _targetOnFrame = false;
     bool _updateAtPos = false;
     bool* _stop_flag;
+
+    // Used to receive ekf coordinates
+    geometry_msgs::PointStamped _ekf_point;
+    int ekfCoordinates[2];
+    std::mutex ekfCoordinatesMutex;
+
+    // Detected message
+    ros::Publisher _pub_objectDetected;
+    std_msgs::Bool _detectedObjectMsg;
 
     // Used for rosbag
     image_transport::ImageTransport _it;

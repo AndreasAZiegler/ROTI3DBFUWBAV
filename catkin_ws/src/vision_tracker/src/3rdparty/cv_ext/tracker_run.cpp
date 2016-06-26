@@ -113,6 +113,12 @@ void TrackerRun::imageCb(const sensor_msgs::ImageConstPtr &msg) {
     }
 }
 
+void TrackerRun::ekfCallback(const geometry_msgs::PointStamped& msg) {
+    std::lock_guard<std::mutex> guard(ekfCoordinatesMutex);
+    ekfCoordinates[0] = msg.point.x;
+    ekfCoordinates[1] = msg.point.y;
+}
+
 Parameters TrackerRun::parseCmdArgs(int argc, char** argv)
 {
     Parameters paras;
@@ -209,9 +215,12 @@ bool TrackerRun::start(int argc, char** argv, bool* stop_flag)
 bool TrackerRun::init()
 {
     // ROS init stuff
-    //_pub = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
-    //_pub = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
-    _pub = _nh->advertise<geometry_msgs::PointStamped>("/vision_tracker/vision_coordinates", 1);
+    //_pub_coordinates = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
+    //_pub_coordinates = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
+    _nh->subscribe("/fusing/ekf/_coordinates", 1, &TrackerRun::ekfCallback, this);
+    _pub_coordinates = _nh->advertise<geometry_msgs::PointStamped>("/vision_tracker/vision_coordinates", 1);
+    _pub_objectDetected = _nh->advertise<std_msgs::Bool>("/vision_tracker/object_detected", 1);
+
     if(false == ROS_RECORD_OR_PLAY){
       _image_pub = _it.advertise("/vision_tracker/video", 1);
     }else{
@@ -303,224 +312,234 @@ bool TrackerRun::run()
 
 bool TrackerRun::update()
 {
-    int64 tStart = 0;
-    int64 tDuration = 0;
+  int64 tStart = 0;
+  int64 tDuration = 0;
 
-    if (!_isPaused || _frameIdx == 0 || _isStep)
-    {
-        if(false == ROS_RECORD_OR_PLAY){
-          _cap >> _image;
-        }else{
-          _image = _rosimage;
-        }
-
-        if (_image.empty())
-            return false;
-
-        if(false == ROS_RECORD_OR_PLAY) {
-            _image_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", _image).toImageMsg());
-        }
-
-        ++_frameIdx;
+  if (!_isPaused || _frameIdx == 0 || _isStep) {
+    if(false == ROS_RECORD_OR_PLAY){
+      _cap >> _image;
+    }else {
+      _image = _rosimage;
     }
 
-    if (!_isTrackerInitialzed)
-    {
-        if (!_hasInitBox)
-        {
-            Rect box;
-
-            if (!InitBoxSelector::selectBox(_image, box))
-                return false;
-
-            _boundingBox = Rect_<double>(static_cast<double>(box.x),
-                static_cast<double>(box.y),
-                static_cast<double>(box.width),
-                static_cast<double>(box.height));
-
-            _hasInitBox = true;
-        }
-
-        tStart = getTickCount();
-        _targetOnFrame = _tracker->reinit(_image, _boundingBox);
-        tDuration = getTickCount() - tStart;
-
-        if (_targetOnFrame)
-            _isTrackerInitialzed = true;
+    if (_image.empty()) {
+      return false;
     }
-    else if (_isTrackerInitialzed && (!_isPaused || _isStep))
-    {
-        _isStep = false;
 
-        if (_updateAtPos)
-        {
-            Rect box;
+    if(false == ROS_RECORD_OR_PLAY) {
+      _image_pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", _image).toImageMsg());
+    }
 
-            if (!InitBoxSelector::selectBox(_image, box))
-                return false;
+    ++_frameIdx;
+  }
 
-            _boundingBox = Rect_<double>(
-                static_cast<double>(box.x),
-                static_cast<double>(box.y),
-                static_cast<double>(box.width),
-                static_cast<double>(box.height));
+  if (!_isTrackerInitialzed) {
+    if (!_hasInitBox) {
+      Rect box;
 
-            _updateAtPos = false;
+      if (!InitBoxSelector::selectBox(_image, box)) {
+        return false;
+      }
 
-            std::cout << "UpdateAt_: " << _boundingBox << std::endl;
-            tStart = getTickCount();
-            _targetOnFrame = _tracker->updateAt(_image, _boundingBox);
+      _boundingBox = Rect_<double>(static_cast<double>(box.x),
+                                   static_cast<double>(box.y),
+                                   static_cast<double>(box.width),
+                                   static_cast<double>(box.height));
 
-            if (!_targetOnFrame)
-                std::cout << "Target not found!" << std::endl;
-        }
-        else
-        {
-            tStart = getTickCount();
-            _targetOnFrame = _tracker->update(_image, _boundingBox);
-            tDuration = getTickCount() - tStart;
-        }
+      _hasInitBox = true;
+    }
 
-        // Publish positions
-        _trans.header.seq = _headerSeq;
-        _headerSeq++;
-        _trans.header.stamp = ros::Time::now();
-        _trans.header.frame_id = string("vision");
-        _trans.child_frame_id = string("vision_tracker");
-        _trans.transform.translation.x = _boundingBox.x + _boundingBox.width * 0.5;
-        _trans.transform.translation.y = _boundingBox.y + _boundingBox.width * 0.5;
-        _trans.transform.translation.z = 1;
-        _trans.transform.rotation.x = 0;
-        _trans.transform.rotation.y = 0;
-        _trans.transform.rotation.z = 0;
-        _trans.transform.rotation.w = 0;
+    tStart = getTickCount();
+    _targetOnFrame = _tracker->reinit(_image, _boundingBox);
+    tDuration = getTickCount() - tStart;
 
-        _point.header.seq = _headerSeq;
-        _point.header.stamp = ros::Time::now();
-        _point.header.frame_id = string("vision");
-        //_point.point.x = _boundingBox.x + _boundingBox.width * 0.5;
-        //_point.point.y = _boundingBox.y + _boundingBox.width * 0.5;
-        //_point.point.x = (_boundingBox.x + _boundingBox.width * 0.5) / 1000.0;
-        //_point.point.y = (_boundingBox.y + _boundingBox.width * 0.5) / 1000.0;
-        _point.point.x = _boundingBox.x + _boundingBox.width / 2;
-        _point.point.y = _boundingBox.y + _boundingBox.width / 2;
-        std::cout << "Point x: " << _point.point.x << " y: " << _point.point.y << std::endl;
-        _point.point.z = 1;
+    if (_targetOnFrame) {
+      _isTrackerInitialzed = true;
+    }
+  }
+  else if (_isTrackerInitialzed && (!_isPaused || _isStep)) {
 
-        _msg.transforms.clear();
-        _msg.transforms.push_back(_trans);
-        ROS_INFO("%f", _point);
-        _pub.publish(_point);
+    if (!_targetOnFrame) {
+      // Set new bounding box based on ekf 2D coordinates
+      {
+        std::lock_guard<std::mutex> guard(ekfCoordinatesMutex);
+        //cv::Point newPos<double>(ekfCoordinates[0] - _boundingBox.width * 0.5, ekfCoordinates[1] - _boundingBox.width * 0.5);
+        _tracker->updatePosition(cv::Point(ekfCoordinates[0] - _boundingBox.width * 0.5, ekfCoordinates[1] - _boundingBox.width * 0.5));
+      }
+      _targetOnFrame = _tracker->reinit(_image, _boundingBox);
+    }
+
+    _isStep = false;
+
+    if (_updateAtPos) {
+      Rect box;
+
+      if (!InitBoxSelector::selectBox(_image, box)) {
+        return false;
+      }
+
+      _boundingBox = Rect_<double>(static_cast<double>(box.x),
+                                   static_cast<double>(box.y),
+                                   static_cast<double>(box.width),
+                                   static_cast<double>(box.height));
+
+      _updateAtPos = false;
+
+      std::cout << "UpdateAt_: " << _boundingBox << std::endl;
+      tStart = getTickCount();
+      _targetOnFrame = _tracker->updateAt(_image, _boundingBox);
+
+      if (!_targetOnFrame) {
+        std::cout << "Target not found!" << std::endl;
+      }
+    }
+    else {
+      tStart = getTickCount();
+      _targetOnFrame = _tracker->update(_image, _boundingBox);
+      tDuration = getTickCount() - tStart;
+    }
+
+    if (!_targetOnFrame) {
+      // Publish ROS message to indicate, that vision tracker can't detect the object
+      _detectedObjectMsg.data = false;
+      _pub_objectDetected.publish(_detectedObjectMsg);
+    } else {
+      // Publish ROS message to indicate, that vision tracker can detect the object
+      _detectedObjectMsg.data = true;
+      _pub_objectDetected.publish(_detectedObjectMsg);
+    }
+
+
+    // Publish positions
+    _trans.header.seq = _headerSeq;
+    _headerSeq++;
+    _trans.header.stamp = ros::Time::now();
+    _trans.header.frame_id = string("vision");
+    _trans.child_frame_id = string("vision_tracker");
+    _trans.transform.translation.x = _boundingBox.x + _boundingBox.width * 0.5;
+    _trans.transform.translation.y = _boundingBox.y + _boundingBox.width * 0.5;
+    _trans.transform.translation.z = 1;
+    _trans.transform.rotation.x = 0;
+    _trans.transform.rotation.y = 0;
+    _trans.transform.rotation.z = 0;
+    _trans.transform.rotation.w = 0;
+
+    _point.header.seq = _headerSeq;
+    _point.header.stamp = ros::Time::now();
+    _point.header.frame_id = string("vision");
+    //_point.point.x = _boundingBox.x + _boundingBox.width * 0.5;
+    //_point.point.y = _boundingBox.y + _boundingBox.width * 0.5;
+    //_point.point.x = (_boundingBox.x + _boundingBox.width * 0.5) / 1000.0;
+    //_point.point.y = (_boundingBox.y + _boundingBox.width * 0.5) / 1000.0;
+    _point.point.x = _boundingBox.x + _boundingBox.width / 2;
+    _point.point.y = _boundingBox.y + _boundingBox.width / 2;
+    std::cout << "Point x: " << _point.point.x << " y: " << _point.point.y << std::endl;
+    _point.point.z = 1;
+
+    _msg.transforms.clear();
+    _msg.transforms.push_back(_trans);
+    ROS_INFO("%f", _point);
+    _pub_coordinates.publish(_point);
+  }
+
+  double fps = static_cast<double>(getTickFrequency() / tDuration);
+  printResults(_boundingBox, _targetOnFrame, fps);
+
+
+  if (_paras.showOutput) {
+    Mat hudImage;
+    _image.copyTo(hudImage);
+    rectangle(hudImage, _boundingBox, Scalar(0, 0, 255), 2);
+    Point_<double> center;
+    center.x = _boundingBox.x + _boundingBox.width / 2;
+    center.y = _boundingBox.y + _boundingBox.height / 2;
+    circle(hudImage, center, 3, Scalar(0, 0, 255), 2);
+
+    stringstream ss;
+    ss << "FPS: " << fps;
+    putText(hudImage, ss.str(), Point(20, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
+
+    ss.str("");
+    ss.clear();
+    ss << "#" << _frameIdx;
+    putText(hudImage, ss.str(), Point(hudImage.cols - 60, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
+
+    if (_debug != 0) {
+      _debug->printOnImage(hudImage);
+    }
+
+    if (!_targetOnFrame) {
+      cv::Point_<double> tl = _boundingBox.tl();
+      cv::Point_<double> br = _boundingBox.br();
+
+      line(hudImage, tl, br, Scalar(0, 0, 255));
+      line(hudImage, cv::Point_<double>(tl.x, br.y),
+      cv::Point_<double>(br.x, tl.y), Scalar(0, 0, 255));
+    }
+
+    imshow(_windowTitle.c_str(), hudImage);
+
+    if (!_paras.imgExportPath.empty()) {
+      stringstream ssi;
+      ssi << setfill('0') << setw(5) << _frameIdx << ".png";
+      std::string imgPath = _paras.imgExportPath + ssi.str();
+
+      try {
+        imwrite(imgPath, hudImage);
+      }catch (runtime_error& runtimeError) {
+        cerr << "Could not write output images: " << runtimeError.what() << endl;
+      }
+    }
+
+    char c = (char)waitKey(10);
+
+    if (c == 27) {
+      _exit = true;
+      *_stop_flag = true;
+      return false;
+    }
+
+    switch (c) {
+      case 'p':
+        _isPaused = !_isPaused;
+        break;
+      case 'c':
+        _isStep = true;
+        break;
+      case 'r':
+        _hasInitBox = false;
+        _isTrackerInitialzed = false;
+        break;
+      case 't':
+        _updateAtPos = true;
+        break;
+      default:
+            ;
+    }
+  }
+
+  return true;
 }
 
-double fps = static_cast<double>(getTickFrequency() / tDuration);
-printResults(_boundingBox, _targetOnFrame, fps);
+void TrackerRun::printResults(const cv::Rect_<double>& boundingBox, bool isConfident, double fps) {
+  if (_resultsFile.is_open()) {
+    if (boundingBox.width > 0 && boundingBox.height > 0 && isConfident) {
+      _resultsFile << boundingBox.x << ","
+      << boundingBox.y << ","
+      << boundingBox.width << ","
+      << boundingBox.height << ","
+      << fps << std::endl;
+    }
+    else {
+      _resultsFile << "NaN, NaN, NaN, NaN, " << fps << std::endl;
+    }
 
-if (_paras.showOutput)
-{
-Mat hudImage;
-_image.copyTo(hudImage);
-rectangle(hudImage, _boundingBox, Scalar(0, 0, 255), 2);
-Point_<double> center;
-center.x = _boundingBox.x + _boundingBox.width / 2;
-center.y = _boundingBox.y + _boundingBox.height / 2;
-circle(hudImage, center, 3, Scalar(0, 0, 255), 2);
-
-stringstream ss;
-ss << "FPS: " << fps;
-putText(hudImage, ss.str(), Point(20, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
-
-ss.str("");
-ss.clear();
-ss << "#" << _frameIdx;
-putText(hudImage, ss.str(), Point(hudImage.cols - 60, 20), FONT_HERSHEY_TRIPLEX, 0.5, Scalar(255, 0, 0));
-
-if (_debug != 0)
-_debug->printOnImage(hudImage);
-
-if (!_targetOnFrame)
-{
-cv::Point_<double> tl = _boundingBox.tl();
-cv::Point_<double> br = _boundingBox.br();
-
-line(hudImage, tl, br, Scalar(0, 0, 255));
-line(hudImage, cv::Point_<double>(tl.x, br.y),
-cv::Point_<double>(br.x, tl.y), Scalar(0, 0, 255));
+    if (_debug != 0) {
+      _debug->printToFile();
+    }
+  }
 }
 
-imshow(_windowTitle.c_str(), hudImage);
-
-if (!_paras.imgExportPath.empty())
-{
-stringstream ssi;
-ssi << setfill('0') << setw(5) << _frameIdx << ".png";
-std::string imgPath = _paras.imgExportPath + ssi.str();
-
-try
-{
-imwrite(imgPath, hudImage);
-}
-catch (runtime_error& runtimeError)
-{
-cerr << "Could not write output images: " << runtimeError.what() << endl;
-}
-}
-
-char c = (char)waitKey(10);
-
-if (c == 27)
-{
-_exit = true;
-*_stop_flag = true;
-return false;
-}
-
-switch (c)
-{
-case 'p':
-_isPaused = !_isPaused;
-break;
-case 'c':
-_isStep = true;
-break;
-case 'r':
-_hasInitBox = false;
-_isTrackerInitialzed = false;
-break;
-case 't':
-_updateAtPos = true;
-break;
-default:
-;
-}
-}
-
-return true;
-}
-
-void TrackerRun::printResults(const cv::Rect_<double>& boundingBox, bool isConfident, double fps)
-{
-if (_resultsFile.is_open())
-{
-if (boundingBox.width > 0 && boundingBox.height > 0 && isConfident)
-{
-_resultsFile << boundingBox.x << ","
-<< boundingBox.y << ","
-<< boundingBox.width << ","
-<< boundingBox.height << ","
-<< fps << std::endl;
-}
-else
-{
-_resultsFile << "NaN, NaN, NaN, NaN, " << fps << std::endl;
-}
-
-if (_debug != 0)
-_debug->printToFile();
-}
-}
-
-void TrackerRun::setTrackerDebug(cf_tracking::TrackerDebug* debug)
-{
-_debug = debug;
+void TrackerRun::setTrackerDebug(cf_tracking::TrackerDebug* debug) {
+  _debug = debug;
 }

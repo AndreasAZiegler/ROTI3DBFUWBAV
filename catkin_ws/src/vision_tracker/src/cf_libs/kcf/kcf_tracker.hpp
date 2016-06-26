@@ -55,7 +55,7 @@ References:
 PAMI, 2015.
 
 [2] M. Danelljan, et al.,
-“Adaptive Color Attributes for Real-Time Visual Tracking,”
+ï¿½Adaptive Color Attributes for Real-Time Visual Tracking,ï¿½
 in Proc. CVPR, 2014.
 
 [3] M. Danelljan,
@@ -63,7 +63,7 @@ in Proc. CVPR, 2014.
 Proceedings of the British Machine Vision Conference BMVC, 2014.
 
 [4] D. Bolme, et al.,
-“Visual Object Tracking using Adaptive Correlation Filters,”
+ï¿½Visual Object Tracking using Adaptive Correlation Filters,ï¿½
 in Proc. CVPR, 2010.
 */
 
@@ -102,7 +102,8 @@ namespace cf_tracking
         int pixelPadding = 0;
 
         bool enableTrackingLossDetection = false;
-        double psrThreshold = 13.5;
+        //double psrThreshold = 13.5;
+        double psrThreshold = 50;
         int psrPeakDel = 1;
 
         bool useVotScaleEstimation = false;
@@ -146,6 +147,8 @@ namespace cf_tracking
             _USE_VOT_SCALE_ESTIMATION(paras.useVotScaleEstimation),
             _ENABLE_TRACKING_LOSS_DETECTION(paras.enableTrackingLossDetection),
             _PSR_THRESHOLD(static_cast<T>(paras.psrThreshold)),
+            _PSR_ADDITIONAL_THRESHOLD(static_cast<T>(0)),
+            _RESPONSE_THRESHOLD(static_cast<T>(0)),
             _PSR_PEAK_DEL(paras.psrPeakDel),
             _MIN_AREA(10),
             _MAX_AREA_FACTOR(static_cast<T>(0.8)),
@@ -153,7 +156,10 @@ namespace cf_tracking
             _ID("KCFcpp"),
             _USE_CCS(true),
             _scaleEstimator(0),
-            _debug(debug)
+            _debug(debug),
+            _lostObjectFlag(false),
+            _foundAnObjectAfterLostFlag(false),
+            _nmbOfFramesWithRefoundObj(0)
         {
             correlate = &KcfTracker::gaussianCorrelation;
 
@@ -366,6 +372,15 @@ namespace cf_tracking
             return _ID;
         }
 
+        virtual void updatePosition(const cv::Point& newPos) {
+            if(false == _foundAnObjectAfterLostFlag) {
+              _pos = newPos;
+              _PSR_ADDITIONAL_THRESHOLD = 50;
+              _RESPONSE_THRESHOLD = 0.5;
+              _templateSzAdditional = static_cast<T>(4);
+            }
+        }
+
     private:
         bool reinit_(const cv::Mat& image, Rect& boundingBox)
         {
@@ -391,6 +406,7 @@ namespace cf_tracking
 
             _templateScaleFactor = 1 / _scale;
             _templateSz = Size(floor(templateSz.width / _scale), floor(templateSz.height / _scale));
+            _templateSzAdditional = static_cast<T>(1);
 
             _targetSize = Size(_targetSize.width / _scale, _targetSize.height / _scale);
 
@@ -561,13 +577,13 @@ namespace cf_tracking
             const T scale, std::shared_ptr<FFC>& features) const
         {
             cv::Mat patch;
-            Size patchSize = _templateSz * scale;
+            Size patchSize = _templateSz * _templateSzAdditional * scale;
 
             if (getSubWindow<T>(image, patch, patchSize, pos) == false)
                 return false;
 
             cv::Mat patchResized;
-            resize(patch, patchResized, _templateSz, 0, 0, _RESIZE_TYPE);
+            resize(patch, patchResized, _templateSz * _templateSzAdditional, 0, 0, _RESIZE_TYPE);
 
             cv::Mat patchResizedFloat;
             patchResized.convertTo(patchResizedFloat, CV_32FC(3));
@@ -639,12 +655,38 @@ namespace cf_tracking
             if (_ENABLE_TRACKING_LOSS_DETECTION)
             {
                 if (evalReponse(image, response, maxResponseIdx,
-                    tempBoundingBox) == false)
+                    tempBoundingBox) == false) {
+
+                    _lostObjectFlag = true;
+                    _nmbOfFramesWithRefoundObj = 0;
+                    _foundAnObjectAfterLostFlag = false;
                     return false;
+                }
+                if(true == _lostObjectFlag) {
+                  if(true == _foundAnObjectAfterLostFlag) {
+                    if(60 <= _nmbOfFramesWithRefoundObj) {
+                      _PSR_ADDITIONAL_THRESHOLD = 0;
+                      _RESPONSE_THRESHOLD = 0;
+                      _templateSzAdditional = static_cast<T>(1);
+
+                      _foundAnObjectAfterLostFlag = false;
+                      _lostObjectFlag = false;
+                      _nmbOfFramesWithRefoundObj = 0;
+                    } else {
+                      _nmbOfFramesWithRefoundObj++;
+                    }
+                  } else{
+                    _foundAnObjectAfterLostFlag = true;
+                    _nmbOfFramesWithRefoundObj++;
+                  }
+                }
             }
 
-            if (updateModel(image, newPos, newScale) == false)
+            if (false == _lostObjectFlag) {
+              if (updateModel(image, newPos, newScale) == false) {
                 return false;
+              }
+            }
 
             boundingBox &= Rect(0, 0, static_cast<T>(image.cols), static_cast<T>(image.rows));
             boundingBox = tempBoundingBox;
@@ -665,8 +707,13 @@ namespace cf_tracking
                 _debug->setPsr(psrClamped);
             }
 
-            if (psrClamped < _PSR_THRESHOLD)
+            if (psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) {
                 return false;
+            }
+
+            if (peakValue < _RESPONSE_THRESHOLD){
+                return false;
+            }
 
             // check if we are out of image, too small or too large
             Rect imageRect(Point(0, 0), image.size());
@@ -896,6 +943,7 @@ namespace cf_tracking
         Point _pos;
         Size _targetSize;
         Size _templateSz;
+        T _templateSzAdditional;
         T _scale;
         T _templateScaleFactor;
         int _frameIdx = 1;
@@ -912,6 +960,8 @@ namespace cf_tracking
         const T _INTERP_FACTOR;
         const T _KERNEL_SIGMA;
         const T _PSR_THRESHOLD;
+        T _PSR_ADDITIONAL_THRESHOLD;
+        T _RESPONSE_THRESHOLD;
         const int _TEMPLATE_SIZE;
         const int _PSR_PEAK_DEL;
         const int _CELL_SIZE;
@@ -927,6 +977,10 @@ namespace cf_tracking
         T _VOT_MAX_SCALE_FACTOR = static_cast<T>(40);
 
         KcfDebug<T>* _debug;
+
+        bool _lostObjectFlag;
+        bool _foundAnObjectAfterLostFlag;
+        int _nmbOfFramesWithRefoundObj;
     };
 }
 

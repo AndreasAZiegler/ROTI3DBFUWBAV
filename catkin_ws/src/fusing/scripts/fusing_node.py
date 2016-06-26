@@ -72,9 +72,14 @@ class Fusing:
     self.matPm = np.zeros((6,6))
     #self.matPm = 5*np.identity(6)
     #self.matQ = np.vstack((np.zeros((3,6)), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of model with only variances for the velocity
-    self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
+    #self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
+    self.matQ = np.vstack((np.hstack((40*10**(3)*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 10**(5)*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
     self.matR1 = np.identity(6)
-    self.matR2 = 10**(-7)*np.identity(2)
+    #self.matR1 = 10**(7)*np.identity(6)
+    #self.matR2 = 10**(-7)*np.identity(2)
+    self.matR2_d = 10**(-7)*np.identity(2)
+    self.matR2_nd = 2*10**(-4) * self.matR2_d
+    self.matR2 = self.matR2_d
     # Constant matrices used by the EKF
     #self.matA = np.vstack((np.hstack((np.identity(3), self.deltaT * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
 
@@ -149,6 +154,7 @@ class Fusing:
     #print("UWB raw: x = {0}, y = {1}, z = {2}".format(uwb_x, uwb_y, uwb_z))
 
     self.mutex_uwb.acquire(1)
+    #self.matR1 = np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
     self.matR1 = 100*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
                             data.covariance[3], data.covariance[4], data.covariance[5]], \
                            [data.covariance[6], data.covariance[7], data.covariance[8], \
@@ -163,8 +169,8 @@ class Fusing:
                            # 10**(-5), 10**(-5), 10**(-5)]])
                            [data.covariance[30], data.covariance[31], data.covariance[32], \
                             data.covariance[33], data.covariance[34], data.covariance[35]]])
-    if self.object_detected==True:
-      self.matR1 =  50**(2) * self.matR1
+    #if self.object_detected==True:
+    #  self.matR1 =  50**(2) * self.matR1
     #print("UWB cov: {0}".format((self.matR1)))
 
     # uwb_1: video_uwb_1: lrms=0.1093
@@ -246,6 +252,11 @@ class Fusing:
   ## Callback function to receive the vision tracker object detected messages from ROS.
   def vision_tracker_object_detected_callback(self, data):
     self.object_detected = data.data
+
+    if self.object_detected==True:
+      self.matR2 = self.matR2_d
+    else:
+      self.matR2 = self.matR2_nd
 
   ## Callback function to receive the image messages from ROS
   def image_callback(self, data):

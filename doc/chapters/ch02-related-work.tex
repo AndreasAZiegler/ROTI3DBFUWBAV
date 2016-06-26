@@ -11,7 +11,7 @@ In this semester project, an UWB system as described in \todo{(Reference to Benn
 \section{Vision based object tracking}
 Because the currently best performing vision based object tracker are mostly built with kernelized correlation filters, an implementation of the KCF tracker \cite{henriques2015tracking} was used as vision based object tracker.
 
-The principle of kernelized correlation filters is, that they exploit the fact that translated and scaled patches, as normally used to train discriminative classifier, are riddled with redundancies - any overlapping pixels are constrained to be the same - and therefore can be represented as circulant matrix. Circulant matrices can be diagonalized with the Discrete Fourier Transform, which reduces storage as well as computation by several orders of magnitude. As demonstrated in \cite{henriques2015tracking} kernel regression has the same complexity as its linear counterpart.
+The principle of kernelized correlation filters is, that they exploit the fact that translated and scaled patches, as normally used to train discriminative classifier, are riddled with redundancies - any overlapping pixels are constrained to be the same - and therefore can be represented as a circulant matrix. Circulant matrices can be diagonalized with the Discrete Fourier Transform, which reduces storage as well as computation by several orders of magnitude. As demonstrated in \cite{henriques2015tracking} kernel regression has the same complexity as its linear counterpart.
 
 This method is not only much faster than other algorithms, it also can be implemented in only a few lines of code and makes it really suitable to use on low-power devices as it is common in the robotics area.
 

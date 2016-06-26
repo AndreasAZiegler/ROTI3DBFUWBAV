@@ -16,6 +16,7 @@ import tf
 import tf2_ros
 import tf2_msgs.msg
 import geometry_msgs.msg
+import std_msgs.msg
 import uwb.msg
 from geometry_msgs.msg import PointStamped
 #from tf2_msgs import TFMessage
@@ -77,6 +78,12 @@ class Fusing:
     # Constant matrices used by the EKF
     #self.matA = np.vstack((np.hstack((np.identity(3), self.deltaT * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
 
+    # ROS message
+    self.ekf_coordinates_msg = geometry_msgs.msg.PointStamped()
+    self.header_seq = 0
+
+    self.object_detected = True
+
 
     # Prototyping
     self.mutex_newValue = Lock()
@@ -122,14 +129,19 @@ class Fusing:
     #uwb_z = data.state[2] + 0.0304
 
     # uwb_7: video_uwb_7: lrms=0.0782
-    uwb_x = data.state[0] + 0.2049
-    uwb_y = data.state[1] - 0.0568
-    uwb_z = data.state[2] - 0.0149
+    #uwb_x = data.state[0] + 0.2049
+    #uwb_y = data.state[1] - 0.0568
+    #uwb_z = data.state[2] - 0.0149
 
     # uwb_8: video_uwb_8: lrms=0.1088
     #uwb_x = data.state[0] + 0.2586
     #uwb_y = data.state[1] - 0.1066
     #uwb_z = data.state[2] - 0.0077
+
+    # uwb_11: video_uwb_11: lrms=0.0703
+    uwb_x = data.state[0] - 0.0327
+    uwb_y = data.state[1] - 0.0143
+    uwb_z = data.state[2] + 0.0038
 
     uwb_vx = data.state[3]
     uwb_vy = data.state[4]
@@ -137,7 +149,7 @@ class Fusing:
     #print("UWB raw: x = {0}, y = {1}, z = {2}".format(uwb_x, uwb_y, uwb_z))
 
     self.mutex_uwb.acquire(1)
-    self.matR1 = 50**(4)*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
+    self.matR1 = 100*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
                             data.covariance[3], data.covariance[4], data.covariance[5]], \
                            [data.covariance[6], data.covariance[7], data.covariance[8], \
                             data.covariance[9], data.covariance[10], data.covariance[11]], \
@@ -151,6 +163,8 @@ class Fusing:
                            # 10**(-5), 10**(-5), 10**(-5)]])
                            [data.covariance[30], data.covariance[31], data.covariance[32], \
                             data.covariance[33], data.covariance[34], data.covariance[35]]])
+    if self.object_detected==True:
+      self.matR1 =  50**(2) * self.matR1
     #print("UWB cov: {0}".format((self.matR1)))
 
     # uwb_1: video_uwb_1: lrms=0.1093
@@ -163,13 +177,13 @@ class Fusing:
     #self.uwb_vz_wc = 0.9819 * ( 0.9422 * uwb_vx + 0.3029 * uwb_vy + 0.1430 * uwb_vz)
 
     # uwb_7: video_uwb_7: lrms=0.0782
-    self.uwb_x_wc = 0.9356 * ( 0.3046 * uwb_x - 0.9441 * uwb_y + 0.1257 * uwb_z)
-    self.uwb_y_wc = 0.9356 * ( 0.2016 * uwb_x - 0.0650 * uwb_y - 0.9773 * uwb_z)
-    self.uwb_z_wc = 0.9356 * ( 0.9309 * uwb_x + 0.3231 * uwb_y + 0.1705 * uwb_z)
+    #self.uwb_x_wc = 0.9356 * ( 0.3046 * uwb_x - 0.9441 * uwb_y + 0.1257 * uwb_z)
+    #self.uwb_y_wc = 0.9356 * ( 0.2016 * uwb_x - 0.0650 * uwb_y - 0.9773 * uwb_z)
+    #self.uwb_z_wc = 0.9356 * ( 0.9309 * uwb_x + 0.3231 * uwb_y + 0.1705 * uwb_z)
 
-    self.uwb_vx_wc = 0.9356 * ( 0.3046 * uwb_vx - 0.9441 * uwb_vy + 0.1257 * uwb_vz)
-    self.uwb_vy_wc = 0.9356 * ( 0.2016 * uwb_vx - 0.0650 * uwb_vy - 0.9773 * uwb_vz)
-    self.uwb_vz_wc = 0.9356 * ( 0.9309 * uwb_vx + 0.3231 * uwb_vy + 0.1705 * uwb_vz)
+    #self.uwb_vx_wc = 0.9356 * ( 0.3046 * uwb_vx - 0.9441 * uwb_vy + 0.1257 * uwb_vz)
+    #self.uwb_vy_wc = 0.9356 * ( 0.2016 * uwb_vx - 0.0650 * uwb_vy - 0.9773 * uwb_vz)
+    #self.uwb_vz_wc = 0.9356 * ( 0.9309 * uwb_vx + 0.3231 * uwb_vy + 0.1705 * uwb_vz)
 
     # uwb_8: video_uwb_8: lrms=0.1088
     #self.uwb_x_wc = 0.9388*( 0.3169*uwb_x - 0.9389*uwb_y + 0.1342*uwb_z)
@@ -179,6 +193,15 @@ class Fusing:
     #self.uwb_vx_wc = 0.9388*( 0.3169*uwb_vx - 0.9389*uwb_vy + 0.1342*uwb_vz)
     #self.uwb_vy_wc = 0.9388*( 0.2742*uwb_vx - 0.0447*uwb_vy - 0.9606*uwb_vz)
     #self.uwb_vz_wc = 0.9388*( 0.9080*uwb_vx + 0.3412*uwb_vy + 0.2433*uwb_vz)
+
+    # uwb_11: video_uwb_11: lrms=0.0703
+    self.uwb_x_wc = 1.0339*( 0.1227*uwb_x - 0.9923*uwb_y + 0.0193*uwb_z)
+    self.uwb_y_wc = 1.0339*(-0.0729*uwb_x - 0.0284*uwb_y - 0.9969*uwb_z)
+    self.uwb_z_wc = 1.0339*( 0.9898*uwb_x + 0.1209*uwb_y - 0.0758*uwb_z)
+
+    self.uwb_vx_wc = 1.0339*( 0.1227*uwb_vx - 0.9923*uwb_vy + 0.0193*uwb_vz)
+    self.uwb_vy_wc = 1.0339*(-0.0729*uwb_vx - 0.0284*uwb_vy - 0.9969*uwb_vz)
+    self.uwb_vz_wc = 1.0339*( 0.9898*uwb_vx + 0.1209*uwb_vy - 0.0758*uwb_vz)
 
     self.uwb_x_uv = 593.16120354*self.uwb_x_wc/self.uwb_z_wc + 308.67164248
     self.uwb_y_uv = 589.605859*self.uwb_y_wc/self.uwb_z_wc + 245.3659398
@@ -201,8 +224,8 @@ class Fusing:
     self.newValue.newUWB = True
     self.mutex_newValue.release()
 
-  ## Callback function to receive the vision tracker messages from ROS.
-  def vision_tracker_callback(self, data):
+  ## Callback function to receive the vision tracker coordinates messages from ROS.
+  def vision_tracker_coordinates_callback(self, data):
     self.mutex_vision.acquire(1)
     self.vision_x_uv = data.point.x
     self.vision_y_uv = data.point.y
@@ -219,6 +242,10 @@ class Fusing:
     self.newValue.newValue = True
     self.newValue.newVision = True
     self.mutex_newValue.release()
+
+  ## Callback function to receive the vision tracker object detected messages from ROS.
+  def vision_tracker_object_detected_callback(self, data):
+    self.object_detected = data.data
 
   ## Callback function to receive the image messages from ROS
   def image_callback(self, data):
@@ -276,7 +303,7 @@ class Fusing:
 
     vecZ = np.zeros((8,1))
     # Checks wheter new UWB data and/or new vision data is available.
-    if (self.newValue.newUWB==True and self.newValue.newVision==True):
+    if (self.newValue.newUWB==True and self.newValue.newVision==True and self.object_detected==True):
       self.mutex_uwb.acquire(1)
       vecZ[0][0] = self.uwb_x_wc
       vecZ[1][0] = self.uwb_y_wc
@@ -292,7 +319,7 @@ class Fusing:
       #self.matR1[0][0] =
       vecStatem_t2 = vecZ - np.vstack(((vecState_p, vecStatem_t1))) # z - [H1*x_p; H2(x_p)]
       #print("h = {0}".format(np.vstack(((vecState_p, vecStatem_t1)))))
-    elif (self.newValue.newUWB==True and self.newValue.newVision==False):
+    elif (self.newValue.newUWB==True and (self.newValue.newVision==False or (self.newValue.newVision==True and self.object_detected==False))):
       self.mutex_uwb.acquire(1)
       vecZ[0][0] = self.uwb_x_wc
       vecZ[1][0] = self.uwb_y_wc
@@ -300,19 +327,19 @@ class Fusing:
       vecZ[3][0] = self.uwb_vx_wc
       vecZ[4][0] = self.uwb_vy_wc
       vecZ[5][0] = self.uwb_vz_wc
+      self.mutex_uwb.release()
       vecZ[6][0] = 0
       vecZ[7][0] = 0
-      self.mutex_uwb.release()
       vecStatem_t2 = vecZ - np.vstack(((vecState_p, np.zeros((2, 1))))) # z - [H1*x; H2(x)]
       #print("h = {0}".format(np.vstack(((vecState_p, np.zeros((2, 1)))))))
-    elif (self.newValue.newUWB==False and self.newValue.newVision==True):
-      self.mutex_vision.acquire(1)
+    elif (self.newValue.newUWB==False and self.newValue.newVision==True and self.object_detected==True):
       vecZ[0][0] = 0
       vecZ[1][0] = 0
       vecZ[2][0] = 0
       vecZ[3][0] = 0
       vecZ[4][0] = 0
       vecZ[5][0] = 0
+      self.mutex_vision.acquire(1)
       vecZ[6][0] = self.vision_x_wc
       vecZ[7][0] = self.vision_y_wc
       self.mutex_vision.release()
@@ -388,17 +415,14 @@ class Fusing:
   ## Initialize ROS
   def initROS(self):
     self.sub_uwb = rospy.Subscriber('/uwb/tracker', uwb.msg.UWBTracker, self.uwb_callback)
-    self.sub_vision = rospy.Subscriber('/vision_tracker/vision_coordinates', geometry_msgs.msg.PointStamped, self.vision_tracker_callback)
+    self.sub_vision_coordinates = rospy.Subscriber('/vision_tracker/vision_coordinates', geometry_msgs.msg.PointStamped, self.vision_tracker_coordinates_callback)
+    self.sub_vision_object_detected = rospy.Subscriber('/vision_tracker/object_detected', std_msgs.msg.Bool, self.vision_tracker_object_detected_callback)
     #self.sub_img = rospy.Subscriber('/vision_tracker/video', sensor_msgs.msg.Image, self.image_callback)
     self.sub_img = rospy.Subscriber('/camera/video/compressed', sensor_msgs.msg.CompressedImage, self.image_callback)
 
-    self.pub = rospy.Publisher('/tf', tf2_msgs.msg.TFMessage, queue_size=1)
+    self.pub = rospy.Publisher('/fusing/ekf_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
 
   def start(self):
-    #tfBuffer = tf2_ros.Buffer()
-    #list1 = tf2_ros.TransformListener(tfBuffer)
-
-    i = 0
 
     while not rospy.is_shutdown():
       os.system('cls' if os.name == 'nt' else 'clear')
@@ -426,29 +450,32 @@ class Fusing:
 
       #self.mutex_newValue.acquire(1)
       if self.newValue.newValue==True:
-          self.ekf_iteration()
+        self.ekf_iteration()
 
-          # Display of state trajectory
-          self.allStatesX = np.append(self.allStatesX, self.state[0])
-          self.allStatesY = np.append(self.allStatesY, self.state[1])
-          self.allStatesZ = np.append(self.allStatesZ, self.state[2])
-          self.allUWBX = np.append(self.allUWBX, self.uwb_x_wc)
-          self.allUWBY = np.append(self.allUWBY, self.uwb_y_wc)
-          self.allUWBZ = np.append(self.allUWBZ, self.uwb_z_wc)
-          self.allVisionX = np.append(self.allVisionX, self.vision_x_wc)
-          self.allVisionY = np.append(self.allVisionY, self.vision_y_wc)
-          self.allVisionZ = np.append(self.allVisionZ, self.vision_z_wc)
+        # Display of state trajectory
+        self.allStatesX = np.append(self.allStatesX, self.state[0])
+        self.allStatesY = np.append(self.allStatesY, self.state[1])
+        self.allStatesZ = np.append(self.allStatesZ, self.state[2])
+        self.allUWBX = np.append(self.allUWBX, self.uwb_x_wc)
+        self.allUWBY = np.append(self.allUWBY, self.uwb_y_wc)
+        self.allUWBZ = np.append(self.allUWBZ, self.uwb_z_wc)
+        self.allVisionX = np.append(self.allVisionX, self.vision_x_wc)
+        self.allVisionY = np.append(self.allVisionY, self.vision_y_wc)
+        self.allVisionZ = np.append(self.allVisionZ, self.vision_z_wc)
+        if self.object_detected==True:
           self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='trajectory', color='green')
-          self.ax.plot(self.allUWBX, self.allUWBZ, -self.allUWBY, label='trajectory', color='red')
-          self.ax.plot(self.allVisionX, self.allVisionY, -self.allVisionY, label='trajectory', color='blue')
-          self.ax.set_xlabel('X')
-          self.ax.set_ylabel('Z')
-          self.ax.set_zlabel('Y')
-          plt.draw()
-          plt.pause(0.01)
+        else:
+          self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='trajectory', color='yellow')
+        self.ax.plot(self.allUWBX, self.allUWBZ, -self.allUWBY, label='trajectory', color='red')
+        self.ax.plot(self.allVisionX, self.allVisionY, -self.allVisionY, label='trajectory', color='blue')
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Z')
+        self.ax.set_zlabel('Y')
+        plt.draw()
+        plt.pause(0.01)
 
-          # Display of vision and the projection of uwb
-          """
+        # Display of vision and the projection of uwb
+        """
         plt.clf()
         plt.ion()
         plt.axis([-1.5, 1.5, -1.5, 1.5])
@@ -471,8 +498,8 @@ class Fusing:
         plt.pause(0.05)  # Display of vision and the projection of uwb
         """
 
-          # Display of state trajectory  OLD
-          """
+        # Display of state trajectory  OLD
+        """
         #self.hl.set_xdata(np.append(self.hl.get_xdata(), self.state[0][0]))
         #self.hl.set_ydata(np.append(self.hl.get_ydata(), self.state[1][0]))
         #plt.scatter(self.state[0][0], self.state[1][0], s=100, c="r", cmap=self.jet)
@@ -485,7 +512,7 @@ class Fusing:
         #plt.show()
         """
 
-          """
+        """
         t = geometry_msgs.msg.TransformStamped()
         t.header.frame_id = "world"
         t.header.stamp = rospy.Time.now()
@@ -505,28 +532,42 @@ class Fusing:
         self.pub.publish(tfm)
         """
 
-          """
-          # Check im image exists
-          # Display image if it exists, the vision tracker position and the projection of the UWB
-          if self.cv_image is not None:
-            self.mutex_image.acquire(1)
-            self.mutex_uwb.acquire(1)
-            print("uwb: x = {0}, y = {1}, z = {2}".format(self.uwb_x_wc, self.uwb_y_wc, self.uwb_z_wc))
-            cv2.circle(self.cv_image, (int(self.uwb_x_uv), int(self.uwb_y_uv)), 10, (0, 0, 255), -1)
-            self.mutex_uwb.release()
-            self.mutex_vision.acquire(1)
-            print("vision: x= {0}, y= {1}".format(self.vision_x_wc, self.vision_y_wc))
-            cv2.circle(self.cv_image, (int(self.vision_x_uv), int(self.vision_y_uv)), 10, (255, 0, 0), -1)
-            #print("Vision: x = {0}, y = {1}".format(self.vision_x_uv, self.vision_y_uv))
-            self.mutex_vision.release()
-            self.mutex_state.acquire(1)
+        # Publish 2D position of the ekf state
+        if (self.state_x_uv >= (0 + 10) and self.state_x_uv <= (640 - 10)) and (self.state_y_uv >= (0 + 10) and self.state_y_uv <= (480 - 10)):
+          print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
+          self.ekf_coordinates_msg.header.seq = self.header_seq
+          self.ekf_coordinates_msg.header.stamp = rospy.Time.now()
+          self.ekf_coordinates_msg.header.frame_id = str("ekf")
+          self.ekf_coordinates_msg.point.x = self.state_x_uv
+          self.ekf_coordinates_msg.point.y = self.state_y_uv
+          self.pub.publish(self.ekf_coordinates_msg)
+
+        # Check im image exists
+        # Display image if it exists, the vision tracker position and the projection of the UWB
+        """
+        if self.cv_image is not None:
+          self.mutex_image.acquire(1)
+          self.mutex_uwb.acquire(1)
+          #print("uwb: x = {0}, y = {1}, z = {2}".format(self.uwb_x_wc, self.uwb_y_wc, self.uwb_z_wc))
+          cv2.circle(self.cv_image, (int(self.uwb_x_uv), int(self.uwb_y_uv)), 10, (0, 0, 255), -1)
+          self.mutex_uwb.release()
+          self.mutex_vision.acquire(1)
+          #print("vision: x= {0}, y= {1}".format(self.vision_x_wc, self.vision_y_wc))
+          cv2.circle(self.cv_image, (int(self.vision_x_uv), int(self.vision_y_uv)), 10, (255, 0, 0), -1)
+          #print("Vision: x = {0}, y = {1}".format(self.vision_x_uv, self.vision_y_uv))
+          self.mutex_vision.release()
+          self.mutex_state.acquire(1)
+          if self.object_detected==True:
             cv2.circle(self.cv_image, (int(self.state_x_uv), int(self.state_y_uv)), 10, (0, 255, 0), -1)
-            self.mutex_state.release()
-            print("State: x = {0}, y = {1}, z = {2}".format(self.state[0], self.state[1], self.state[2]))
-            cv2.imshow("frame", self.cv_image)
-            self.mutex_image.release()
-            cv2.waitKey(1)
-          """
+          else:
+            cv2.circle(self.cv_image, (int(self.state_x_uv), int(self.state_y_uv)), 10, (0, 255, 255), -1)
+          self.mutex_state.release()
+          #print("State: x = {0}, y = {1}, z = {2}".format(self.state[0], self.state[1], self.state[2]))
+          print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
+          cv2.imshow("frame", self.cv_image)
+          self.mutex_image.release()
+          cv2.waitKey(1)
+        """
 
     plt.show()
     plt.pause(0.01)

@@ -10,6 +10,14 @@ import h5py
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
+# VICON
+file_av = h5py.File("./aruco_vicon_output.hdf5", "r")
+vicon_coordinates = file_av['vicon_coordinates'][:]
+file_av.close()
+
+vicon = np.empty([len(vicon_coordinates), 4])
+# END VICON
+
 file = h5py.File("./aruco_uwb_output.hdf5", "r")
 aruco_coordinates = file['aruco_coordinates'][:]
 uwb_coordinates = file['uwb_coordinates'][:]
@@ -32,15 +40,39 @@ for i in range(len(uwb_coordinates)):
         offset = j
         continue
 
+# VICON
+pos = 0
+offset = 1
+for i in range(len(vicon_coordinates)):
+  for j in range(offset, len(aruco_coordinates)):
+    # Value where aruco time > vicon time
+    if vicon_coordinates[i,0] < aruco_coordinates[j,0]:
+      # check the one before
+      if abs(vicon_coordinates[i,0] - aruco_coordinates[j-1,0]) < 5:
+        vicon[pos] = vicon_coordinates[i]
+        aruco[pos] = aruco_coordinates[j-1]
+        pos = pos + 1
+        offset = j
+        continue
+# END VICON
+
 # Remove empty rows
 uwb = uwb[~(uwb==0).all(1)]
 aruco = aruco[~(aruco==0).all(1)]
+
+# VICON
+vicon = vicon[~(vicon==0).all(1)]
+# END VICON
 
 #print('Max. difference: {0}'.format(max(abs(uwb[:,0] - aruco[:,0]))))
 
 # Calculate mean
 mean_uwb = uwb[:,1:4].mean(0)
 mean_aruco = aruco[:,1:4].mean(0)
+
+# VICON
+mean_vicon = vicon[:,1:4].mean(0)
+# END VICON
 
 """
 aruco_x = aruco[:,1]
@@ -124,10 +156,15 @@ uwb_x11 = uwb_x - 0.0327
 uwb_y11 = uwb_y - 0.0143
 uwb_z11 = uwb_z + 0.0038
 
+# uwb_30: video_uwb_30: lrms=0.0632
+uwb_x30 = uwb_x - 0.0239
+uwb_y30 = uwb_y + 0.0119
+uwb_z30 = uwb_z - 0.0563
 
-uwb_x = uwb_x11
-uwb_y = uwb_y11
-uwb_z = uwb_z11
+
+uwb_x = uwb_x30
+uwb_y = uwb_y30
+uwb_z = uwb_z30
 
 
 # uwb_1: video_uwb_1: lrms=0.1093
@@ -180,10 +217,32 @@ uwb_transf_x11 = 1.0339*( 0.1227*uwb_x - 0.9923*uwb_y + 0.0193*uwb_z)
 uwb_transf_y11 = 1.0339*(-0.0729*uwb_x - 0.0284*uwb_y - 0.9969*uwb_z)
 uwb_transf_z11 = 1.0339*( 0.9898*uwb_x + 0.1209*uwb_y - 0.0758*uwb_z)
 
+# uwb_30: video_uwb_30: lrms=0.0632
+uwb_transf_x30 = 1.0281*( 0.1233*uwb_x - 0.9904*uwb_y + 0.0629*uwb_z)
+uwb_transf_y30 = 1.0281*(-0.0348*uwb_x - 0.0677*uwb_y - 0.9971*uwb_z)
+uwb_transf_z30 = 1.0281*( 0.9918*uwb_x + 0.1207*uwb_y - 0.0428*uwb_z)
 
-uwb_transf_x = uwb_transf_x11
-uwb_transf_y = uwb_transf_y11
-uwb_transf_z = uwb_transf_z11
+
+uwb_transf_x = uwb_transf_x30
+uwb_transf_y = uwb_transf_y30
+uwb_transf_z = uwb_transf_z30
+
+
+# VICON
+vicon_x = vicon[:,1]
+vicon_y = vicon[:,2]
+vicon_z = vicon[:,3]
+
+# vicon_30: video_uwb_30: lrms=0.0336
+vicon_x = vicon_x - 1.4680
+vicon_y = vicon_y + 1.2642
+vicon_z = vicon_z - 1.2334
+
+# vicon_30: video_uwb_30: lrms=0.0336
+vicon_transf_x = 1.0639*(-0.0349*vicon_x + 0.9993*vicon_y - 0.0109*vicon_z)
+vicon_transf_y = 1.0639*( 0.0581*vicon_x - 0.0089*vicon_y - 0.9983*vicon_z)
+vicon_transf_z = 1.0639*(-0.9977*vicon_x - 0.0355*vicon_y - 0.0587*vicon_z)
+# END VICON
 
 
 print('Aruco x difference: {0}m'.format(abs(max(aruco_x) - min(aruco_x))))
@@ -198,6 +257,11 @@ ax = fig.add_subplot(111, projection='3d')
 #aruco_plt = ax.scatter(aruco_coordinates[:,1], aruco_coordinates[:,3], -aruco_coordinates[:,2], depthshade=True, c='g', marker='x', label='Aruco')
 aruco_plt = ax.scatter(aruco_x, aruco_z, aruco_y, c='b', marker='x', label='Aruco')
 uwb_transf_plt = ax.scatter(uwb_transf_x, uwb_transf_z, uwb_transf_y, c='r', marker='o', label='UWB Transformed')
+
+# VICON
+#vicon_transf_plt = ax.scatter(vicon_transf_x, vicon_transf_z, vicon_transf_y, c='y', marker='o', label='VICON Transformed')
+# END VICON
+#plt.legend(handles=[uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
 plt.legend(handles=[uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
 #plt.legend(handles=[uwb_plt])
 

@@ -52,7 +52,7 @@ class Fusing:
     # Coordinates received from the vision tracker
     self.vision_x_wc = 0.0
     self.vision_y_wc = 0.0
-    self.vision_z_wc = 0.0
+    self.vision_z_wc = 1.0
 
     self.vision_x_uv = 0.0
     self.vision_y_uv = 0.0
@@ -108,7 +108,7 @@ class Fusing:
     self.allUWBZ = np.zeros(1)
     self.allVisionX = np.zeros(1)
     self.allVisionY = np.zeros(1)
-    self.allVisionZ = np.zeros(1)
+    self.allVisionZ = np.ones(1)
 
     self.bridge = CvBridge()
 
@@ -118,7 +118,8 @@ class Fusing:
     #plt.axis([-1.5, 1.5, -1.5, 1.5])
     #plt.axis('equal')
     fig = plt.figure()
-    self.ax = fig.gca(projection='3d')
+    #self.ax = fig.gca(projection='3d')
+    self.ax = fig.add_subplot(111, projection='3d')
     #self.jet = plt.get_cmap('jet')
 
   ## Callback function to receive the UWB messages from ROS.
@@ -139,9 +140,14 @@ class Fusing:
     #uwb_z = data.state[2] - 0.0077
 
     # uwb_11: video_uwb_11: lrms=0.0703
-    uwb_x = data.state[0] - 0.0327
-    uwb_y = data.state[1] - 0.0143
-    uwb_z = data.state[2] + 0.0038
+    #uwb_x = data.state[0] - 0.0327
+    #uwb_y = data.state[1] - 0.0143
+    #uwb_z = data.state[2] + 0.0038
+
+    # uwb_30: video_uwb_30: lrms=0.0646
+    uwb_x = data.state[0] - 0.0297
+    uwb_y = data.state[1] + 0.0083
+    uwb_z = data.state[2] - 0.0568
 
     uwb_vx = data.state[3]
     uwb_vy = data.state[4]
@@ -195,13 +201,22 @@ class Fusing:
     #self.uwb_vz_wc = 0.9388*( 0.9080*uwb_vx + 0.3412*uwb_vy + 0.2433*uwb_vz)
 
     # uwb_11: video_uwb_11: lrms=0.0703
-    self.uwb_x_wc = 1.0339*( 0.1227*uwb_x - 0.9923*uwb_y + 0.0193*uwb_z)
-    self.uwb_y_wc = 1.0339*(-0.0729*uwb_x - 0.0284*uwb_y - 0.9969*uwb_z)
-    self.uwb_z_wc = 1.0339*( 0.9898*uwb_x + 0.1209*uwb_y - 0.0758*uwb_z)
+    #self.uwb_x_wc = 1.0339*( 0.1227*uwb_x - 0.9923*uwb_y + 0.0193*uwb_z)
+    #self.uwb_y_wc = 1.0339*(-0.0729*uwb_x - 0.0284*uwb_y - 0.9969*uwb_z)
+    #self.uwb_z_wc = 1.0339*( 0.9898*uwb_x + 0.1209*uwb_y - 0.0758*uwb_z)
 
-    self.uwb_vx_wc = 1.0339*( 0.1227*uwb_vx - 0.9923*uwb_vy + 0.0193*uwb_vz)
-    self.uwb_vy_wc = 1.0339*(-0.0729*uwb_vx - 0.0284*uwb_vy - 0.9969*uwb_vz)
-    self.uwb_vz_wc = 1.0339*( 0.9898*uwb_vx + 0.1209*uwb_vy - 0.0758*uwb_vz)
+    #self.uwb_vx_wc = 1.0339*( 0.1227*uwb_vx - 0.9923*uwb_vy + 0.0193*uwb_vz)
+    #self.uwb_vy_wc = 1.0339*(-0.0729*uwb_vx - 0.0284*uwb_vy - 0.9969*uwb_vz)
+    #self.uwb_vz_wc = 1.0339*( 0.9898*uwb_vx + 0.1209*uwb_vy - 0.0758*uwb_vz)
+
+    # uwb_30: video_uwb_30: lrms=0.0646
+    self.uwb_x_wc = 1.0340*( 0.1203*uwb_x - 0.9910*uwb_y + 0.0595*uwb_z)
+    self.uwb_y_wc = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
+    self.uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0758*uwb_z)
+
+    self.uwb_vx_wc = 1.0340*( 0.1203*uwb_vx - 0.9910*uwb_vy + 0.0595*uwb_vz)
+    self.uwb_vy_wc = 1.0340*(-0.0356*uwb_vx - 0.0642*uwb_vy - 0.9973*uwb_vz)
+    self.uwb_vz_wc = 1.0340*( 0.9921*uwb_vx + 0.1178*uwb_vy - 0.0758*uwb_vz)
 
     self.uwb_x_uv = 593.16120354*self.uwb_x_wc/self.uwb_z_wc + 308.67164248
     self.uwb_y_uv = 589.605859*self.uwb_y_wc/self.uwb_z_wc + 245.3659398
@@ -358,7 +373,6 @@ class Fusing:
     #print(" + {0}".format(vecStatem_t3[5]))
     self.mutex_state.acquire(1)
     self.state = vecState_p + vecStatem_t3
-    self.mutex_state.release()
 
 
     #self.state_x_uv = 593.16120354 * self.state[0] + 308.67164248 * self.state[2]
@@ -374,7 +388,6 @@ class Fusing:
 
     # Estimation of the new coovariance matrix
     matPm_t = np.dot(matK, matH) # K*H
-    self.mutex_state.acquire(1)
     self.matPm = np.dot(np.identity(6) - matPm_t, matP_p) # (I - K*H)*Pp
     #print("matPm = {0}".format(self.matPm))
     self.mutex_state.release()
@@ -420,7 +433,8 @@ class Fusing:
     #self.sub_img = rospy.Subscriber('/vision_tracker/video', sensor_msgs.msg.Image, self.image_callback)
     self.sub_img = rospy.Subscriber('/camera/video/compressed', sensor_msgs.msg.CompressedImage, self.image_callback)
 
-    self.pub = rospy.Publisher('/fusing/ekf_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
+    #self.pub_uv_coord = rospy.Publisher('/fusing/ekf_uv_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
+    self.pub_wc_coord = rospy.Publisher('/fusing/ekf_wc_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
 
   def start(self):
 
@@ -431,7 +445,7 @@ class Fusing:
         rospy.signal_shutdown("terminate")
         #break
 
-      rospy.sleep(0.1)
+      rospy.sleep(0.01)
 
       """
       try:
@@ -462,17 +476,20 @@ class Fusing:
         self.allVisionX = np.append(self.allVisionX, self.vision_x_wc)
         self.allVisionY = np.append(self.allVisionY, self.vision_y_wc)
         self.allVisionZ = np.append(self.allVisionZ, self.vision_z_wc)
+        """
         if self.object_detected==True:
-          self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='trajectory', color='green')
+          self.ekf_plot = self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='EKF', color='green')
         else:
-          self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='trajectory', color='yellow')
-        self.ax.plot(self.allUWBX, self.allUWBZ, -self.allUWBY, label='trajectory', color='red')
-        self.ax.plot(self.allVisionX, self.allVisionY, -self.allVisionY, label='trajectory', color='blue')
+          self.ekf_plot = self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='EKF', color='yellow')
+        self.uwb_plot = self.ax.plot(self.allUWBX, self.allUWBZ, -self.allUWBY, label='UWB', color='red')
+        self.vision_plot = self.ax.plot(self.allVisionX, self.allVisionZ, -self.allVisionY, label='Vision', color='blue')
         self.ax.set_xlabel('X')
         self.ax.set_ylabel('Z')
         self.ax.set_zlabel('Y')
+        plt.axis('equal')
         plt.draw()
         plt.pause(0.01)
+        """
 
         # Display of vision and the projection of uwb
         """
@@ -533,14 +550,29 @@ class Fusing:
         """
 
         # Publish 2D position of the ekf state
+        """
         if (self.state_x_uv >= (0 + 10) and self.state_x_uv <= (640 - 10)) and (self.state_y_uv >= (0 + 10) and self.state_y_uv <= (480 - 10)):
-          print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
+          #print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
           self.ekf_coordinates_msg.header.seq = self.header_seq
           self.ekf_coordinates_msg.header.stamp = rospy.Time.now()
-          self.ekf_coordinates_msg.header.frame_id = str("ekf")
+          self.ekf_coordinates_msg.header.frame_id = str("ekf_uv")
+          self.mutex_state.acquire(1)
           self.ekf_coordinates_msg.point.x = self.state_x_uv
           self.ekf_coordinates_msg.point.y = self.state_y_uv
-          self.pub.publish(self.ekf_coordinates_msg)
+          self.mutex_state.release()
+          self.pub_uv_coord.publish(self.ekf_coordinates_msg)
+        """
+
+        # Publish 3D position of the ekf state
+        self.ekf_coordinates_msg.header.seq = self.header_seq
+        self.ekf_coordinates_msg.header.stamp = rospy.Time.now()
+        self.ekf_coordinates_msg.header.frame_id = str("ekf_wc")
+        self.mutex_state.acquire(1)
+        self.ekf_coordinates_msg.point.x = self.state[0]
+        self.ekf_coordinates_msg.point.y = self.state[1]
+        self.ekf_coordinates_msg.point.z = self.state[2]
+        self.mutex_state.release()
+        self.pub_wc_coord.publish(self.ekf_coordinates_msg)
 
         # Check im image exists
         # Display image if it exists, the vision tracker position and the projection of the UWB
@@ -569,6 +601,14 @@ class Fusing:
           cv2.waitKey(1)
         """
 
+    #plt.clf()
+    self.ekf_plot = self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='EKF', color='green')
+    self.uwb_plot = self.ax.plot(self.allUWBX, self.allUWBZ, -self.allUWBY, label='UWB', color='red')
+    self.vision_plot = self.ax.plot(self.allVisionX, self.allVisionZ, -self.allVisionY, label='Vision', color='blue')
+    self.ax.set_xlabel('X')
+    self.ax.set_ylabel('Z')
+    self.ax.set_zlabel('Y')
+    plt.legend()
     plt.show()
     plt.pause(0.01)
 

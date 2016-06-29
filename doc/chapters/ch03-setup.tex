@@ -14,7 +14,7 @@ As it is well known, that cameras, as the one used in this semester project, suf
 In this semester project, the camera calibration framework of the OpenCV library \cite{opencv_library} was used, as it is easy to handle and well known to work properly.
 
 \section{UWB and camera mounting}
-The UWB system and the camera are mounted in a way, that the center of their relative coordination systems have a fixed, not too large displacement. This setup is shown in \autoref{fig:setup}. In this setup, the origin of the camera coordination system is a bit above of the one from the UWB system, which is positioned in the middle of the monitor screen (indicated by the blue arrow in \autoref{fig:setup}). 
+The UWB system and the camera are mounted in a way, that the center of their relative coordination systems have a fixed, not too large displacement. This setup is shown in \autoref{fig:setup}. In this setup, the origin of the camera coordination system is a bit above of the one from the UWB system (indicated by the blue arrow in \autoref{fig:setup}), which is positioned in the middle of the monitor screen. 
 
 \begin{figure}[h]\centering
 	\includegraphics[width=0.5\textwidth]{figures/Monitor_cut.jpg}
@@ -24,10 +24,10 @@ The UWB system and the camera are mounted in a way, that the center of their rel
 \section{Matching frames}
 The coordination systems of the UWB setup and the one of the camera are not the same, as sketched in \autoref{fig:coordinationsystem}. As the goal of this semester project is to fuse the locations provided by the UWB system and by the vision tracker, the locations must be transformed from one to the other. To achieve this, the location of the object in 3D must be available from both systems (UWB and vision).
 
-For the vision system, the ArUco \cite{Aruco2014} library and an ArUco marker were used to get 3D coordinates of the object, as explained in \autoref{subsec:aruco}.
+For the vision system, the ArUco \cite{Aruco2014} library and an ArUco marker were used to get the 3D coordinates of the object, as explained in \autoref{subsec:aruco}.
 
 The translation as well as the rotation between the two coordination systems were then determined by the Kabsch algorithm \cite{Kabsch:a12999} in the matching proceeder, explained in \autoref{subsec:matching}.
-\begin{figure}[h]\centering
+\begin{figure}[ht!]\centering
 	\includegraphics[width=0.5\textwidth]{figures/coordination_system}
 	\caption{The two coordination systems relative to each other.}\label{fig:coordinationsystem}
 \end{figure}
@@ -35,8 +35,8 @@ The translation as well as the rotation between the two coordination systems wer
 \subsection{ArUco}\label{subsec:aruco}
 ArUco \cite{Aruco2014} presents itself as a minimal library for augmented reality applications based on OpenCV. ArUco is a marker system specialized for camera pose estimation in different applications such as augmented reality, robot localization, etc. ArUco contains an algorithm for the generation of markers as well as marker boards and an algorithm for the automatic detection of markers. A third contribution of ArUco is a solution to the occlusion problem in augmented reality applications which is not of interest for this semester project.
 
-To get 3D vision coordinates, an ArUco marker was mounted on the object, as shown in \autoref{fig:target}, right in front of an UWB target and an application was written which uses the ArUco library to read out the 3D coordination of detected ArUco markers and saves them for the later usage by the main matching proceeder.
-\begin{figure}[h]\centering
+To get 3D vision coordinates, an ArUco marker was mounted on the object, as shown in \autoref{fig:target}, right in front of an UWB target and an application was written which uses the ArUco library to read out the 3D coordination of detected ArUco markers and saves them for the later usage by the matching proceeder.
+\begin{figure}[ht!]\centering
 	\includegraphics[width=0.5\textwidth]{figures/Box_cut.jpg}
 	\caption{ArUco marker and UWB target.}\label{fig:target}
 \end{figure}

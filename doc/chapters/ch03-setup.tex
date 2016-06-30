@@ -53,6 +53,35 @@ The Kabsch algorithm \cite{Kabsch:a12999} calculates the optimal rotation matrix
 \subsection{Matching proceeder}\label{subsec:matching}
 For the matching proceeder, a Matlab script was written, shown in \autoref{lst:matching}, which calculates the mean of the UWB and the vision (ArUco) coordinates, centralizes the coordinates of both, calculates the scale from the centralized coordinates, scales the vision (ArUco) coordinates and finally executes the Kabsch algorithm to calculate the rotation matrix $\textbf{U}$, the translation $\vec r$ and the least root mean squared error $\text{lrms}$.
 
+To transform 3D points from the UWB coordinate system to the vision coordinate system the translation $\vec r$ is applied to the 3D coordinate and the then rotation matrix $\textbf{U}$ and the scale is applied as shown in \autoref{eq:transformation}
+
+\begin{equation}\label{eq:transformation}
+	\begin{bmatrix}
+		x_{\textit{Vision}} \\
+		y_{\textit{Vision}} \\
+		z_{\textit{Vision}}
+	\end{bmatrix} = \mathit{scale} \cdot \textbf{U}
+	\Bigg( \begin{bmatrix}
+		x_{\textit{UWB}} \\
+		y_{\textit{UWB}} \\
+		z_{\textit{UWB}}
+	\end{bmatrix} - \vec r \Bigg)
+\end{equation}
+
+To transform the covariance matrix $\textbf{C}$ from the UWB coordinate system to the vision coordinate system, a new rotation matrix $\textbf{U}' \in \mathbb{R}^{6x6}$ has to be applied to the covariance matrix in the UWB coordinate system like
+
+\begin{equation}
+	\textbf{C}' = \textbf{U}' \textbf{C} \textbf{U}'^T
+\end{equation}
+where
+\begin{equation}
+	\textbf{U}' =
+	\begin{bmatrix}
+		\textbf{U} & \textbf{0} \\
+		\textbf{0} & \textbf{U}
+	\end{bmatrix}
+\end{equation}
+
 The determined rotation matrix $\textbf{U}$ and the translation vector $\vec r$ applied on a set of measured points by the UWB systems together with the set of measured points by ArUco results in a data set as shown in \autoref{fig:matching}
 
 \lstset{language=Matlab}
@@ -84,6 +113,8 @@ aruco = scale .* aruco;
 	
 [U, r, lrms] = Kabsch(aruco, uwb);
 \end{lstlisting}
+
+
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/matching}

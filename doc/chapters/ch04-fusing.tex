@@ -36,13 +36,13 @@ where
 \begin{align}
 	\textbf{Q} =
 	\begin{pmatrix}
-		\textbf{0} & \textbf{0}\\
+		\textbf{I}_3 & \textbf{0}\\
 		\textbf{0} & \textbf{q}_v
 	\end{pmatrix}
 \end{align}
 and $\textbf{q}_v \in \mathbb{R}^{3\times3}$ is the velocity covariance of the process noise.
 
-There are two possible measurements. The first measurement is a direct measurement of the state $\vec x$ from ultra-wideband (UWB) trilateration:
+There are two possible measurements. The first measurement is a direct measurement of the state $\vec x$ from ultra-wideband (UWB) multilateration:
 \begin{equation}
 	\vec z_1(k) = \vec h_{k,1}(\vec x(k), \vec w_1(k))
 \end{equation}
@@ -136,7 +136,7 @@ $$\textbf{K}(k) = \textbf{P}_p(k) \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{P}
 \end{bmatrix} \Big)^{-1}$$
 
 \subsection{Implementation}
-The implementation of the EKF was done in Python within a ROS environment.
+The implementation of the EKF was done in a Python script within the ROS environment. For more details please see \autoref{}.
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/state_track}

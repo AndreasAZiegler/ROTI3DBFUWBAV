@@ -34,18 +34,20 @@ minimum height=3em, minimum width=6em]
 \begin{document}
 	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
 		\node [block] (uwb) {UWB};
-		\node [point] (p1) [right= 6.72cm of uwb]{};
+		\node [block] (transformation) [right= 3.5cm of uwb] {$T \in \mathit{SE}(3)$};
+		\node [point] (p1) [right= 2.72cm of transformation]{};
 		\node [point] (p2) [below= 0.8cm of p1]{};
 		
 		\node [block] (camera) [below = 1cm of uwb] {Camera};	
-		\node [block] (visionTracker) [right=2cm of camera] {Vision Tracker};
-		\node [point] (p3) [right = 2.23cm of visionTracker]{};
+		\node [block] (visionTracker) [right=3.5cm of camera] {Vision Tracker};
+		\node [point] (p3) [right = 2.35cm of visionTracker]{};
 		\node [point] (p4) [above = 0.8cm of p3]{};
 		
-		\node [block] (ekf) [below right =-0.04cm and 8cm of uwb] {EKF};
+		\node [block] (ekf) [below right =-0.04cm and 10cm of uwb] {EKF};
 		\node [point] (state) [right = 4.5cm of ekf] {};
 		
-		\draw [-] (uwb) -- node[name=u] {$[x_1, x_2, x_3, \dot{x}_1, \dot{x}_2, \dot{x}_3]^T$} (p1);
+		\draw [-] (uwb) -- node[name=u] {UWB coordinates} (transformation);
+		\draw [-] (transformation) -- node[name=u, right= 0.5cm, above] {$[x_1, x_2, x_3, \dot{x}_1, \dot{x}_2, \dot{x}_3]^T$} (p1);
 		\draw [-] (p1) -- node[name=u] {} (p2);
 		
 		\draw [-] (visionTracker) -- node[name=u] {$[\frac{x_1}{x_3}, \frac{x_2}{x_3}]^T$} (p3);

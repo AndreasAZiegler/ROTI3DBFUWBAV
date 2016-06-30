@@ -6,14 +6,31 @@
 \chapter{Related Work}
 
 \section{Ultra-wideband (UWB)}
-In this semester project, an UWB system as described in \todo{(Reference to Benni's paper)}  was used to get the location and the velocity of the object, relative to the measurement setup. This UWB system has an accuracy of $\approx 10 cm$ but also provides a distance in the z-direction in contrast to our vision tracker described next, which only gives x- and y-coordinates. The adaption of the UWB system used in this semester project is described in \autoref{ch:setup}.
+In this semester project, an UWB system as described in \cite{Naegeli:2016} was used to get the location and the velocity of the object, relative to the measurement setup. This UWB system is manually calibrated with the help of a motion capture system (VICON) and has an accuracy of $\approx 10 cm$ but also provides a distance in the z-direction in contrast to our vision tracker described next, which only gives x- and y-coordinates. The adaption of the UWB system used in this semester project is described in \autoref{ch:setup}.
 
 \section{Vision based object tracking}
-Because the currently best performing vision based object tracker are mostly built with kernelized correlation filters, an implementation of the KCF tracker \cite{henriques2015tracking} was used as vision based object tracker.
+Because the currently best performing vision based object tracker are mostly built with kernelized correlation filters, an implementation of the KCF tracker \cite{henriques2015tracking} was used as vision based object tracker\cite{Haag:2015}, which implements the KCF tracker, with FHOG features proposed in \cite{lsvm-pami}, and a few adaption, more precisely speaking with a default scale adaption proposed in \cite{danelljan2014dsst}, a more robust filter update scheme from \cite{danelljan2014colorattributes} and a target loss functionality presented in \cite{bolme2010mosse}.
 
-The principle of kernelized correlation filters is, that they exploit the fact that translated and scaled patches, as normally used to train discriminative classifier, are riddled with redundancies - any overlapping pixels are constrained to be the same - and therefore can be represented as a circulant matrix. Circulant matrices can be diagonalized with the Discrete Fourier Transform, which reduces storage as well as computation by several orders of magnitude. As demonstrated in \cite{henriques2015tracking} kernel regression has the same complexity as its linear counterpart.
+Kernelized correlation filters, exploit the fact that translated and scaled patches, as normally used to train discriminative classifier, are riddled with redundancies and therefore can be represented as a circulant matrix. As is standard with correlation filters, the input patches are weighted by a cosine window to smoothly remove discontinuities at the image boundaries, caused by the cyclic shifts. Circulant matrices can then be diagonalized with the Discrete Fourier Transform, which reduces storage as well as computation by several orders of magnitude. As demonstrated in \cite{henriques2015tracking} kernel regression has the same complexity as its linear counterpart.
 
-This method is not only much faster than other algorithms, it also can be implemented in only a few lines of code and makes it really suitable to use on low-power devices as it is common in the robotics area.
+Thanks to this properties of the circulant matrices, the KCF tracker can be implemented in only a few lines of code. The bulk of the functionality of the KCF tracker is implemented in three functions: "train" which implements \autoref{eq:train}, "detect" which implements \autoref{eq:detect}, and "kernel\_correlation" which implements \autoref{eq:kernelcorrelation}.
+
+\begin{equation}\label{eq:train}
+	\hat{\alpha} = \frac{\hat{y}}{\hat{\vec{k}}^{\vec x \vec x} + \lambda}
+\end{equation}
+where $\vec{k}^{\vec x \vec x}$ is the first row of the kernel matrix $\textbf{K}=C(\vec{k}^{\vec x \vec x})$, and $\hat{}$ denotes the DFT of a vector.
+
+\begin{equation}\label{eq:detect}
+	\hat{\vec f}(z) = \hat{\vec k}^{xz} \odot \hat{\vec \alpha}
+\end{equation}
+where $\vec k^{xz}$ is the kernel correlation of $x$ and $z$.
+
+\begin{equation}\label{eq:kernelcorrelation}
+	\vec{k}^{\vec x\vec x'} = \mathit{exp} \big( -\frac{1}{\sigma^2} (\left\Vert \vec x \right\Vert^2) + \left\Vert \vec x' \right\Vert^2 -2\mathcal{F}^{-1}(\sum_c \hat{\vec x}_c \odot \hat{\vec x'}_c) \big)
+\end{equation}
+For more detailed information and also the derivation of the presented equations, please see \cite{henriques2015tracking}.
+
+As this method is much faster than other algorithms, and can be implemented in only a few lines of code, it makes it really suitable to use on low-power devices as it is common in the robotics area.
 
 \section{Extended Kalman Filter (EKF)}
-The Extended Kalman Filter (EKF) \todo{(Which paper to cite? NASA?)} in this semester project is used to fuse the coordination information of the tracked object from the UWB system and from the vision based object tracker. The EKF model and the update steps are described in detail in \autoref{ch:fusing}.
+The Extended Kalman Filter (EKF) \cite{Chui2009} in this semester project is used to fuse the 3D position of the tracked object from the UWB system and the 2D pixel coordinates from the vision based object tracker. The EKF model and the update steps are described in detail in \autoref{ch:fusing}.

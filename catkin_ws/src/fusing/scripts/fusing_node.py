@@ -57,7 +57,7 @@ class Fusing:
     # Coordinates received from the UWB
     self.uwb_x_wc = 0.0
     self.uwb_y_wc = 0.0
-    self.uwb_z_wc = 0.0
+    self.uwb_z_wc = 0.5
     # Velocities recived from the UWB
     self.uwb_vx_wc = 0.0
     self.uwb_vy_wc = 0.0
@@ -74,7 +74,7 @@ class Fusing:
 
     # Fused coordinates from the states of the EKF
     #self.state = np.array([[320.0], [160.0], [1.0], [0.0], [0.0], [0.0]])
-    self.state = np.array([[0.01], [-0.04], [1.0], [0.0], [0.0], [0.0]])
+    self.state = np.array([[0.0], [0.0], [0.5], [0.0], [0.0], [0.0]])
     #self.state = np.empty((6, 1))
 
     # EKF
@@ -87,10 +87,10 @@ class Fusing:
     #self.matPm = 5*np.identity(6)
     #self.matQ = np.vstack((np.zeros((3,6)), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of model with only variances for the velocity
     #self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
-    self.matQ = np.vstack((np.hstack((np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 2*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
+    self.matQ = np.vstack((np.hstack((np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
     self.matR1 = np.identity(6)
     #self.matR2 = 10**(-7)*np.identity(2)
-    self.matR2 = 10**(-6)*np.identity(2)
+    self.matR2 = np.identity(2)
     # Constant matrices used by the EKF
     #self.matA = np.vstack((np.hstack((np.identity(3), self.deltaT * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
     self.matCovarianceRotation = np.array([[ 0.1203, -0.9910,  0.0595,       0,       0,       0],\
@@ -113,6 +113,7 @@ class Fusing:
     self.mutex_uwb = Lock()
     self.mutex_image = Lock()
     self.mutex_state = Lock()
+    self.mutex_vision_detected = Lock()
     self.uwb_x_wc_list = collections.deque(maxlen=200)
     self.uwb_y_wc_list = collections.deque(maxlen=200)
     self.uwb_z_wc_list = collections.deque(maxlen=200)
@@ -124,10 +125,10 @@ class Fusing:
     self.realState = []
     self.allStatesX = np.zeros(1)
     self.allStatesY = np.zeros(1)
-    self.allStatesZ = np.zeros(1)
+    self.allStatesZ = 0.5*np.ones(1)
     self.allUWBX = np.zeros(1)
     self.allUWBY = np.zeros(1)
-    self.allUWBZ = np.zeros(1)
+    self.allUWBZ = 0.5*np.ones(1)
     self.allVisionX = np.zeros(1)
     self.allVisionY = np.zeros(1)
     self.allVisionZ = np.ones(1)
@@ -268,7 +269,7 @@ class Fusing:
                             data.covariance[33], data.covariance[34], data.covariance[35]]])
 
     matR1_t2 = np.dot(matR1_t1, self.matCovarianceRotation.transpose())
-    self.matR1 = np.dot(self.matCovarianceRotation, matR1_t2)
+    self.matR1 = 1.0340**2 * np.dot(self.matCovarianceRotation, matR1_t2)
     #if self.object_detected==True:
       #self.matR1 =  50**(2) * self.matR1
     #print("UWB cov: {0}".format((self.matR1)))
@@ -360,7 +361,13 @@ class Fusing:
 
   ## Callback function to receive the vision tracker object detected messages from ROS.
   def vision_tracker_object_detected_callback(self, data):
+    self.mutex_vision_detected.acquire(1)
     self.object_detected = data.data
+    if self.object_detected==True:
+      self.matR2 = 10**(-7)*np.identity(2)
+    else:
+      self.matR2 = np.identity(2)
+    self.mutex_vision_detected.release()
 
   ## Callback function to receive the image messages from ROS
   def image_callback(self, data):
@@ -384,6 +391,7 @@ class Fusing:
     #vecState_p = np.dot(self.matB, self.vecX)
     # Get the time difference
     deltaT = rospy.Time.now().to_sec() - self.lastTimeStamp
+    #print("deltaT = {0}".format(deltaT))
     self.lastTimeStamp = rospy.Time.now().to_sec()
 
     # Compute the matrix B, the vector state_p and the matrix P_p
@@ -443,6 +451,8 @@ class Fusing:
 
     vecZ = np.zeros((8,1))
     # Checks wheter new UWB data and/or new vision data is available.
+    self.mutex_newValue.acquire(1)
+    self.mutex_vision_detected.acquire(1)
     if (self.newValue.newUWB==True and self.newValue.newVision==True and self.object_detected==True):
       self.mutex_uwb.acquire(1)
       vecZ[0][0] = self.uwb_x_wc
@@ -456,7 +466,6 @@ class Fusing:
       vecZ[6][0] = self.vision_x_wc
       vecZ[7][0] = self.vision_y_wc
       self.mutex_vision.release()
-      #self.matR1[0][0] =
       vecStatem_t2 = vecZ - np.vstack(((vecState_p, vecStatem_t1))) # z - [H1*x_p; H2(x_p)]
       #print("h = {0}".format(np.vstack(((vecState_p, vecStatem_t1)))))
     elif (self.newValue.newUWB==True and (self.newValue.newVision==False or (self.newValue.newVision==True and self.object_detected==False))):
@@ -485,6 +494,9 @@ class Fusing:
       self.mutex_vision.release()
       vecStatem_t2 = vecZ - np.vstack(((np.zeros((6, 1)), vecStatem_t1))) # z - [H1*x; H2(x)]
       #print("h = {0}".format(np.vstack(((np.zeros((6, 1)), vecStatem_t1)))))
+
+    self.mutex_newValue.release()
+    self.mutex_vision_detected.release()
 
 
     # Estimation of the new state

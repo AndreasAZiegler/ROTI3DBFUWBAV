@@ -1,0 +1,17 @@
+\chapter{Conclusion and Outlook}
+
+\section{Conclusion}
+The proposed method of fusing less accurate 3D coordinate measurements from the UWB system with more precise 2D pixel coordinate measurements from the vision based tracker with an Extended Kalman Filter has shown to improve the accuracy significantly compared to the coordinates measured solely by the UWB system. The idea of combining these two sources has therefore proven to be beneficial.
+
+This semester project was meant to be a prove of concept and the proposed method could be applied in many applications in different fields as robotics, human-computer-interaction, entertainment, rescue, etc., to mention only a few.
+
+\section{Outlook}
+The UWB system used in this semester project runs with a frequency of approximately $80\mathit{Hz}$ as well as the implemented Extended Kalman Filter. If an UWB system with a higher frequency would be used, the currently in python implemented Extended Kalman Filter won't be able to process all the measurements provided by the UWB system and by the vision based tracker. To encounter this problem, a faster implementation in C++ would be conceivable.
+
+The proposed fusing method does not contain any sophisticated re-detection system for the cases when the object goes out of the camera view. A re-detection based on the 3D coordinate measurements of the UWB system could improve the stability as well as the usability of the proposed method.\todo{(If redetection works somehow, adapt this part)}
+
+So far the used UWB system has to be calibrated manually, for example with a motion capture system (VICON). With an ArUco marker and the ArUco library \cite{Aruco2014} an automated calibration proceeder for the UWB system could be developed which would simplify the setup of the whole system. 
+
+Up to now, for the vision based tracker the desired object has to be marked manually by an user which restricts the usability of the system in many real-world applications. Automatic visual target detecting with the help of the information provided by the UWB system would widen the the application area of the proposed system.
+
+In this semester project only one object at a time can be tracked. In many applications tracking of multiple targets is of interest. A multi target tracking system consisting of multiple objects equipped with distinguishable UWB targets and a vision based multi target tracker would allow to track multiple object simultaneously. 

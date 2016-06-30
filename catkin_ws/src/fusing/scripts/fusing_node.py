@@ -25,6 +25,20 @@ from cv_bridge import CvBridge, CvBridgeError
 import sensor_msgs.msg
 import cv2
 
+
+
+from numpy.core import (
+    array, asarray, zeros, empty, empty_like, transpose, intc, single, double,
+    csingle, cdouble, inexact, complexfloating, newaxis, ravel, all, Inf, dot,
+    add, multiply, sqrt, maximum, fastCopyAndTranspose, sum, isfinite, size,
+    finfo, errstate, geterrobj, longdouble, rollaxis, amin, amax, product, abs,
+    broadcast, atleast_2d, intp, asanyarray, isscalar
+    )
+from numpy.lib import triu, asfarray
+from numpy.linalg import lapack_lite, _umath_linalg
+from numpy.matrixlib.defmatrix import matrix_power
+from numpy.compat import asbytes
+
 ## Fusing class: Fuses the information from UWB and for the vision tracker with an Extenden Kalmanfilter (EKF)
 class Fusing:
 
@@ -65,18 +79,26 @@ class Fusing:
 
     # EKF
     self.newValue = self.NewValue()
-    self.lastTimeStamp = rospy.Time.now()
+    self.lastTimeStamp = rospy.Time.now().to_sec()
     self.deltaT = 0.0035
     # Initial values
     self.vecXm = [0, 0]
     self.matPm = np.zeros((6,6))
     #self.matPm = 5*np.identity(6)
     #self.matQ = np.vstack((np.zeros((3,6)), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of model with only variances for the velocity
-    self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
+    #self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
+    self.matQ = np.vstack((np.hstack((np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 2*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
     self.matR1 = np.identity(6)
-    self.matR2 = 10**(-7)*np.identity(2)
+    #self.matR2 = 10**(-7)*np.identity(2)
+    self.matR2 = 10**(-6)*np.identity(2)
     # Constant matrices used by the EKF
     #self.matA = np.vstack((np.hstack((np.identity(3), self.deltaT * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
+    self.matCovarianceRotation = np.array([[ 0.1203, -0.9910,  0.0595,       0,       0,       0],\
+                                           [-0.0356,  0.0642, -0.9973,       0,       0,       0],\
+                                           [ 0.9921,  0.1178,  0.0758,       0,       0,       0],\
+                                           [      0,       0,       0,  0.1203, -0.9910,  0.0595],\
+                                           [      0,       0,       0, -0.0356,  0.0642, -0.9973],\
+                                           [      0,       0,       0,  0.9921,  0.1178,  0.0758]])
 
     # ROS message
     self.ekf_coordinates_msg = geometry_msgs.msg.PointStamped()
@@ -122,6 +144,78 @@ class Fusing:
     self.ax = fig.add_subplot(111, projection='3d')
     #self.jet = plt.get_cmap('jet')
 
+  def _solve_equation_least_squares(self, A, B):
+    """Solve system of linear equations A X = B.
+    Currently using Pseudo-inverse because it also allows for singular matrices.
+
+    Args:
+      A (numpy.ndarray): Left-hand side of equation.
+      B (numpy.ndarray): Right-hand side of equation.
+
+    Returns:
+      X (numpy.ndarray): Solution of equation.
+    """
+    # Pseudo-inverse
+    X = np.dot(np.linalg.pinv(A), B)
+    # LU decomposition
+    # lu, piv = scipy.linalg.lu_factor(A)
+    # X = scipy.linalg.lu_solve((lu, piv), B)
+    # Vanilla least-squares from numpy
+    # X, _, _, _ = np.linalg.lstsq(A, B)
+    # QR decomposition
+    # Q, R, P = scipy.linalg.qr(A, mode='economic', pivoting=True)
+    ## Find first zero element in R
+    # out = np.where(np.diag(R) == 0)[0]
+    # if out.size == 0:
+    #     i = R.shape[0]
+    # else:
+    #     i = out[0]
+    # B_prime = np.dot(Q.T, B)
+    # X = np.zeros((A.shape[1], B.shape[1]), dtype=A.dtype)
+    # X[P[:i], :] = scipy.linalg.solve_triangular(R[:i, :i], B_prime[:i, :])
+
+    return X
+
+  def faster_inverse(self, a):
+    """
+    Compute the (multiplicative) inverse of a matrix.
+
+    Given a square matrix `a`, return the matrix `ainv` satisfying
+    ``dot(a, ainv) = dot(ainv, a) = eye(a.shape[0])``.
+
+    Parameters
+    ----------
+    a : (..., M, M) array_like
+        Matrix to be inverted.
+
+    Returns
+    -------
+    ainv : (..., M, M) ndarray or matrix
+        (Multiplicative) inverse of the matrix `a`.
+
+    Raises
+    ------
+    LinAlgError
+        If `a` is not square or inversion fails.
+
+    Notes
+    -----
+
+    .. versionadded:: 1.8.0
+
+    Broadcasting rules apply, see the `numpy.linalg` documentation for
+    details.
+    """
+    a, wrap = np.linalg._makearray(a)
+    np.linalg._assertRankAtLeast2(a)
+    np.linalg._assertNdSquareness(a)
+    t, result_t = np.linalg._commonType(a)
+
+    signature = 'D->D'
+    extobj = np.linalg.get_linalg_error_extobj(np.linalg._raise_linalgerror_singular)
+    ainv = _umath_linalg.inv(a, signature=signature, extobj=extobj)
+    return wrap(ainv.astype(result_t, copy=False))
+
   ## Callback function to receive the UWB messages from ROS.
   def uwb_callback(self, data):
     # uwb_1: video_uwb_1: lrms=0.1093
@@ -155,7 +249,10 @@ class Fusing:
     #print("UWB raw: x = {0}, y = {1}, z = {2}".format(uwb_x, uwb_y, uwb_z))
 
     self.mutex_uwb.acquire(1)
-    self.matR1 = 100*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
+    #print("Covariances: C[0] = {0}, C[7] = {1}, C[14] = {2}".format(2.5*data.covariance[0], data.covariance[7], data.covariance[14]))
+    #self.matR1 = 100*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
+    #self.matR1 = 70*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
+    matR1_t1 = np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
                             data.covariance[3], data.covariance[4], data.covariance[5]], \
                            [data.covariance[6], data.covariance[7], data.covariance[8], \
                             data.covariance[9], data.covariance[10], data.covariance[11]], \
@@ -169,8 +266,11 @@ class Fusing:
                            # 10**(-5), 10**(-5), 10**(-5)]])
                            [data.covariance[30], data.covariance[31], data.covariance[32], \
                             data.covariance[33], data.covariance[34], data.covariance[35]]])
-    if self.object_detected==True:
-      self.matR1 =  50**(2) * self.matR1
+
+    matR1_t2 = np.dot(matR1_t1, self.matCovarianceRotation.transpose())
+    self.matR1 = np.dot(self.matCovarianceRotation, matR1_t2)
+    #if self.object_detected==True:
+      #self.matR1 =  50**(2) * self.matR1
     #print("UWB cov: {0}".format((self.matR1)))
 
     # uwb_1: video_uwb_1: lrms=0.1093
@@ -278,15 +378,28 @@ class Fusing:
     self.mutex_image.release()
 
   ## Performs one iteration of the EKF.
+  #@profile
   def ekf_iteration(self):
     # Step 1
     #vecState_p = np.dot(self.matB, self.vecX)
     # Get the time difference
-    deltaT = rospy.Time.now() - self.lastTimeStamp
-    self.lastTimeStamp = rospy.Time.now()
+    deltaT = rospy.Time.now().to_sec() - self.lastTimeStamp
+    self.lastTimeStamp = rospy.Time.now().to_sec()
 
     # Compute the matrix B, the vector state_p and the matrix P_p
-    matB = np.vstack((np.hstack((np.identity(3), deltaT.to_sec() * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
+    #matB_t11 = deltaT.to_sec() * np.identity(3)
+    """
+    matB_t11 = deltaT * np.identity(3)
+    matB_t1 = np.hstack((np.identity(3), matB_t11))
+    matB_t2 = np.hstack((np.zeros((3,3)), np.identity(3)))
+    matB = np.vstack((matB_t1, matB_t2))
+    """
+    matB = np.array([[1, 0, 0, deltaT,      0,      0],\
+                     [0, 1, 0,      0, deltaT,      0],\
+                     [0, 0, 1,      0,      0, deltaT],\
+                     [0, 0, 0,      1,      0,      0],\
+                     [0, 0, 0,      0,      1,      0],\
+                     [0, 0, 0,      0,      0,      1]])
     #print("B = {0}".format(matB))
     #print("deltaT = {0}".format(deltaT.to_sec()))
     vecState_p = np.dot(matB, self.state)
@@ -298,10 +411,20 @@ class Fusing:
     #matH = np.array([[np.identity(6)], [1/vecState_p[2], 0, -vecState_p[0]/vecState_p[3]**2, 0, 0, 0],\
     #                 [0, 1/vecState_p[2], -vecState_p[1]/vecState_p[3]**2, 0, 0, 0]])
     # Compute the matrix H, R and K
+    """
     matH_top = np.identity(6)
     matH_bottom = np.array([[1/vecState_p[2][0], 0, -vecState_p[0][0]/(vecState_p[2][0]**2), 0, 0, 0], \
                      [0, 1/vecState_p[2][0], -vecState_p[1][0]/(vecState_p[2][0]**2), 0, 0, 0]])
     matH = np.vstack((matH_top,matH_bottom))
+    """
+    matH = np.array([[1, 0, 0, 0, 0, 0],\
+                     [0, 1, 0, 0, 0, 0],\
+                     [0, 0, 1, 0, 0, 0],\
+                     [0, 0, 0, 1, 0, 0],\
+                     [0, 0, 0, 0, 1, 0],\
+                     [0, 0, 0, 0, 0, 1],\
+                     [1/vecState_p[2][0], 0, -vecState_p[0][0]/(vecState_p[2][0]**2), 0, 0, 0],\
+                     [0, 1/vecState_p[2][0], -vecState_p[1][0]/(vecState_p[2][0]**2), 0, 0, 0]])
     #matK_t1 = np.dot(self.matQ, matH.transpose()) # Q * H^T
     #matK_t2 = np.dot(matH, matK_t1) # H*Q*H^T
     matK_t1 = np.dot(matP_p, matH.transpose()) # P_p * H^T
@@ -309,6 +432,8 @@ class Fusing:
     matR = np.vstack((np.hstack((self.matR1, np.zeros((6,2)))), np.hstack((np.zeros((2,6)), self.matR2))))
 
     matK = np.dot(matK_t1, np.linalg.inv(matK_t2 + matR)) # (P_p * H^T) * (H*P_p*H^T + [R_1, 0; 0, R_2])^(-1)
+    #matK = np.dot(matK_t1, self.faster_inverse(matK_t2 + matR)) # Use lapack directly
+    #matK = np.dot(matP_p, self._solve_equation_least_squares(matK_t2 + matR, matH).transpose()) # Benni's implementation
     #print("Q = {0}".format(self.matQ))
     #print("R = {0}".format(matR))
     #print("K = {0}".format(matK))
@@ -436,16 +561,23 @@ class Fusing:
     #self.pub_uv_coord = rospy.Publisher('/fusing/ekf_uv_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
     self.pub_wc_coord = rospy.Publisher('/fusing/ekf_wc_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
 
+  #@profile
   def start(self):
 
+    rate = rospy.Rate(100)
+
     while not rospy.is_shutdown():
+      """
       os.system('cls' if os.name == 'nt' else 'clear')
       if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
         line = raw_input()
         rospy.signal_shutdown("terminate")
         #break
+      """
+      mutex_ekfiter = Lock()
 
-      rospy.sleep(0.01)
+      #rospy.sleep(0.1)
+      rate.sleep()
 
       """
       try:
@@ -464,7 +596,9 @@ class Fusing:
 
       #self.mutex_newValue.acquire(1)
       if self.newValue.newValue==True:
+        mutex_ekfiter.acquire(1)
         self.ekf_iteration()
+        mutex_ekfiter.release()
 
         # Display of state trajectory
         self.allStatesX = np.append(self.allStatesX, self.state[0])
@@ -614,9 +748,9 @@ class Fusing:
 
 
 if __name__ == '__main__':
-    try:
-        fusing = Fusing()
-        fusing.initROS()
-        fusing.start()
-    except rospy.ROSInterruptException:
-        pass
+  try:
+    fusing = Fusing()
+    fusing.initROS()
+    fusing.start()
+  except rospy.ROSInterruptException:
+    pass

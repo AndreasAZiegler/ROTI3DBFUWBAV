@@ -238,14 +238,24 @@ vicon_y = vicon[:,2]
 vicon_z = vicon[:,3]
 
 # vicon_30: video_uwb_30: lrms=0.0336
-vicon_x = vicon_x - 1.4663
-vicon_y = vicon_y + 1.2641
-vicon_z = vicon_z - 1.2332
+#vicon_x = vicon_x - 1.4663
+#vicon_y = vicon_y + 1.2641
+#vicon_z = vicon_z - 1.2332
+
+# vicon_40: video_uwb_40: lrms=0.0365
+vicon_x = vicon_x - 1.1373
+vicon_y = vicon_y + 0.9085
+vicon_z = vicon_z - 1.2501
 
 # vicon_30: video_uwb_30: lrms=0.0336
-vicon_transf_x = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
-vicon_transf_y = 1.0662*( 0.0578*vicon_x - 0.0092*vicon_y - 0.9983*vicon_z)
-vicon_transf_z = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
+#vicon_transf_x = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
+#vicon_transf_y = 1.0662*( 0.0578*vicon_x - 0.0092*vicon_y - 0.9983*vicon_z)
+#vicon_transf_z = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
+
+# vicon_40: video_uwb_40: lrms=0.0365
+vicon_transf_x = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
+vicon_transf_y = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
+vicon_transf_z = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
 # END VICON
 
 

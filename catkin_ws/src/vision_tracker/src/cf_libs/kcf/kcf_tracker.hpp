@@ -103,7 +103,7 @@ namespace cf_tracking
 
         bool enableTrackingLossDetection = false;
         //double psrThreshold = 13.5;
-        double psrThreshold = 50;
+        double psrThreshold = 20;
         int psrPeakDel = 1;
 
         bool useVotScaleEstimation = false;
@@ -159,7 +159,8 @@ namespace cf_tracking
             _debug(debug),
             _lostObjectFlag(false),
             _foundAnObjectAfterLostFlag(false),
-            _nmbOfFramesWithRefoundObj(0)
+            _nmbOfFramesWithRefoundObj(0),
+            _PSR_MAX_THRESHOLD(1000)
         {
             correlate = &KcfTracker::gaussianCorrelation;
 
@@ -373,11 +374,13 @@ namespace cf_tracking
         }
 
         virtual void updatePosition(const cv::Point& newPos) {
-            if(false == _foundAnObjectAfterLostFlag) {
+            if((true == _lostObjectFlag) && (false == _foundAnObjectAfterLostFlag)) {
               _pos = newPos;
-              _PSR_ADDITIONAL_THRESHOLD = 50;
-              _RESPONSE_THRESHOLD = 0.5;
-              _templateSzAdditional = static_cast<T>(4);
+              //_PSR_ADDITIONAL_THRESHOLD = 50;
+              _PSR_ADDITIONAL_THRESHOLD = 0;
+              _PSR_MAX_THRESHOLD = 100;
+              _RESPONSE_THRESHOLD = 0.4;
+              _templateSzAdditional = static_cast<T>(3);
             }
         }
 
@@ -664,8 +667,9 @@ namespace cf_tracking
                 }
                 if(true == _lostObjectFlag) {
                   if(true == _foundAnObjectAfterLostFlag) {
-                    if(60 <= _nmbOfFramesWithRefoundObj) {
+                    if(30 <= _nmbOfFramesWithRefoundObj) {
                       _PSR_ADDITIONAL_THRESHOLD = 0;
+                      _PSR_MAX_THRESHOLD = 1000;
                       _RESPONSE_THRESHOLD = 0;
                       _templateSzAdditional = static_cast<T>(1);
 
@@ -707,7 +711,8 @@ namespace cf_tracking
                 _debug->setPsr(psrClamped);
             }
 
-            if (psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) {
+            //if (psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) {
+            if ((psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) || (psrClamped > _PSR_MAX_THRESHOLD)) {
                 return false;
             }
 
@@ -886,10 +891,10 @@ namespace cf_tracking
 
         bool getResponse(const cv::Mat& image, const Point& pos,
             T scale, cv::Mat &newResponse, double& newMaxResponse,
-            cv::Point2i& newMaxIdx) const
-        {
-            if (detect(image, pos, scale, newResponse) == false)
-                return false;
+            cv::Point2i& newMaxIdx) const {
+            if (detect(image, pos, scale, newResponse) == false) {
+              return false;
+            }
 
             minMaxLoc(newResponse, 0, &newMaxResponse, 0, &newMaxIdx);
 
@@ -961,6 +966,7 @@ namespace cf_tracking
         const T _KERNEL_SIGMA;
         const T _PSR_THRESHOLD;
         T _PSR_ADDITIONAL_THRESHOLD;
+        T _PSR_MAX_THRESHOLD;
         T _RESPONSE_THRESHOLD;
         const int _TEMPLATE_SIZE;
         const int _PSR_PEAK_DEL;

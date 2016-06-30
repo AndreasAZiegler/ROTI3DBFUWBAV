@@ -25,20 +25,6 @@ from cv_bridge import CvBridge, CvBridgeError
 import sensor_msgs.msg
 import cv2
 
-
-
-from numpy.core import (
-    array, asarray, zeros, empty, empty_like, transpose, intc, single, double,
-    csingle, cdouble, inexact, complexfloating, newaxis, ravel, all, Inf, dot,
-    add, multiply, sqrt, maximum, fastCopyAndTranspose, sum, isfinite, size,
-    finfo, errstate, geterrobj, longdouble, rollaxis, amin, amax, product, abs,
-    broadcast, atleast_2d, intp, asanyarray, isscalar
-    )
-from numpy.lib import triu, asfarray
-from numpy.linalg import lapack_lite, _umath_linalg
-from numpy.matrixlib.defmatrix import matrix_power
-from numpy.compat import asbytes
-
 ## Fusing class: Fuses the information from UWB and for the vision tracker with an Extenden Kalmanfilter (EKF)
 class Fusing:
 
@@ -176,46 +162,6 @@ class Fusing:
     # X[P[:i], :] = scipy.linalg.solve_triangular(R[:i, :i], B_prime[:i, :])
 
     return X
-
-  def faster_inverse(self, a):
-    """
-    Compute the (multiplicative) inverse of a matrix.
-
-    Given a square matrix `a`, return the matrix `ainv` satisfying
-    ``dot(a, ainv) = dot(ainv, a) = eye(a.shape[0])``.
-
-    Parameters
-    ----------
-    a : (..., M, M) array_like
-        Matrix to be inverted.
-
-    Returns
-    -------
-    ainv : (..., M, M) ndarray or matrix
-        (Multiplicative) inverse of the matrix `a`.
-
-    Raises
-    ------
-    LinAlgError
-        If `a` is not square or inversion fails.
-
-    Notes
-    -----
-
-    .. versionadded:: 1.8.0
-
-    Broadcasting rules apply, see the `numpy.linalg` documentation for
-    details.
-    """
-    a, wrap = np.linalg._makearray(a)
-    np.linalg._assertRankAtLeast2(a)
-    np.linalg._assertNdSquareness(a)
-    t, result_t = np.linalg._commonType(a)
-
-    signature = 'D->D'
-    extobj = np.linalg.get_linalg_error_extobj(np.linalg._raise_linalgerror_singular)
-    ainv = _umath_linalg.inv(a, signature=signature, extobj=extobj)
-    return wrap(ainv.astype(result_t, copy=False))
 
   ## Callback function to receive the UWB messages from ROS.
   def uwb_callback(self, data):
@@ -363,10 +309,14 @@ class Fusing:
   def vision_tracker_object_detected_callback(self, data):
     self.mutex_vision_detected.acquire(1)
     self.object_detected = data.data
+    self.mutex_vision.acquire(1)
+
     if self.object_detected==True:
       self.matR2 = 10**(-7)*np.identity(2)
     else:
       self.matR2 = np.identity(2)
+
+    self.mutex_vision.release()
     self.mutex_vision_detected.release()
 
   ## Callback function to receive the image messages from ROS
@@ -450,6 +400,7 @@ class Fusing:
     vecStatem_t1 = np.array([[vecState_p[0][0]/vecState_p[2][0]], [vecState_p[1][0]/vecState_p[2][0]]])
 
     vecZ = np.zeros((8,1))
+    vecStatem_t2 = np.zeros((8,1))
     # Checks wheter new UWB data and/or new vision data is available.
     self.mutex_newValue.acquire(1)
     self.mutex_vision_detected.acquire(1)
@@ -467,7 +418,6 @@ class Fusing:
       vecZ[7][0] = self.vision_y_wc
       self.mutex_vision.release()
       vecStatem_t2 = vecZ - np.vstack(((vecState_p, vecStatem_t1))) # z - [H1*x_p; H2(x_p)]
-      #print("h = {0}".format(np.vstack(((vecState_p, vecStatem_t1)))))
     elif (self.newValue.newUWB==True and (self.newValue.newVision==False or (self.newValue.newVision==True and self.object_detected==False))):
       self.mutex_uwb.acquire(1)
       vecZ[0][0] = self.uwb_x_wc
@@ -480,7 +430,6 @@ class Fusing:
       vecZ[6][0] = 0
       vecZ[7][0] = 0
       vecStatem_t2 = vecZ - np.vstack(((vecState_p, np.zeros((2, 1))))) # z - [H1*x; H2(x)]
-      #print("h = {0}".format(np.vstack(((vecState_p, np.zeros((2, 1)))))))
     elif (self.newValue.newUWB==False and self.newValue.newVision==True and self.object_detected==True):
       vecZ[0][0] = 0
       vecZ[1][0] = 0
@@ -493,10 +442,9 @@ class Fusing:
       vecZ[7][0] = self.vision_y_wc
       self.mutex_vision.release()
       vecStatem_t2 = vecZ - np.vstack(((np.zeros((6, 1)), vecStatem_t1))) # z - [H1*x; H2(x)]
-      #print("h = {0}".format(np.vstack(((np.zeros((6, 1)), vecStatem_t1)))))
 
-    self.mutex_newValue.release()
     self.mutex_vision_detected.release()
+    self.mutex_newValue.release()
 
 
     # Estimation of the new state
@@ -695,8 +643,8 @@ class Fusing:
         self.pub.publish(tfm)
         """
 
-        # Publish 2D position of the ekf state
         """
+        # Publish 2D position of the ekf state
         if (self.state_x_uv >= (0 + 10) and self.state_x_uv <= (640 - 10)) and (self.state_y_uv >= (0 + 10) and self.state_y_uv <= (480 - 10)):
           #print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
           self.ekf_coordinates_msg.header.seq = self.header_seq
@@ -720,9 +668,9 @@ class Fusing:
         self.mutex_state.release()
         self.pub_wc_coord.publish(self.ekf_coordinates_msg)
 
+        """
         # Check im image exists
         # Display image if it exists, the vision tracker position and the projection of the UWB
-        """
         if self.cv_image is not None:
           self.mutex_image.acquire(1)
           self.mutex_uwb.acquire(1)
@@ -741,7 +689,7 @@ class Fusing:
             cv2.circle(self.cv_image, (int(self.state_x_uv), int(self.state_y_uv)), 10, (0, 255, 255), -1)
           self.mutex_state.release()
           #print("State: x = {0}, y = {1}, z = {2}".format(self.state[0], self.state[1], self.state[2]))
-          print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
+          #print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
           cv2.imshow("frame", self.cv_image)
           self.mutex_image.release()
           cv2.waitKey(1)

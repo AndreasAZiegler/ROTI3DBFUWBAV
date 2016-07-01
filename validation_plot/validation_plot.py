@@ -61,24 +61,24 @@ uwb_y_wc = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
 uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0430*uwb_z)
 
 # vicon_30: video_uwb_30: lrms=0.0336
-#vicon_x = vicon[:, 1] - 1.4663
-#vicon_y = vicon[:, 2] + 1.2641
-#vicon_z = vicon[:, 3] - 1.2332
+vicon_x = vicon[:, 1] - 1.4663
+vicon_y = vicon[:, 2] + 1.2641
+vicon_z = vicon[:, 3] - 1.2332
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x = vicon[:, 1] - 1.1373
-vicon_y = vicon[:, 2] + 0.9085
-vicon_z = vicon[:, 3] - 1.2501
+#vicon_x = vicon[:, 1] - 1.1373
+#vicon_y = vicon[:, 2] + 0.9085
+#vicon_z = vicon[:, 3] - 1.2501
 
 # vicon_30: video_uwb_30: lrms=0.0336
-#vicon_x_wc = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
-#vicon_y_wc = 1.0662*( 0.0578*vicon_x - 0.0092*vicon_y - 0.9983*vicon_z)
-#vicon_z_wc = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
+vicon_x_wc = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
+vicon_y_wc = 1.0662*( 0.0578*vicon_x - 0.0092*vicon_y - 0.9983*vicon_z)
+vicon_z_wc = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
-vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
-vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+#vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
+#vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
+#vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
 
 rmse_uwb = []
 rmse_uwb_xy = []
@@ -121,14 +121,14 @@ ekf = ekf[~(ekf==0).all(1)]
 vicon = vicon[~(vicon==0).all(1)]
 
 # vicon_30: video_uwb_30: lrms=0.0336
-#vicon_x = vicon[:, 1] - 1.4663
-#vicon_y = vicon[:, 2] + 1.2641
-#vicon_z = vicon[:, 3] - 1.2332
+vicon_x = vicon[:, 1] - 1.4663
+vicon_y = vicon[:, 2] + 1.2641
+vicon_z = vicon[:, 3] - 1.2332
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x = vicon[:, 1] - 1.1373
-vicon_y = vicon[:, 2] + 0.9085
-vicon_z = vicon[:, 3] - 1.2501
+#vicon_x = vicon[:, 1] - 1.1373
+#vicon_y = vicon[:, 2] + 0.9085
+#vicon_z = vicon[:, 3] - 1.2501
 
 """
 vicon_x = vicon_coordinates[:, 1] - 1.4663
@@ -137,14 +137,14 @@ vicon_z = vicon_coordinates[:, 3] - 1.2332
 """
 
 # vicon_30: video_uwb_30: lrms=0.0336
-#vicon_x_wc = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
-#vicon_y_wc = 1.0662*( 0.0578*vicon_x - 0.0092*vicon_y - 0.9983*vicon_z)
-#vicon_z_wc = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
+vicon_x_wc = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
+vicon_y_wc = 1.0662*( 0.0578*vicon_x - 0.0092*vicon_y - 0.9983*vicon_z)
+vicon_z_wc = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
-vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
-vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+#vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
+#vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
+#vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
 
 rmse_ekf = []
 rmse_ekf_xy = []
@@ -163,15 +163,15 @@ plt.plot(ekf[:, 0], rmse_ekf)
 fig = plt.figure(3)
 ax = fig.add_subplot(111, projection='3d')
 
-vicon_plt = ax.plot(vicon_x_wc, vicon_z_wc, -vicon_y_wc, c='b', label='VICON')
+vicon_plt = ax.plot(vicon_x_wc, vicon_z_wc, -vicon_y_wc, c='magenta', label='VICON')
 #vicon_plt = ax.plot(vicon_coordinates[:,1], vicon_coordinates[:,3], -vicon_coordinates[:,2], c='b', label='VICON')
 uwb_plt = ax.plot(uwb_x_wc, uwb_z_wc, -uwb_y_wc, c='r', label='UWB')
 ekf_plt = ax.plot(ekf[:, 1], ekf[:, 3], -ekf[:, 2], c='green', label='EKF')
 ##ekf_plt_orig = ax.plot(ekf_coordinates[:, 1], ekf_coordinates[:, 3], -ekf_coordinates[:, 2], c='y', label='EKF orig')
 plt.legend()
-ax.set_xlabel('X')
-ax.set_ylabel('Z')
-ax.set_zlabel('Y')
+ax.set_xlabel('X (image plane)')
+ax.set_ylabel('Z (distance)')
+ax.set_zlabel('Y (image plane)')
 
 plt.axis('equal')
 plt.show()

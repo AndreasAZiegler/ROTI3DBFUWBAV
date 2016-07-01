@@ -1,12 +1,12 @@
 \chapter{Conclusion and Outlook}
 
 \section{Conclusion}
-The proposed method of fusing less accurate 3D coordinate measurements from the \ac{UWB} system with more precise 2D pixel coordinate measurements from the vision based tracker with an Extended Kalman Filter has shown to improve the accuracy significantly compared to the coordinates measured solely by the \ac{UWB} system. The idea of combining these two sources has therefore proven to be beneficial.
+The proposed method of fusing less accurate 3D coordinate measurements from the \ac{UWB} system with more precise 2D pixel coordinate measurements from the vision based tracker with an \acf{EKF} has shown a significantly improved accuracy compared to the coordinates measured solely by the \ac{UWB} system. The idea of combining these two sources has therefore proven to be beneficial.
 
-This semester project was meant to be a prove of concept and the proposed method could be applied in many applications in different fields as robotics, human-computer-interaction, entertainment, rescue, etc., to mention only a few.
+This semester project was meant to be a proof of concept.The proposed method could be applied in many applications in different fields as robotics, human-computer-interaction, entertainment, rescue, etc., to mention only a few.
 
 \section{Limitations}
-The used visual based tracker allows target loss and can re-detect the object only if it passes the same location where the tracker lost it. Because of this limited re-detection functionality, target loss by the visual based tracker is possible if the object reenter the camera view at a different location as it left it or if the object moves to fast. In the case of a target loss, the \ac{EKF} receives position information only from the \ac{UWB} system and is not able to increase the accuracy.
+The used visual based tracker allows target loss and can re-detect the object only if it passes the same location where the tracker lost it. Because of this limited re-detection functionality, target loss by the visual based tracker is possible if the object reenters the camera view at a different location as it left it or if the object moves to fast. In the case of a target loss, the \ac{EKF} receives position information only from the \ac{UWB} system and is not able to increase the accuracy.
 
 The current \ac{EKF} implementation does not consist of an outlier-detection. Since the standard \ac{EKF} is not robust to outliers, noisy input signals may result in an unstable state estimation. 
 
@@ -18,6 +18,6 @@ The proposed fusing method does not contain any sophisticated re-detection syste
 
 So far the used \ac{UWB} system has to be calibrated manually, for example with a motion capture system (VICON). With an ArUco marker and the ArUco library \cite{Aruco2014} an automated calibration proceeder for the \ac{UWB} system could be developed which would simplify the setup of the whole system. 
 
-Up to now, for the vision based tracker the desired object has to be marked manually by an user which restricts the usability of the system in many real-world applications. Automatic visual target detecting with the help of the information provided by the \ac{UWB} system would widen the the application area of the proposed system.
+Up to now, for the vision based tracker the desired object has to be marked manually by a user which restricts the usability of the system in many real-world applications. Automatic visual target detecting with the help of the information provided by the \ac{UWB} system would widen the application area of the proposed system.
 
 In this semester project only one object at a time can be tracked. In many applications tracking of multiple targets is of interest. A multi target tracking system consisting of multiple objects equipped with distinguishable \ac{UWB} targets and a vision based multi target tracker would allow to track multiple object simultaneously. 

@@ -5,6 +5,12 @@ The proposed method of fusing less accurate 3D coordinate measurements from the 
 
 This semester project was meant to be a prove of concept and the proposed method could be applied in many applications in different fields as robotics, human-computer-interaction, entertainment, rescue, etc., to mention only a few.
 
+\section{Limitations}
+The used visual based tracker allows target loss and can re-detect the object only if it passes the same location where the tracker lost it. Because of this limited re-detection functionality, target loss by the visual based tracker is possible if the object reenter the camera view at a different location as it left it or if the object moves to fast. In the case of a target loss, the \ac{EKF} receives position information only from the \ac{UWB} system and is not able to increase the accuracy.
+
+The current \ac{EKF} implementation does not consist of an outlier-detection. Since the standard \ac{EKF} is not robust to outliers, noisy input signals may result in an unstable state estimation. 
+
+
 \section{Outlook}\textsl{}
 The \ac{UWB} system used in this semester project runs with a frequency of approximately $80\mathit{Hz}$ as well as the implemented Extended Kalman Filter. If an \ac{UWB} system with a higher frequency would be used, the currently in python implemented Extended Kalman Filter won't be able to process all the measurements provided by the \ac{UWB} system and by the vision based tracker. To encounter this problem, a faster implementation in C++ would be conceivable.
 

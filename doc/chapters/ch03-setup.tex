@@ -71,11 +71,11 @@ To transform 3D points from the \ac{UWB} coordinate system to the vision coordin
 To transform the covariance matrix $\textbf{C}$ from the \ac{UWB} coordinate system to the vision coordinate system, a new rotation matrix $\textbf{U}' \in \mathbb{R}^{6x6}$ has to be applied to the covariance matrix in the \ac{UWB} coordinate system like
 
 \begin{equation}
-	\textbf{C}' = \textbf{U}' \textbf{C} \textbf{U}'^T
+	\textbf{C}' = \frac{1}{\mathit{scale}^2} \textbf{U}' \textbf{C} \textbf{U}'^T
 \end{equation}
 where
 \begin{equation}
-	\textbf{U}' = \frac{1}{\mathit{scale}^2}
+	\textbf{U}' =
 	\begin{bmatrix}
 		\textbf{U} & \textbf{0} \\
 		\textbf{0} & \textbf{U}

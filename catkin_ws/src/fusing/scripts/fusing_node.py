@@ -1,9 +1,6 @@
 #!/usr/bin/env python2
 
 # Imports
-import sys
-import select
-import os
 from threading import Thread
 from threading import Lock
 import collections
@@ -59,9 +56,7 @@ class Fusing:
     self.vision_z_uv = 0.0
 
     # Fused coordinates from the states of the EKF
-    #self.state = np.array([[320.0], [160.0], [1.0], [0.0], [0.0], [0.0]])
     self.state = np.array([[0.0], [0.0], [0.5], [0.0], [0.0], [0.0]])
-    #self.state = np.empty((6, 1))
 
     # EKF
     self.newValue = self.NewValue()
@@ -70,7 +65,6 @@ class Fusing:
     # Initial values
     self.vecXm = [0, 0]
     self.matPm = np.zeros((6,6))
-    #self.matPm = 5*np.identity(6)
     #self.matQ = np.vstack((np.zeros((3,6)), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of model with only variances for the velocity
     #self.matQ = np.vstack((np.hstack((40*np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), 100*np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
     self.matQ = np.vstack((np.hstack((np.identity(3), np.zeros((3,3)))), np.hstack((np.zeros((3,3)), np.identity(3))))) # Covariance matrix of the model with variances for position and velocity
@@ -78,7 +72,7 @@ class Fusing:
     #self.matR2 = 10**(-7)*np.identity(2)
     self.matR2 = np.identity(2)
     # Constant matrices used by the EKF
-    #self.matA = np.vstack((np.hstack((np.identity(3), self.deltaT * np.identity(3))), np.hstack((np.zeros((3,3)), np.identity(3)))))
+    # Create rotation matrix for the UWB covariance matrix
     self.matCovarianceRotation = np.array([[ 0.1203, -0.9910,  0.0595,       0,       0,       0],\
                                            [-0.0356,  0.0642, -0.9973,       0,       0,       0],\
                                            [ 0.9921,  0.1178,  0.0758,       0,       0,       0],\
@@ -86,7 +80,7 @@ class Fusing:
                                            [      0,       0,       0, -0.0356,  0.0642, -0.9973],\
                                            [      0,       0,       0,  0.9921,  0.1178,  0.0758]])
 
-    # ROS message
+    # ROS messages
     self.ekf_coordinates_msg = geometry_msgs.msg.PointStamped()
     self.header_seq = 0
     self.ekf_covariances_msg = std_msgs.msg.Float64MultiArray()
@@ -120,17 +114,11 @@ class Fusing:
     self.allVisionY = np.zeros(1)
     self.allVisionZ = np.ones(1)
 
+    # For plot and image handling
     self.bridge = CvBridge()
-
     self.cv_image = None
-
-    #plt.ion()
-    #plt.axis([-1.5, 1.5, -1.5, 1.5])
-    #plt.axis('equal')
     fig = plt.figure()
-    #self.ax = fig.gca(projection='3d')
     self.ax = fig.add_subplot(111, projection='3d')
-    #self.jet = plt.get_cmap('jet')
 
   def _solve_equation_least_squares(self, A, B):
     """Solve system of linear equations A X = B.
@@ -166,6 +154,9 @@ class Fusing:
 
   ## Callback function to receive the UWB messages from ROS.
   def uwb_callback(self, data):
+    # Transform from UWB coordinate system to the vision coordinate system
+
+    # Aply translation
     # uwb_1: video_uwb_1: lrms=0.1093
     #uwb_x = data.state[0] + 0.1151
     #uwb_y = data.state[1] - 0.0139
@@ -197,29 +188,25 @@ class Fusing:
     #print("UWB raw: x = {0}, y = {1}, z = {2}".format(uwb_x, uwb_y, uwb_z))
 
     self.mutex_uwb.acquire(1)
-    #print("Covariances: C[0] = {0}, C[7] = {1}, C[14] = {2}".format(2.5*data.covariance[0], data.covariance[7], data.covariance[14]))
+
+    # Aply rotation and scaling
     #self.matR1 = 100*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
     #self.matR1 = 70*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
-    matR1_t1 = np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
-                            data.covariance[3], data.covariance[4], data.covariance[5]], \
-                           [data.covariance[6], data.covariance[7], data.covariance[8], \
-                            data.covariance[9], data.covariance[10], data.covariance[11]], \
-                           [data.covariance[12], data.covariance[13], data.covariance[14], \
-                            data.covariance[15], data.covariance[16], data.covariance[17]], \
-                           [data.covariance[18], data.covariance[19], data.covariance[20], \
-                            data.covariance[21], data.covariance[22], data.covariance[23]], \
-                           [data.covariance[24], data.covariance[25], data.covariance[26], \
-                            data.covariance[27], data.covariance[28], data.covariance[29]], \
-                           #[10**(-5), 10**(-5), 10**(-5), \
-                           # 10**(-5), 10**(-5), 10**(-5)]])
-                           [data.covariance[30], data.covariance[31], data.covariance[32], \
-                            data.covariance[33], data.covariance[34], data.covariance[35]]])
+    matR1_t1 = np.array([[data.covariance[0],  data.covariance[1],  data.covariance[2], \
+                          data.covariance[3],  data.covariance[4],  data.covariance[5]], \
+                         [data.covariance[6],  data.covariance[7],  data.covariance[8], \
+                          data.covariance[9],  data.covariance[10], data.covariance[11]], \
+                         [data.covariance[12], data.covariance[13], data.covariance[14], \
+                          data.covariance[15], data.covariance[16], data.covariance[17]], \
+                         [data.covariance[18], data.covariance[19], data.covariance[20], \
+                          data.covariance[21], data.covariance[22], data.covariance[23]], \
+                         [data.covariance[24], data.covariance[25], data.covariance[26], \
+                          data.covariance[27], data.covariance[28], data.covariance[29]], \
+                         [data.covariance[30], data.covariance[31], data.covariance[32], \
+                          data.covariance[33], data.covariance[34], data.covariance[35]]])
 
     matR1_t2 = np.dot(matR1_t1, self.matCovarianceRotation.transpose())
     self.matR1 = 1.0340**2 * np.dot(self.matCovarianceRotation, matR1_t2)
-    #if self.object_detected==True:
-      #self.matR1 =  50**(2) * self.matR1
-    #print("UWB cov: {0}".format((self.matR1)))
 
     # uwb_1: video_uwb_1: lrms=0.1093
     #self.uwb_x_wc = 0.9819 * ( 0.3072 * uwb_x - 0.9216 * uwb_y - 0.0086 * uwb_z)
@@ -266,16 +253,11 @@ class Fusing:
     self.uwb_vy_wc = 1.0340*(-0.0356*uwb_vx - 0.0642*uwb_vy - 0.9973*uwb_vz)
     self.uwb_vz_wc = 1.0340*( 0.9921*uwb_vx + 0.1178*uwb_vy - 0.0758*uwb_vz)
 
+    # Make 2D projection
     self.uwb_x_uv = 593.16120354*self.uwb_x_wc/self.uwb_z_wc + 308.67164248
     self.uwb_y_uv = 589.605859*self.uwb_y_wc/self.uwb_z_wc + 245.3659398
 
-    #self.uwb_x_uv = 593.16120354 * self.uwb_x_wc + 308.67164248 * self.uwb_z_wc
-    #self.uwb_y_uv = 589.605859 * self.uwb_y_wc + 245.3659398 * self.uwb_z_wc
     self.uwb_z_uv = self.uwb_z_wc
-
-    #self.uwb_vx_uv = 593.16120354 * self.uwb_vx_wc + 308.67164248 * self.uwb_vz_wc
-    #self.uwb_vy_uv = 589.605859 * self.uwb_vy_wc + 245.3659398 * self.uwb_vz_wc
-    #self.uwb_vz_uv = self.uwb_vz_wc
 
     self.uwb_x_wc_list.append(self.uwb_x_wc)
     self.uwb_y_wc_list.append(self.uwb_y_wc)
@@ -339,36 +321,30 @@ class Fusing:
   #@profile
   def ekf_iteration(self):
     # Step 1
-    #vecState_p = np.dot(self.matB, self.vecX)
+
     # Get the time difference
     deltaT = rospy.Time.now().to_sec() - self.lastTimeStamp
-    #print("deltaT = {0}".format(deltaT))
     self.lastTimeStamp = rospy.Time.now().to_sec()
 
     # Compute the matrix B, the vector state_p and the matrix P_p
-    #matB_t11 = deltaT.to_sec() * np.identity(3)
     """
     matB_t11 = deltaT * np.identity(3)
     matB_t1 = np.hstack((np.identity(3), matB_t11))
     matB_t2 = np.hstack((np.zeros((3,3)), np.identity(3)))
     matB = np.vstack((matB_t1, matB_t2))
     """
+    # This implementation performs better
     matB = np.array([[1, 0, 0, deltaT,      0,      0],\
                      [0, 1, 0,      0, deltaT,      0],\
                      [0, 0, 1,      0,      0, deltaT],\
                      [0, 0, 0,      1,      0,      0],\
                      [0, 0, 0,      0,      1,      0],\
                      [0, 0, 0,      0,      0,      1]])
-    #print("B = {0}".format(matB))
-    #print("deltaT = {0}".format(deltaT.to_sec()))
     vecState_p = np.dot(matB, self.state)
-    #print("vecState_p = {0}".format(vecState_p))
     matP_p = np.dot(matB, np.dot(self.matPm, matB.transpose())) + self.matQ # B*Pm*B^T + Q
-    #print("matP_p = {0}".format(matP_p))
 
     # Step 2
-    #matH = np.array([[np.identity(6)], [1/vecState_p[2], 0, -vecState_p[0]/vecState_p[3]**2, 0, 0, 0],\
-    #                 [0, 1/vecState_p[2], -vecState_p[1]/vecState_p[3]**2, 0, 0, 0]])
+
     # Compute the matrix H, R and K
     """
     matH_top = np.identity(6)
@@ -376,6 +352,7 @@ class Fusing:
                      [0, 1/vecState_p[2][0], -vecState_p[1][0]/(vecState_p[2][0]**2), 0, 0, 0]])
     matH = np.vstack((matH_top,matH_bottom))
     """
+    # This implementation performs better
     matH = np.array([[1, 0, 0, 0, 0, 0],\
                      [0, 1, 0, 0, 0, 0],\
                      [0, 0, 1, 0, 0, 0],\
@@ -384,8 +361,6 @@ class Fusing:
                      [0, 0, 0, 0, 0, 1],\
                      [1/vecState_p[2][0], 0, -vecState_p[0][0]/(vecState_p[2][0]**2), 0, 0, 0],\
                      [0, 1/vecState_p[2][0], -vecState_p[1][0]/(vecState_p[2][0]**2), 0, 0, 0]])
-    #matK_t1 = np.dot(self.matQ, matH.transpose()) # Q * H^T
-    #matK_t2 = np.dot(matH, matK_t1) # H*Q*H^T
     matK_t1 = np.dot(matP_p, matH.transpose()) # P_p * H^T
     matK_t2 = np.dot(matH, matK_t1) # H*P_p*H^T
     matR = np.vstack((np.hstack((self.matR1, np.zeros((6,2)))), np.hstack((np.zeros((2,6)), self.matR2))))
@@ -393,16 +368,12 @@ class Fusing:
     matK = np.dot(matK_t1, np.linalg.inv(matK_t2 + matR)) # (P_p * H^T) * (H*P_p*H^T + [R_1, 0; 0, R_2])^(-1)
     #matK = np.dot(matK_t1, self.faster_inverse(matK_t2 + matR)) # Use lapack directly
     #matK = np.dot(matP_p, self._solve_equation_least_squares(matK_t2 + matR, matH).transpose()) # Benni's implementation
-    #print("Q = {0}".format(self.matQ))
-    #print("R = {0}".format(matR))
-    #print("K = {0}".format(matK))
 
-    #vecStatem_t1 = np.array([[vecState_p[0][0]/vecState_p[2][0]], [vecState_p[1][0]/vecState_p[2][0]]])
     vecStatem_t1 = np.array([[vecState_p[0][0]/vecState_p[2][0]], [vecState_p[1][0]/vecState_p[2][0]]])
 
     vecZ = np.zeros((8,1))
     vecStatem_t2 = np.zeros((8,1))
-    # Checks wheter new UWB data and/or new vision data is available.
+    # Checks whether new UWB data and/or new vision data is available.
     self.mutex_newValue.acquire(1)
     self.mutex_vision_detected.acquire(1)
     if (self.newValue.newUWB==True and self.newValue.newVision==True and self.object_detected==True):
@@ -447,35 +418,19 @@ class Fusing:
     self.mutex_vision_detected.release()
     self.mutex_newValue.release()
 
-
     # Estimation of the new state
-    #vecStatem_t2 = vecZ - np.vstack(((vecState_p, vecStatem_t1))) # z - [H1*x; H2(x)]
-    #print("z = {0}".format(vecZ))
-    #print("h = {0}".format(np.vstack(((vecState_p, vecStatem_t1)))))
-    #print("x_p = {0}".format(vecState_p))
-    #print("K = {0}".format(matK))
-    #print("(z - h) = {0}".format(vecStatem_t2))
     vecStatem_t3 = np.dot(matK, vecStatem_t2) # K*(z - [H1*x; H2(x)])
-    #print(" + {0}".format(vecStatem_t3[5]))
     self.mutex_state.acquire(1)
     self.state = vecState_p + vecStatem_t3
 
-
-    #self.state_x_uv = 593.16120354 * self.state[0] + 308.67164248 * self.state[2]
-    #self.state_y_uv = 589.605859 * self.state[1] + 245.3659398 * self.state[2]
-
     self.state_x_uv = 593.16120354*self.state[0]/self.state[2] + 308.67164248
     self.state_y_uv = 589.605859*self.state[1]/self.state[2] + 245.3659398
-    #self.state_x_uv = self.state[0]
-    #self.state_y_uv = self.state[1]
-    #self.state_z_uv = self.state[2]
     self.x_state_list.append(self.state[0])
     self.y_state_list.append(self.state[1])
 
     # Estimation of the new coovariance matrix
     matPm_t = np.dot(matK, matH) # K*H
     self.matPm = np.dot(np.identity(6) - matPm_t, matP_p) # (I - K*H)*Pp
-    #print("matPm = {0}".format(self.matPm))
     self.mutex_state.release()
 
     # Reset flags
@@ -526,33 +481,13 @@ class Fusing:
   #@profile
   def start(self):
 
+    mutex_ekfiter = Lock()
     rate = rospy.Rate(100)
 
     while not rospy.is_shutdown():
-      """
-      os.system('cls' if os.name == 'nt' else 'clear')
-      if sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
-        line = raw_input()
-        rospy.signal_shutdown("terminate")
-        #break
-      """
-      mutex_ekfiter = Lock()
 
       #rospy.sleep(0.1)
       rate.sleep()
-
-      """
-      try:
-        trans = tfBuffer.lookup_transform_full(
-        target_frame='vision',
-        target_time=rospy.Time.now(),
-        source_frame='world',
-        source_time=rospy.Time.now(),
-        timeout=rospy.Duration(0.0))
-      except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-        rospy.sleep(0.1)
-        continue
-      """
 
       #[matQ, matR1, matR2, vecZ] = self.simulateInput()
 
@@ -585,44 +520,6 @@ class Fusing:
         plt.axis('equal')
         plt.draw()
         plt.pause(0.01)
-        """
-
-        # Display of vision and the projection of uwb
-        """
-        plt.clf()
-        plt.ion()
-        plt.axis([-1.5, 1.5, -1.5, 1.5])
-        self.mutex_vision.acquire(1)
-        vision_plt = plt.scatter(self.vision_x_uv_list, self.vision_y_uv_list, c='b', marker='o')
-        #print("x vision mean: ",format(np.mean(self.vision_x_uv_list)))
-        #print("y vision mean: ",format(np.mean(self.vision_y_uv_list)))
-        self.mutex_vision.release()
-        self.mutex_uwb.acquire(1)
-        #uwbPlt = plt.scatter(self.uwb_x_wc_list, self.uwb_y_wc_list, c='r', marker='o')
-        uwb_x = np.array(self.uwb_x_wc_list)
-        uwb_y = np.array(self.uwb_y_wc_list)
-        uwb_z = np.array(self.uwb_z_wc_list)
-        print("x div: ",format(abs(self.uwb_x_wc_list[-1] - self.vision_x_uv_list[-1])))
-        print("y div: ",format(abs(self.uwb_y_wc_list[-1] - self.vision_y_uv_list[-1])))
-        uwb_plt = plt.scatter(self.uwb_x_wc_list, self.uwb_y_wc_list, c='r', marker='o')
-        self.mutex_uwb.release()
-        ekf_plt = plt.scatter(self.x_state_list, self.y_state_list, c='g', marker='x')
-        #plt.legend(handles=[vision_plt, uwb_plt, ekf_plt])#, aruco_transf_plt, uwb_plt])
-        plt.pause(0.05)  # Display of vision and the projection of uwb
-        """
-
-        # Display of state trajectory  OLD
-        """
-        #self.hl.set_xdata(np.append(self.hl.get_xdata(), self.state[0][0]))
-        #self.hl.set_ydata(np.append(self.hl.get_ydata(), self.state[1][0]))
-        #plt.scatter(self.state[0][0], self.state[1][0], s=100, c="r", cmap=self.jet)
-        self.ax.scatter(self.state[0][0], self.state[2][0], self.state[1][0], c='b', marker='x')
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Z')
-        self.ax.set_zlabel('Y')
-        plt.axis('equal')
-        plt.pause(0.05)
-        #plt.show()
         """
 
         """
@@ -672,35 +569,7 @@ class Fusing:
 
         # Publish covarances of the ekf
         self.ekf_covariances_msg.data = [self.matPm[0,0], self.matPm[1,1], self.matPm[2,2]]
-        self.pub_ekf_covar.publish(self.ekf_coordinates_msg)
-
-
-        """
-        # Check im image exists
-        # Display image if it exists, the vision tracker position and the projection of the UWB
-        if self.cv_image is not None:
-          self.mutex_image.acquire(1)
-          self.mutex_uwb.acquire(1)
-          #print("uwb: x = {0}, y = {1}, z = {2}".format(self.uwb_x_wc, self.uwb_y_wc, self.uwb_z_wc))
-          cv2.circle(self.cv_image, (int(self.uwb_x_uv), int(self.uwb_y_uv)), 10, (0, 0, 255), -1)
-          self.mutex_uwb.release()
-          self.mutex_vision.acquire(1)
-          #print("vision: x= {0}, y= {1}".format(self.vision_x_wc, self.vision_y_wc))
-          cv2.circle(self.cv_image, (int(self.vision_x_uv), int(self.vision_y_uv)), 10, (255, 0, 0), -1)
-          #print("Vision: x = {0}, y = {1}".format(self.vision_x_uv, self.vision_y_uv))
-          self.mutex_vision.release()
-          self.mutex_state.acquire(1)
-          if self.object_detected==True:
-            cv2.circle(self.cv_image, (int(self.state_x_uv), int(self.state_y_uv)), 10, (0, 255, 0), -1)
-          else:
-            cv2.circle(self.cv_image, (int(self.state_x_uv), int(self.state_y_uv)), 10, (0, 255, 255), -1)
-          self.mutex_state.release()
-          #print("State: x = {0}, y = {1}, z = {2}".format(self.state[0], self.state[1], self.state[2]))
-          #print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
-          cv2.imshow("frame", self.cv_image)
-          self.mutex_image.release()
-          cv2.waitKey(1)
-        """
+        self.pub_ekf_covar.publish(self.ekf_covariances_msg)
 
     #plt.clf()
     self.ekf_plot = self.ax.plot(self.allStatesX, self.allStatesZ, -self.allStatesY, label='EKF', color='green')

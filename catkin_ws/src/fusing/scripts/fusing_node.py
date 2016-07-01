@@ -89,6 +89,7 @@ class Fusing:
     # ROS message
     self.ekf_coordinates_msg = geometry_msgs.msg.PointStamped()
     self.header_seq = 0
+    self.ekf_covariances_msg = std_msgs.msg.Float64MultiArray()
 
     self.object_detected = True
 
@@ -323,7 +324,6 @@ class Fusing:
   def image_callback(self, data):
     self.mutex_image.acquire(1)
     # For uncompressed images
-    """
     try:
       self.cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
@@ -332,6 +332,7 @@ class Fusing:
     # For compressed images
     np_arr = np.fromstring(data.data, np.uint8)
     self.cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    """
     self.mutex_image.release()
 
   ## Performs one iteration of the EKF.
@@ -516,10 +517,11 @@ class Fusing:
     self.sub_vision_coordinates = rospy.Subscriber('/vision_tracker/vision_coordinates', geometry_msgs.msg.PointStamped, self.vision_tracker_coordinates_callback)
     self.sub_vision_object_detected = rospy.Subscriber('/vision_tracker/object_detected', std_msgs.msg.Bool, self.vision_tracker_object_detected_callback)
     #self.sub_img = rospy.Subscriber('/vision_tracker/video', sensor_msgs.msg.Image, self.image_callback)
-    self.sub_img = rospy.Subscriber('/camera/video/compressed', sensor_msgs.msg.CompressedImage, self.image_callback)
+    self.sub_img = rospy.Subscriber('/camera/video', sensor_msgs.msg.Image, self.image_callback)
 
-    #self.pub_uv_coord = rospy.Publisher('/fusing/ekf_uv_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
+    self.pub_uv_coord = rospy.Publisher('/fusing/ekf_uv_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
     self.pub_wc_coord = rospy.Publisher('/fusing/ekf_wc_coordinates', geometry_msgs.msg.PointStamped, queue_size=1)
+    self.pub_ekf_covar = rospy.Publisher('/fusing/ekf_covariance', std_msgs.msg.Float64MultiArray, queue_size=1)
 
   #@profile
   def start(self):
@@ -643,7 +645,6 @@ class Fusing:
         self.pub.publish(tfm)
         """
 
-        """
         # Publish 2D position of the ekf state
         if (self.state_x_uv >= (0 + 10) and self.state_x_uv <= (640 - 10)) and (self.state_y_uv >= (0 + 10) and self.state_y_uv <= (480 - 10)):
           #print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
@@ -656,6 +657,7 @@ class Fusing:
           self.mutex_state.release()
           self.pub_uv_coord.publish(self.ekf_coordinates_msg)
         """
+        """
 
         # Publish 3D position of the ekf state
         self.ekf_coordinates_msg.header.seq = self.header_seq
@@ -667,6 +669,11 @@ class Fusing:
         self.ekf_coordinates_msg.point.z = self.state[2]
         self.mutex_state.release()
         self.pub_wc_coord.publish(self.ekf_coordinates_msg)
+
+        # Publish covarances of the ekf
+        self.ekf_covariances_msg.data = [self.matPm[0,0], self.matPm[1,1], self.matPm[2,2]]
+        self.pub_ekf_covar.publish(self.ekf_coordinates_msg)
+
 
         """
         # Check im image exists

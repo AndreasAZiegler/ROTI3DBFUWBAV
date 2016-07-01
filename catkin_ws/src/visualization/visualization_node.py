@@ -61,9 +61,6 @@ def uwb_callback(data):
   uwb_z = data.state[2] - 0.0568
 
   mutex_uwb.acquire(1)
-  #print("Covariances: C[0] = {0}, C[7] = {1}, C[14] = {2}".format(2.5*data.covariance[0], data.covariance[7], data.covariance[14]))
-  #self.matR1 = 100*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
-  #self.matR1 = 70*np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
   matR1_t1 = np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
                         data.covariance[3], data.covariance[4], data.covariance[5]], \
                        [data.covariance[6], data.covariance[7], data.covariance[8], \

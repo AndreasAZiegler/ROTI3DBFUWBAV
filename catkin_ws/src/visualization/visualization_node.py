@@ -34,12 +34,15 @@ matCovarianceRotation = np.array([[ 0.1203, -0.9910,  0.0595,       0,       0, 
 covRadiusUWB = 0
 matR1 = np.identity(6)
 
+covRadiusEKF = 0
+
 mutex_image = Lock()
 mutex_vision_detected = Lock()
 mutex_vision = Lock()
 mutex_uwb = Lock()
 mutex_newValue = Lock()
 mutex_state = Lock()
+mutex_covar_ekf = Lock()
 
 ## Callback function to receive the UWB messages from ROS.
 def uwb_callback(data):
@@ -77,7 +80,7 @@ def uwb_callback(data):
   matR1_t2 = np.dot(matR1_t1, matCovarianceRotation.transpose())
   matR1 = 1.0340**2 * np.dot(matCovarianceRotation, matR1_t2)
 
-  covRadiusUWB = 50**4*(matR1[0, 0] ** 2 + matR1[1, 1] ** 2 + matR1[2, 2] ** 2)
+  covRadiusUWB = 25**4*(matR1[0, 0] ** 2 + matR1[1, 1] ** 2 + matR1[2, 2] ** 2)
 
   # uwb_30: video_uwb_30: lrms=0.0646
   uwb_x_wc = 1.0340*( 0.1203*uwb_x - 0.9910*uwb_y + 0.0595*uwb_z)
@@ -153,7 +156,7 @@ def image_callback(data):
   mutex_newValue.release()
 
 ## Callback function to receive the fused coordinate points from the EKF
-def ekf_callback(data):
+def ekf_coordinates_callback(data):
   global state_x_uv
   global state_y_uv
   global mutex_state
@@ -168,6 +171,14 @@ def ekf_callback(data):
   newValue = True
   mutex_newValue.release()
 
+## Callback function to receive the covariances from the EKF
+def ekf_covariances_callback(data):
+  global covRadiusEKF
+  global mutex_covar_ekf
+
+  mutex_covar_ekf.acquire(1)
+  covRadiusEKF = 25**4*(data.data[0]**2 + data.data[1]**2 + data.data[2]**2)
+  mutex_covar_ekf.release()
 
 ## Initialize ROS
 def initROS():
@@ -178,7 +189,8 @@ def initROS():
   sub_vision_coordinates = rospy.Subscriber('/vision_tracker/vision_coordinates', geometry_msgs.msg.PointStamped, vision_tracker_coordinates_callback)
   sub_vision_object_detected = rospy.Subscriber('/vision_tracker/object_detected', std_msgs.msg.Bool, vision_tracker_object_detected_callback)
   sub_img = rospy.Subscriber('/camera/video', sensor_msgs.msg.Image, image_callback)
-  sub_ekf = rospy.Subscriber('/fusing/ekf_uv_coordinates', geometry_msgs.msg.PointStamped, ekf_callback)
+  sub_ekf_coordinates = rospy.Subscriber('/fusing/ekf_uv_coordinates', geometry_msgs.msg.PointStamped, ekf_coordinates_callback)
+  sub_ekf_covariances = rospy.Subscriber('/fusing/ekf_covariance', std_msgs.msg.Float64MultiArray, ekf_covariances_callback)
 
 def start():
   global mutex_image
@@ -213,20 +225,25 @@ def start():
         mutex_uwb.release()
         mutex_vision.acquire(1)
         #print("vision: x= {0}, y= {1}".format(self.vision_x_wc, self.vision_y_wc))
-        cv2.circle(cv_image, (int(vision_x_uv), int(vision_y_uv)), 10, (255, 0, 0), 5)
+        if object_detected==True:
+          cv2.circle(cv_image, (int(vision_x_uv), int(vision_y_uv)), 10, (255, 0, 0), 5)
+          cv2.putText(cv_image, "Vision", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 0, 0))
+        else:
+          cv2.circle(cv_image, (int(vision_x_uv), int(vision_y_uv)), 10, (255, 255, 0), 5)
+          #cv2.putText(cv_image, "Vision", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 255, 0))
         #print("Vision: x = {0}, y = {1}".format(self.vision_x_uv, self.vision_y_uv))
         mutex_vision.release()
         mutex_state.acquire(1)
-        if object_detected==True:
-          cv2.circle(cv_image, (int(state_x_uv), int(state_y_uv)), 10, (0, 255, 0), 5)
-        else:
-          cv2.circle(cv_image, (int(state_x_uv), int(state_y_uv)), 10, (0, 255, 255), 5)
+        mutex_covar_ekf.acquire(1)
+        cv2.circle(cv_image, (int(state_x_uv), int(state_y_uv)), int(covRadiusEKF), (0, 200, 0), 5)
+        print("covRadiusEKF = {0}".format(covRadiusEKF))
+        mutex_covar_ekf.release()
         mutex_state.release()
         #print("State: x = {0}, y = {1}, z = {2}".format(self.state[0], self.state[1], self.state[2]))
         #print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
         cv2.putText(cv_image, "UWB", (20, 40), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (0, 0, 255))
-        cv2.putText(cv_image, "Vision", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 0, 0))
-        cv2.putText(cv_image, "EKF", (20, 100), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (0, 255, 0))
+        cv2.putText(cv_image, "EKF", (20, 100), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (0, 207, 0))
+        cv2.imwrite("./output.jpg", cv_image)
         cv2.imshow("frame", cv_image)
         mutex_image.release()
         cv2.waitKey(1)

@@ -5,11 +5,11 @@ To measure the accuracy of the developed system, a \ac{ROS} setup similar as des
 
 To have a ground truth to compare with, the 3D coordinates of the tracked object measured by a motion capture system (VICON) were additionally recorded.
 
-For the comparison between the accuracy of the \ac{UWB} system and the one of the \ac{EKF}, both systems were compared with the mentioned ground truth by the root mean squared error $$\textit{rmse} = \frac{1}{\#\text{ of elements}} \sum_i \sqrt{(x_{m,i} - x_{V,i})^2 + (y_{m,i} - y_{V,i})^2 + (z_{m,i} - z_{V,i})^2}$$
+For the comparison between the accuracy of the \ac{UWB} system and the one of the \ac{EKF}, both systems were compared with the mentioned ground truth by the root mean squared error $$\textit{rmse} = \sqrt{\frac{1}{N - 1} \sum_i^N \big( (x_{m,i} - x_{V,i})^2 + (y_{m,i} - y_{V,i})^2 + (z_{m,i} - z_{V,i})^2}\big)$$
 and by the root mean squared error of only the $x$ and $y$ axis
-$$\textit{rmse}_{xy} = \frac{1}{\#\text{ of elements}} \sum_i \sqrt{(x_{m,i} - x_{V,i})^2 + (y_{m,i} - y_{V,i})^2}$$
+$$\textit{rmse}_{xy} = \sqrt{\frac{1}{N - 1} \sum_i^N \big( (x_{m,i} - x_{V,i})^2 + (y_{m,i} - y_{V,i})^2}\big)$$
 
-where the subfix $m$ stands for measurement and represents coordinates which either come from the \ac{UWB} system or from the \ac{EKF}. The subfix $V$ on the other hand stands for VICON which is the ground truth in this experiment. 
+where the subfix $m$ stands for measurement and represents coordinates which either come from the \ac{UWB} system or from the \ac{EKF}. The subfix $V$ on the other hand stands for VICON which is the ground truth in this experiment. $N$ is, as common for $\textit{rmse}$, the number of points in the data set.
 
 \section{Results}
 On several recorded experiments, the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the \ac{EKF} was significantly lower compared to the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the \ac{UWB}. The results of some experiments are listed in \autoref{tab:results}. A 3D plot of the measured coordinates by the VICON system (ground truth), the \ac{UWB} system and the coordinates fused by the \ac{EKF} from a data set is shown in \autoref{fig:evaluation}.
@@ -19,10 +19,10 @@ On several recorded experiments, the $\textit{rmse}$ and the $\textit{rmse}_{xy}
 \begin{tabular}{c|c|c|c|c}
 	Experiment number & $\textit{rmse}$ of \ac{UWB} & $\textit{rmse}$ of \ac{EKF} & $\textit{rmse}_{xy}$ of \ac{UWB} & $\textit{rmse}_{xy}$ of \ac{EKF}\\ 
 	\hline 
-	1 & 0.0780 & 0.0452 & 0.0717 & 0.0345 \\
-	2 & 0.0935 & 0.0557 & 0.0864 & 0.0433 \\
-	3 & 0.1360 & 0.0569 & 0.1275 & 0.0431 \\
-	4 & 0.1286 & 0.0487 & 0.1186 & 0.0320
+	1 & 0.0673 & 0.0279 & 0.0628 & 0.0167 \\
+	2 & 0.0766 & 0.0305 & 0.0728 & 0.0172 \\
+	3 & 0.1260 & 0.0281 & 0.1228 & 0.0170 \\
+	4 & 0.1147 & 0.0271 & 0.1102 & 0.0152
 	%\hline 
 \end{tabular}
 \end{center}
@@ -32,5 +32,5 @@ On several recorded experiments, the $\textit{rmse}$ and the $\textit{rmse}_{xy}
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/evaluation}
-	\caption{3D pot of the measured coordinate points by the \ac{UWB} system (red), the measured point by the VICON system (blue) and the fused positions (green) of the experiment number 1}\label{fig:evaluation}
+	\caption{3D plot of the coordinate points measured by the \ac{UWB} system (red), the points measured by the VICON system (blue) and the fused positions (green) of the experiment number 1.}\label{fig:evaluation}
 \end{figure}

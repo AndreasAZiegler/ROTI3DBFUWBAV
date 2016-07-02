@@ -136,14 +136,44 @@ $$\textbf{K}(k) = \textbf{P}_p(k) \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{P}
 \end{bmatrix} \Big)^{-1}$$
 
 \subsection{Implementation}
-The implementation of the \ac{EKF} was done in a Python script within the \ac{ROS} environment. For more details please see \cite{Ziegler:2016}.
+The implementation of the \ac{EKF} was done in a Python script within the \ac{ROS} environment. The \ac{ROS} nodes used in this semester project and their function are listed in \autoref{tab:rosnodes}.
+
+\begin{table}[ht!]
+	\begin{center}
+		\begin{tabular}{l|l|l}
+			Node name & File/Script name & Function \\ 
+			\hline
+			\hline
+			publish\_image & publish\_image\_node & \begin{tabular}[x]{@{}l@{}}Publishes images, recorded with a camera,\\as \ac{ROS} messages.\end{tabular} \\
+			\hline
+			uwb & uwb\_tracker\_node & \begin{tabular}[x]{@{}l@{}}Publishes the information provided by the\\UWB system as \ac{ROS} messages.\end{tabular} \\
+			\hline
+			uwb\_aruco & uwb\_aruco\_node.py & \begin{tabular}[x]{@{}l@{}}Receives \ac{ROS} messages from the uwb and\\publish\_image node, detects ArUco\\markers and saves the locations provided by\\both systems into a hdf5 file.\end{tabular} \\
+			\hline
+			vicon\_aruco &  vicon\_aruco\_node.py & \begin{tabular}[x]{@{}l@{}}Receives \ac{ROS} messages from the VICON\\system and publish\_image node, detects\\ArUco markers and saves the locations\\provided by both systems into a hdf5 file.\end{tabular} \\
+			\hline
+			vision\_tracker & vision\_tracker\_node & \begin{tabular}[x]{@{}l@{}}The \ac{KCF} tracker publishes the 2D pixel\\coordinates as \ac{ROS} message as well as\\boolean \ac{ROS} message which indicate,\\if the object is lost or not.\end{tabular}\\
+			\hline
+			fusing & fusing\_node.py & \begin{tabular}[x]{@{}l@{}}The \ac{EKF} receives \ac{ROS} messages from\\the vision\_tracker and uwb node and\\publishes the fused positions as \ac{ROS} messages.\end{tabular}\\
+			\hline
+			visualization & visualization\_node & \begin{tabular}[x]{@{}l@{}}Displays the positions provided by the UWB,\\the vision tracker and by the EKF on top\\of the picture.\end{tabular}\\
+			\hline
+			validation & validation\_node.py & \begin{tabular}[x]{@{}l@{}}Records the required information to perform\\the evaluation.\end{tabular}\\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Table with the implemented \ac{ROS} nodes and their function.}
+	\label{tab:rosnodes}
+\end{table}
+
+For more details as well as for the used parameters, please see \cite{Ziegler:2016}.
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/state_track}
-	\caption{3D pot of the measured point by the \ac{UWB} (red), the measured point by the vision tracker (blue) and the fused positions (green)}\label{fig:statetrack}
+	\caption{3D plot of the points measured by the \ac{UWB} (red), the points detected by the vision tracker (blue) and the fused positions (green).}\label{fig:statetrack}
 \end{figure}
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/2d_output}
-	\caption{Recorded picture with the measured point by the \ac{UWB} (red), the measured point by the vision tracker (blue) and the fused positions (green). The radii of the UWB and EKF circle indicate the the covariances of their position.}\label{fig:statetrack2d}
+	\caption{Recorded picture with the point measured by the \ac{UWB} (red), the point detected by the vision tracker (blue) and the fused position (green). The radii of the \ac{UWB} and \ac{EKF} circle indicate the covariances of the measured/estimated position.}\label{fig:statetrack2d}
 \end{figure}

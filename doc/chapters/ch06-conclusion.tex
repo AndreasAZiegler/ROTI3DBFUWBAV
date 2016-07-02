@@ -1,9 +1,13 @@
 \chapter{Conclusion and Outlook}
 
 \section{Conclusion}
-The proposed method of fusing less accurate 3D coordinate measurements from the \ac{UWB} system with more precise 2D pixel coordinate measurements from the vision based tracker with an \acf{EKF} has shown a significantly improved accuracy compared to the coordinates measured solely by the \ac{UWB} system. The idea of combining these two sources has therefore proven to be beneficial.
+In this semester project I have explored the proposed approach of fusing \ac{UWB} and vision for a robust object tracking in 3D.
 
-This semester project was meant to be a proof of concept.The proposed method could be applied in many applications in different fields as robotics, human-computer-interaction, entertainment, rescue, etc., to mention only a few.
+The results show that the proposed method of fusing less accurate 3D coordinate measurements from the \ac{UWB} system with more precise 2D pixel coordinate measurements from the vision based tracker with an \acf{EKF} has a significantly improved accuracy compared to the coordinates measured solely by the \ac{UWB} system. The idea of combining these two sources has therefore proven to be beneficial.
+
+This semester project was meant to be a proof of concept. The proposed method could be applied in many applications in different fields as robotics, human-computer-interaction, entertainment, rescue, etc., to mention only a few.
+
+As part of this semester project I have also implemented the approach in a modular fashion within the \ac{ROS} environment and made it public accessible on GitHub\cite{Ziegler:2016}.
 
 \section{Limitations}
 The used visual based tracker allows target loss and can re-detect the object only if it passes the same location where the tracker lost it. Because of this limited re-detection functionality, target loss by the visual based tracker is possible if the object reenters the camera view at a different location as it left it or if the object moves to fast. In the case of a target loss, the \ac{EKF} receives position information only from the \ac{UWB} system and is not able to increase the accuracy.

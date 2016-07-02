@@ -12,6 +12,8 @@ import uwb.msg
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 
+# Global variables
+
 object_detected = True
 bridge = CvBridge()
 newValue = False
@@ -55,12 +57,12 @@ def uwb_callback(data):
   global uwb_x_uv
   global uwb_y_uv
 
+  # Transformation from the uwb coordinate system to the vision coordinate system.
   # uwb_30: video_uwb_30: lrms=0.0646
   uwb_x = data.state[0] - 0.0297
   uwb_y = data.state[1] + 0.0083
   uwb_z = data.state[2] - 0.0568
 
-  mutex_uwb.acquire(1)
   matR1_t1 = np.array([[data.covariance[0], data.covariance[1], data.covariance[2], \
                         data.covariance[3], data.covariance[4], data.covariance[5]], \
                        [data.covariance[6], data.covariance[7], data.covariance[8], \
@@ -75,8 +77,10 @@ def uwb_callback(data):
                         data.covariance[33], data.covariance[34], data.covariance[35]]])
 
   matR1_t2 = np.dot(matR1_t1, matCovarianceRotation.transpose())
+  mutex_uwb.acquire(1)
   matR1 = 1.0340**2 * np.dot(matCovarianceRotation, matR1_t2)
 
+  # Calculate the "covariance radius" used to dispay the covariance as a radius
   covRadiusUWB = 25**4*(matR1[0, 0] ** 2 + matR1[1, 1] ** 2 + matR1[2, 2] ** 2)
 
   # uwb_30: video_uwb_30: lrms=0.0646
@@ -84,6 +88,7 @@ def uwb_callback(data):
   uwb_y_wc = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
   uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0758*uwb_z)
 
+  # 2D projection
   uwb_x_uv = 593.16120354*uwb_x_wc/uwb_z_wc + 308.67164248
   uwb_y_uv = 589.605859*uwb_y_wc/uwb_z_wc + 245.3659398
 
@@ -211,7 +216,7 @@ def start():
 
     mutex_newValue.acquire(1)
     if newValue==True:
-      # Check im image exists
+      # Check if image exists
       # Display image if it exists, the vision tracker position and the projection of the UWB
       if cv_image is not None:
         mutex_image.acquire(1)

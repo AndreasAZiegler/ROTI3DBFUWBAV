@@ -15,9 +15,9 @@ from uwb.msg import UWBTracker
 import threading
 import h5py
 
+# Global variables
 mutex_image = threading.Lock()
 mutex_vicon = threading.Lock()
-
 
 camparam = aruco.CameraParameters()
 camparam.readFromXMLFile("../config/camera.yml")
@@ -26,17 +26,20 @@ intrinsics = camparam.CameraMatrix
 R = np.array([[ 0.03674776, 0.99930489, -0.00627444], [ 0.99402457, -0.03590636, 0.10308167], [ 0.10278472, -0.01002497, -0.99465311]])
 t = np.array([[ 0.02915348], [-0.05801044], [ 0.66861612]])
 
+## Function wich returns time difference in respect to the start time
 def timedelta():
     #delta =  time.mktime((datetime.datetime.now().timetuple())) - time.mktime((start.timetuple()))
     delta =  (datetime.datetime.now() - start).total_seconds() * 1000.0
     return delta
 
+## Write to file
 def writeToFile(string):
     # Thread block at this line until it can obtain lock
     lock.acquire()
 
     file.write(string)
 
+## Callback function used to receive and save the images
 def image_callback(data):
   global cv_image
   global mutex_image
@@ -45,6 +48,7 @@ def image_callback(data):
   cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
   mutex_image.release()
 
+## Callback function used to receive and save the position measured by the VICON system
 def vicon_callback(data):
   global cv_image
   global mutex_image
@@ -86,11 +90,13 @@ def vicon_callback(data):
   mutex_vicon.release()
   """
 
+## Initialize ROS
 def rosInit():
   rospy.init_node('uwb_aruco', anonymous=True)
   rospy.Subscriber('/camera/video/compressed', sensor_msgs.msg.CompressedImage, image_callback)
   rospy.Subscriber('/vicon/UWB_Box/UWB_Box', geometry_msgs.msg.TransformStamped, vicon_callback)
 
+## Detect ArUco markers and saves the position.
 def getCoordinatesFromMarker():
     global camparam
     global cv_image

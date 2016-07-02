@@ -13,13 +13,12 @@ import threading
 import numpy as np
 import matplotlib.pyplot as plt
 
-#vicon_list = np.empty((4,1))
+# Global variable
+
 vicon_list = []
 
-#uwb_list = np.empty((4,1))
 uwb_list = []
 
-#ekf_list = np.empty((4,1))
 ekf_list = []
 
 vicon_mutex = threading.Lock()
@@ -27,11 +26,13 @@ uwb_mutex = threading.Lock()
 ekf_mutex = threading.Lock()
 
 
+## Function wich returns time difference in respect to the start time
 def timedelta():
   #delta =  time.mktime((datetime.datetime.now().timetuple())) - time.mktime((start.timetuple()))
   delta =  (datetime.datetime.now() - start_time).total_seconds() * 1000.0
   return delta
 
+## Callback function used to receive and save the position measured by the VICON system
 def vicon_callback(data):
   global vicon_list
   global vicon_mutex
@@ -67,6 +68,7 @@ def vicon_callback(data):
   vicon_list.append([timedelta(), data.transform.translation.x, data.transform.translation.y, data.transform.translation.z])
   vicon_mutex.release()
 
+## Callback function used to receive and save the position measured by the UWB system
 def uwb_callback(data):
   global uwb_list
   global uwb_mutex
@@ -96,6 +98,7 @@ def uwb_callback(data):
   uwb_list.append([timedelta(), data.state[0], data.state[1], data.state[2]])
   uwb_mutex.release()
 
+## Callback function used to receive and save the position estimated by the EKF
 def ekf_callback(data):
   global ekf_list
   global ekf_mutex
@@ -115,6 +118,7 @@ def ekf_callback(data):
   ekf_mutex.release()
 
 
+## Initialize ROS
 def initROS():
   rospy.init_node('validation', anonymous=True)
 

@@ -15,6 +15,7 @@ from uwb.msg import UWBTracker
 import threading
 import h5py
 
+# Global variables
 mutex_image = threading.Lock()
 mutex_uwb = threading.Lock()
 
@@ -26,17 +27,20 @@ intrinsics = camparam.CameraMatrix
 R = np.array([[ 0.03674776, 0.99930489, -0.00627444], [ 0.99402457, -0.03590636, 0.10308167], [ 0.10278472, -0.01002497, -0.99465311]])
 t = np.array([[ 0.02915348], [-0.05801044], [ 0.66861612]])
 
+## Function wich returns time difference in respect to the start time
 def timedelta():
     #delta =  time.mktime((datetime.datetime.now().timetuple())) - time.mktime((start.timetuple()))
     delta =  (datetime.datetime.now() - start).total_seconds() * 1000.0
     return delta
 
+## Write to file
 def writeToFile(string):
     # Thread block at this line until it can obtain lock
     lock.acquire()
 
     file.write(string)
 
+## Callback function used to receive and save the images
 def image_callback(data):
   global cv_image
   global mutex_image
@@ -45,6 +49,7 @@ def image_callback(data):
   cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
   mutex_image.release()
 
+## Callback function used to receive and save the uwb positions
 def uwb_callback(data):
   global cv_image
   global mutex_image
@@ -62,6 +67,7 @@ def uwb_callback(data):
   uwbCoordinates.append([timedelta(), data.state[0], data.state[1], data.state[2]])
   uwbVariances.append([timedelta(), data.covariance[0], data.covariance[7], data.covariance[14]])
 
+  # Transform point from the uwb coordinate system to the vision coordinate system
   uwb_x_tmp = data.state[0] + 0.0907
   uwb_y_tmp = data.state[1] - 0.0377
   uwb_z_tmp = data.state[2] - 0.0185
@@ -83,17 +89,20 @@ def uwb_callback(data):
   x_uwb_transf = uwb[0]
   y_uwb_transf = uwb[1]
   """
+  # 2D projection of the uwb point
   x_uwb_transf = 593.16120354*x_uwb/z_uwb + 308.67164248
   y_uwb_transf = 589.605859*y_uwb/z_uwb + 245.3659398
   #x_uwb_transf = 593.16120354*x_uwb + 308.67164248*z_uwb + t[0]
   #y_uwb_transf = 589.605859*y_uwb + 245.3659398*z_uwb + t[1]
   mutex_uwb.release()
 
+## Initialize ROS
 def rosInit():
   rospy.init_node('uwb_aruco', anonymous=True)
   rospy.Subscriber('/camera/video/compressed', sensor_msgs.msg.CompressedImage, image_callback)
   rospy.Subscriber('/uwb/tracker', uwb.msg.UWBTracker, uwb_callback)
 
+## Detect ArUco markers and saves the position.
 def getCoordinatesFromMarker():
     global camparam
     global cv_image

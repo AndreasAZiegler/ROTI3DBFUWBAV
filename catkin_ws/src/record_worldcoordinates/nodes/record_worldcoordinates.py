@@ -16,17 +16,20 @@ import h5py
 
 lock = threading.Lock()
 
+## Function wich returns time difference in respect to the start time
 def timedelta():
     #delta =  time.mktime((datetime.datetime.now().timetuple())) - time.mktime((start.timetuple()))
     delta =  (datetime.datetime.now() - start).total_seconds() * 1000.0
     return delta
 
+## Write to file
 def writeToFile(string):
     # Thread block at this line until it can obtain lock
     lock.acquire()
 
     file.write(string)
 
+## Initialize ROS
 def rosInit():
     rospy.init_node('record_worldcoordinates', anonymous=True)
     rospy.Subscriber("/uwb/tracker", UWBTracker, callback)
@@ -39,6 +42,7 @@ def callback(data):
     uwbCoordinates.append([timedelta(), data.state[0], data.state[1], data.state[2]])
     uwbVariances.append([timedelta(), data.covariance[0], data.covariance[7], data.covariance[14]])
 
+## Detect ArUco markers and saves the position.
 def getCoordinatesFromMarker():
     # load board and camera parameters
     camparam = aruco.CameraParameters()

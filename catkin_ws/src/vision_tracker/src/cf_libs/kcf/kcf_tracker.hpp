@@ -159,8 +159,7 @@ namespace cf_tracking
             _debug(debug),
             _lostObjectFlag(false),
             _foundAnObjectAfterLostFlag(false),
-            _nmbOfFramesWithRefoundObj(0),
-            _PSR_MAX_THRESHOLD(1000)
+            _nmbOfFramesWithRefoundObj(0)
         {
             correlate = &KcfTracker::gaussianCorrelation;
 
@@ -374,16 +373,15 @@ namespace cf_tracking
         }
 
         virtual void updatePosition(const cv::Point& newPos) {
+            // Is object lost and not found again?
             if((true == _lostObjectFlag) && (false == _foundAnObjectAfterLostFlag)) {
+              // Activate redetection mode
               _pos = newPos;
-                std::cout << "_pos: " << _pos.x << ", " << _pos.y << std::endl;
-              //_PSR_ADDITIONAL_THRESHOLD = 50;
               _PSR_ADDITIONAL_THRESHOLD = 10;
-              //_PSR_MAX_THRESHOLD = 100;
-              _RESPONSE_THRESHOLD = 0.2;
-              _templateSzAdditional = static_cast<T>(1);
+              _RESPONSE_THRESHOLD = 0.3;
 
               /*
+              _templateSzAdditional = static_cast<T>(1);
               // original target size for scale estimation
               Size targetSize = Size(_lastBoundingBox.width, _lastBoundingBox.height);
 
@@ -729,20 +727,20 @@ namespace cf_tracking
                 if (evalReponse(image, response, maxResponseIdx,
                     tempBoundingBox) == false) {
 
+                    // Object not found, activate redetection
                     _lostObjectFlag = true;
                     _nmbOfFramesWithRefoundObj = 0;
                     _foundAnObjectAfterLostFlag = false;
-                    std::cout << "evalResponse == false" << std::endl;
                     return false;
                 }
-                std::cout << "evalResponse == true" << std::endl;
 
                 if(true == _lostObjectFlag) {
-                  std::cout << "lost object" << std::endl;
+                  // Found object after lost
                   if(true == _foundAnObjectAfterLostFlag) {
+                    // Found object in 5 frames after lost?
                     if(5 <= _nmbOfFramesWithRefoundObj) {
+                      // Reset changes
                       _PSR_ADDITIONAL_THRESHOLD = 0;
-                      _PSR_MAX_THRESHOLD = 1000;
                       _RESPONSE_THRESHOLD = 0;
                       _templateSzAdditional = static_cast<T>(1);
 
@@ -752,10 +750,11 @@ namespace cf_tracking
                     } else {
                       _nmbOfFramesWithRefoundObj++;
                     }
-                  } else{
+                  }
+                  // Found object first time after lost
+                  else{
                     _foundAnObjectAfterLostFlag = true;
                     _nmbOfFramesWithRefoundObj++;
-                    std::cout << "found an objevt after lost" << std::endl;
                   }
                 }
             }
@@ -1040,7 +1039,6 @@ namespace cf_tracking
         const T _KERNEL_SIGMA;
         const T _PSR_THRESHOLD;
         T _PSR_ADDITIONAL_THRESHOLD;
-        T _PSR_MAX_THRESHOLD;
         T _RESPONSE_THRESHOLD;
         const int _TEMPLATE_SIZE;
         const int _PSR_PEAK_DEL;

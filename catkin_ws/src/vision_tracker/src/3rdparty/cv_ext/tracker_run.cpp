@@ -359,17 +359,15 @@ bool TrackerRun::update()
   }
   else if (_isTrackerInitialzed && (!_isPaused || _isStep)) {
 
+    // Target lost?
     if (!_targetOnFrame) {
       // Set new bounding box based on ekf 2D coordinates
       {
         std::lock_guard<std::mutex> guard(ekfCoordinatesMutex);
-        //cv::Point newPos<double>(ekfCoordinates[0] - _boundingBox.width * 0.5, ekfCoordinates[1] - _boundingBox.width * 0.5);
         if((ekfCoordinates[0] > 0) && (ekfCoordinates[1] > 0)) {
-          //_tracker->updatePosition(cv::Point(ekfCoordinates[0] - _boundingBox.width * 0.5, ekfCoordinates[1] - _boundingBox.width * 0.5));
           _tracker->updatePosition(cv::Point(ekfCoordinates[0], ekfCoordinates[1]));
         }
       }
-      //_targetOnFrame = _tracker->reinit(_image, _boundingBox);
     }
 
     _isStep = false;

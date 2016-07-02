@@ -1,3 +1,4 @@
+// Includes
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
@@ -10,6 +11,7 @@ int main(int argc, char** argv)
   // Check if video source has been passed as a parameter
   if(argv[1] == NULL) return 1;
 
+  // Init ROS node and publisher
   ros::init(argc, argv, "image_publisher");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
@@ -32,7 +34,9 @@ int main(int argc, char** argv)
     cap >> frame;
     // Check if grabbed frame is actually full with some content
     if(!frame.empty()) {
+      // Publish image as ROS message
       pub.publish(cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame).toImageMsg());
+      // Display image
       cv::imshow("Image", frame);
       //std::cout << "Image size: " << frame.size() << std::endl;
       //pub.publish(msg);

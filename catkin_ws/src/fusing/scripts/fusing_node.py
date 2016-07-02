@@ -543,16 +543,14 @@ class Fusing:
         """
 
         # Publish 2D position of the ekf state
-        if (self.state_x_uv >= 0 and self.state_x_uv <= 640) and (self.state_y_uv >= 0 and self.state_y_uv <= 480):
-          #print("State: x = {0}, y = {1}".format(self.state_x_uv, self.state_y_uv))
-          self.ekf_coordinates_msg.header.seq = self.header_seq
-          self.ekf_coordinates_msg.header.stamp = rospy.Time.now()
-          self.ekf_coordinates_msg.header.frame_id = str("ekf_uv")
-          self.mutex_state.acquire(1)
-          self.ekf_coordinates_msg.point.x = self.state_x_uv
-          self.ekf_coordinates_msg.point.y = self.state_y_uv
-          self.mutex_state.release()
-          self.pub_uv_coord.publish(self.ekf_coordinates_msg)
+        self.ekf_coordinates_msg.header.seq = self.header_seq
+        self.ekf_coordinates_msg.header.stamp = rospy.Time.now()
+        self.ekf_coordinates_msg.header.frame_id = str("ekf_uv")
+        self.mutex_state.acquire(1)
+        self.ekf_coordinates_msg.point.x = self.state_x_uv
+        self.ekf_coordinates_msg.point.y = self.state_y_uv
+        self.mutex_state.release()
+        self.pub_uv_coord.publish(self.ekf_coordinates_msg)
         """
         """
 

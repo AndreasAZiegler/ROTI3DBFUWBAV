@@ -3,9 +3,11 @@ clc;
 
 TOL = 5; % tolerance in milliseconds
 
+% Load data sets
 aruco_coordinates = h5read('aruco_uwb_output.hdf5', '/aruco_coordinates');
 uwb_coordinates = h5read('aruco_uwb_output.hdf5', '/uwb_coordinates');
 
+% Matching of the datasets according to their time stamps
 pos = 1;
 offset = 2;
 
@@ -76,7 +78,8 @@ uwb_centred(3,:) = uwb(3,:) - mean_uwb(3)*ones(1,length(uwb(3,:)));
 %scale = (std_uwb./std_aruco);
 scale = norm(uwb_centred)/norm(aruco_centred);
 
+% Scale aruco
 aruco = scale .* aruco;
 
-
+% Perform Kabsch
 [U, r, lrms] = Kabsch(aruco, uwb);

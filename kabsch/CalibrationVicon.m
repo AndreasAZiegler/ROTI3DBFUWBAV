@@ -3,9 +3,11 @@ clc;
 
 TOL = 5; % tolerance in milliseconds
 
+% Load data sets
 aruco_coordinates = h5read('aruco_vicon_output.hdf5', '/aruco_coordinates');
 vicon_coordinates = h5read('aruco_vicon_output.hdf5', '/vicon_coordinates');
 
+% Matching of the datasets according to their time stamps
 pos = 1;
 offset = 2;
 
@@ -76,7 +78,8 @@ vicon_centred(3,:) = vicon(3,:) - mean_vicon(3)*ones(1,length(vicon(3,:)));
 %scale = (std_uwb./std_aruco);
 scale = norm(vicon_centred)/norm(aruco_centred);
 
+% Scale aruco
 aruco = scale .* aruco;
 
-
+% Perform Kabsch
 [U, r, lrms] = Kabsch(aruco, vicon);

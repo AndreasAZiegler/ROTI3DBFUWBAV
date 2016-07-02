@@ -217,7 +217,7 @@ bool TrackerRun::init()
     // ROS init stuff
     //_pub_coordinates = _nh->advertise<tf2_msgs::TFMessage>("vision_coordinates", 10);
     //_pub_coordinates = _nh->advertise<tf::tfMessage>("vision_coordinates", 10);
-    _nh->subscribe("/fusing/ekf_uv_coordinates", 1, &TrackerRun::ekfCallback, this);
+    _sub_ekfCoordinates = _nh->subscribe("/fusing/ekf_uv_coordinates", 1, &TrackerRun::ekfCallback, this);
     _pub_coordinates = _nh->advertise<geometry_msgs::PointStamped>("/vision_tracker/vision_coordinates", 1);
     _pub_objectDetected = _nh->advertise<std_msgs::Bool>("/vision_tracker/object_detected", 1);
 
@@ -364,7 +364,10 @@ bool TrackerRun::update()
       {
         std::lock_guard<std::mutex> guard(ekfCoordinatesMutex);
         //cv::Point newPos<double>(ekfCoordinates[0] - _boundingBox.width * 0.5, ekfCoordinates[1] - _boundingBox.width * 0.5);
-        _tracker->updatePosition(cv::Point(ekfCoordinates[0] - _boundingBox.width * 0.5, ekfCoordinates[1] - _boundingBox.width * 0.5));
+        if((ekfCoordinates[0] > 0) && (ekfCoordinates[1] > 0)) {
+          //_tracker->updatePosition(cv::Point(ekfCoordinates[0] - _boundingBox.width * 0.5, ekfCoordinates[1] - _boundingBox.width * 0.5));
+          _tracker->updatePosition(cv::Point(ekfCoordinates[0], ekfCoordinates[1]));
+        }
       }
       //_targetOnFrame = _tracker->reinit(_image, _boundingBox);
     }

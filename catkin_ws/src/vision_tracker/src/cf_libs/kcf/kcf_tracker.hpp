@@ -376,11 +376,79 @@ namespace cf_tracking
         virtual void updatePosition(const cv::Point& newPos) {
             if((true == _lostObjectFlag) && (false == _foundAnObjectAfterLostFlag)) {
               _pos = newPos;
+                std::cout << "_pos: " << _pos.x << ", " << _pos.y << std::endl;
               //_PSR_ADDITIONAL_THRESHOLD = 50;
-              _PSR_ADDITIONAL_THRESHOLD = 0;
-              _PSR_MAX_THRESHOLD = 100;
-              _RESPONSE_THRESHOLD = 0.4;
-              _templateSzAdditional = static_cast<T>(3);
+              _PSR_ADDITIONAL_THRESHOLD = 10;
+              //_PSR_MAX_THRESHOLD = 100;
+              _RESPONSE_THRESHOLD = 0.2;
+              _templateSzAdditional = static_cast<T>(1);
+
+              /*
+              // original target size for scale estimation
+              Size targetSize = Size(_lastBoundingBox.width, _lastBoundingBox.height);
+
+              _targetSize = targetSize;
+              T targetPadding = _PADDING * sqrt(_targetSize.width * _targetSize.height);
+              Size templateSz = Size(floor(_targetSize.width + targetPadding),
+                  floor(_targetSize.height + targetPadding));
+
+              if (templateSz.height > templateSz.width)
+                  _scale = templateSz.height / _TEMPLATE_SIZE;
+              else
+                  _scale = templateSz.width / _TEMPLATE_SIZE;
+
+              _templateScaleFactor = 1 / (_scale * _templateSzAdditional);
+              _templateSz = Size(floor(templateSz.width / (_scale * _templateSzAdditional)), floor(templateSz.height / (_scale * _templateSzAdditional)));
+              _templateSzAdditional = static_cast<T>(1);
+
+              _targetSize = Size(_targetSize.width / (_scale * _templateSzAdditional), _targetSize.height / (_scale * _templateSzAdditional));
+
+              T outputSigma = sqrt(_templateSz.area() / ((1 + _PADDING) * (1 + _PADDING)))
+                  * _OUTPUT_SIGMA_FACTOR / _CELL_SIZE;
+              Size templateSzByCells = Size(floor((_templateSz.width - _PIXEL_PADDING) / _CELL_SIZE),
+                  floor((_templateSz.height - _PIXEL_PADDING) / _CELL_SIZE));
+
+              _y = gaussianShapedLabelsShifted2D(outputSigma, templateSzByCells);
+
+              if (_USE_CCS)
+                  dft(_y, _yf);
+              else
+                  dft(_y, _yf, cv::DFT_COMPLEX_OUTPUT);
+
+              cv::Mat cosWindowX;
+              cv::Mat cosWindowY;
+              cosWindowY = hanningWindow<T>(_yf.rows);
+              cosWindowX = hanningWindow<T>(_yf.cols);
+              _cosWindow = cosWindowY * cosWindowX.t();
+
+              cv::Mat numeratorf;
+              cv::Mat denominatorf;
+              std::shared_ptr<FFC> xf(0);
+
+              if (_scaleEstimator == 0 && _USE_VOT_SCALE_ESTIMATION)
+              {
+                  cv::Mat colScales = numberToColVector<T>(_N_SCALES_VOT);
+                  T scaleHalf = static_cast<T>(ceil(_N_SCALES_VOT / 2.0));
+                  cv::Mat ss = colScales - scaleHalf;
+
+                  _scaleFactors = pow<T, T>(_SCALE_STEP, ss);
+              }
+
+              if (getTrainingData(image, numeratorf, denominatorf, xf) == false)
+                  return false;
+
+              cv::Mat alphaf;
+
+              if (_USE_CCS)
+                  divSpectrums(numeratorf, denominatorf, alphaf, 0, false);
+              else
+                  divideSpectrumsNoCcs<T>(numeratorf, denominatorf, alphaf);
+
+              _modelNumeratorf = numeratorf;
+              _modelDenominatorf = denominatorf;
+              _modelAlphaf = alphaf;
+              _modelXf = xf;
+              */
             }
         }
 
@@ -648,6 +716,7 @@ namespace cf_tracking
             if (detectModel(image, response, maxResponseIdx, newPos, newScale) == false)
                 return false;
 
+            std::cout << "Model detected." << std::endl;
             // calc new box
             Rect tempBoundingBox;
             tempBoundingBox.width = newScale * _targetSize.width;
@@ -663,11 +732,15 @@ namespace cf_tracking
                     _lostObjectFlag = true;
                     _nmbOfFramesWithRefoundObj = 0;
                     _foundAnObjectAfterLostFlag = false;
+                    std::cout << "evalResponse == false" << std::endl;
                     return false;
                 }
+                std::cout << "evalResponse == true" << std::endl;
+
                 if(true == _lostObjectFlag) {
+                  std::cout << "lost object" << std::endl;
                   if(true == _foundAnObjectAfterLostFlag) {
-                    if(30 <= _nmbOfFramesWithRefoundObj) {
+                    if(5 <= _nmbOfFramesWithRefoundObj) {
                       _PSR_ADDITIONAL_THRESHOLD = 0;
                       _PSR_MAX_THRESHOLD = 1000;
                       _RESPONSE_THRESHOLD = 0;
@@ -682,6 +755,7 @@ namespace cf_tracking
                   } else{
                     _foundAnObjectAfterLostFlag = true;
                     _nmbOfFramesWithRefoundObj++;
+                    std::cout << "found an objevt after lost" << std::endl;
                   }
                 }
             }
@@ -711,8 +785,8 @@ namespace cf_tracking
                 _debug->setPsr(psrClamped);
             }
 
-            //if (psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) {
-            if ((psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) || (psrClamped > _PSR_MAX_THRESHOLD)) {
+            if (psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) {
+            //if ((psrClamped < (_PSR_THRESHOLD + _PSR_ADDITIONAL_THRESHOLD)) || (psrClamped > _PSR_MAX_THRESHOLD)) {
                 return false;
             }
 

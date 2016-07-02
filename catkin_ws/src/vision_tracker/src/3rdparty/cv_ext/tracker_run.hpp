@@ -145,8 +145,9 @@ private:
     bool* _stop_flag;
 
     // Used to receive ekf coordinates
+    ros::Subscriber _sub_ekfCoordinates;
     geometry_msgs::PointStamped _ekf_point;
-    int ekfCoordinates[2];
+    float ekfCoordinates[2];
     std::mutex ekfCoordinatesMutex;
 
     // Detected message

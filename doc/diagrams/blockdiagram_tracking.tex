@@ -46,6 +46,10 @@ minimum height=3em, minimum width=6em]
 		
 		\node [block] (fusing) [below right =-0.04cm and 12cm of rosbag] {fusing};
 		\node [point] (state) [right = 4.0cm of fusing] {};
+		\node [branch] (p5) [right = 1.0cm of fusing] {};
+		\node [point] (p6) [above = 2.0cm of p5] {};
+		\node [point] (p7) [left = 9.0cm of p6] {};
+		
 		
 		\draw [-] (rosbag) -- node[name=u] {} (p3);
 		\draw [-] (p3) -- node[name=u] {/camera/video} (vision_tracker);
@@ -59,7 +63,10 @@ minimum height=3em, minimum width=6em]
 		\draw [->] (p4) -- node[name=u, below] {/uwb/tracker} (p4-|fusing.west);
 		
 		
-		\draw [->] (fusing) -- node[name=u] {/fusing/coordinates} (state);
+		\draw [->] (fusing) -- node[name=u, below] {/fusing/coordinates} (state);
+		\draw [-] (p5) -- node[name=u] {} (p6);
+		\draw [-] (p6) -- node[name=u] {} (p7);
+		\draw [->] (p7) -| node[name=u] {} (vision_tracker);
 	
 	%\node [block, above right of=visionTracker, name=ekf , above right=0.7cm and 4cm of uwb] {EKF};
 %	

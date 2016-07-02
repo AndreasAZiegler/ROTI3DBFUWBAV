@@ -1,0 +1,34 @@
+% !TEX root = ../thesis.tex
+
+\chapter{Re-detection of the object in the vision tracker}\label{ch:redetecton}
+
+The implementation of the \acf{KCF} tracker in \cite{Haag:2015} does not provide any sophisticated re-detection. To be able to re-detect the object, it has to pass the location, where the tracker has lost it. Otherwise the tracker is not able to re-detect the object as it does not search at other locations than the one of the object's last appearance.
+
+As with our system the \acf{EKF} gets the location of the object measured by the \acf{UWB} system also if the vision tracker can't detect the object, this information can be used to re-detect the object in the image.
+
+This information feedback from the \ac{EKF} to the Vision Tracker is visualized in \autoref{fig:block}.
+
+\section{Method}
+The re-detection mechanism works as follows. If the object can't be detected by the \ac{KCF} tracker, the re-detection mode is activated and the detection parameters (PSR and "response threshold") are adapted. The \ac{KCF} tracker now takes the 2D location provided by the \ac{EKF} and tries to detect the object, under the adapted detection parameters, at this new location. The \ac{KCF} tracker needs to detect the object on five consecutive frames to deactivate the re-detection mode and to reset the detection parameters to the standard values.
+This whole mechanism is illustrated in the pseudo code %\autoref{lst:redetection}.
+
+\begin{algorithm}
+	\begin{algorithmic}[1]
+		\While{true}
+			\If{target not detected}
+				\State Adapt $\textit{PSR}$ and $\textit{response threshold}$
+				\State Set re-detection = true
+			\Else
+				\If{Object was detected in 5 consecutive frames}
+					\State Reset $\textit{PSR}$ and $\textit{response threshold}$
+					\State Set re-detection flag = false
+				\EndIf
+			\EndIf
+			\If{re-detection flag = true}
+				\State Take 2D position from \ac{EKF}
+			\EndIf
+		\EndWhile
+	\end{algorithmic}
+	\algCaption{Re-detection mechanism}\label{lst:redetection}
+\end{algorithm}
+

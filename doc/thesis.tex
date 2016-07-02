@@ -8,6 +8,24 @@
 \usepackage[font={small,sl},hang,labelfont=bf]{caption} % configure captions
 \usepackage{booktabs} % publication quality tables for LaTeX
 %\usepackage{showkeys} % shows the labels above the references for easier development
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\makeatletter
+\@addtoreset{algorithm}{chapter}% algorithm counter resets every chapter
+\makeatother
+\renewcommand{\thealgorithm}{\thechapter.\arabic{algorithm}}% Algorithm # is <chapter>.<algorithm>
+\usepackage{etoolbox} % provides AtBeginEnvironment
+
+% make a new caption command for algorithms
+\newcommand{\algCaption}[1]{
+	\caption{#1}
+	\addcontentsline{lol}{lstlisting}{\protect\numberline{\thealgorithm}#1}
+	\addtocounter{lstlisting}{1}}
+\AtBeginEnvironment{lstlisting}{\addtocounter{algorithm}{1}}
+\AtBeginDocument{
+	\renewcommand{\lstlistlistingname}{List of Algorithms and Listings}
+}
+
 \usepackage{listings}
 \usepackage{acronym}         %Abkürzungsverzeichnis
 \usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
@@ -205,8 +223,10 @@
 
 \cleardoublepage
 \phantomsection
+\clearpage
+\addcontentsline{toc}{chapter}{\lstlistlistingname}
 \addcontentsline{toc}{chapter}{List of Listings}
-\lstlistoflistings
+\lstlistoflistings%
 \cleardoublepage
 
 \pagenumbering{arabic}
@@ -220,8 +240,9 @@
 \input{./chapters/ch02-related-work}
 \input{./chapters/ch03-setup}
 \input{./chapters/ch04-fusing}
-\input{./chapters/ch05-results-discussion}
-\input{./chapters/ch06-conclusion}
+\input{./chapters/ch05-redetection}
+\input{./chapters/ch06-results-discussion}
+\input{./chapters/ch07-conclusion}
 
 
 % ---- END MAIN PART ----

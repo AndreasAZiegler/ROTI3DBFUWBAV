@@ -232,7 +232,7 @@ def start():
           cv2.putText(cv_image, "Vision", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 0, 0))
         else:
           cv2.circle(cv_image, (int(vision_x_uv), int(vision_y_uv)), 10, (255, 255, 0), 5)
-          #cv2.putText(cv_image, "Vision", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 255, 0))
+          cv2.putText(cv_image, "Vision", (20, 70), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 255, 0))
         #print("Vision: x = {0}, y = {1}".format(self.vision_x_uv, self.vision_y_uv))
         mutex_vision.release()
         mutex_state.acquire(1)

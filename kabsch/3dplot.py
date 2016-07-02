@@ -36,6 +36,7 @@ for i in range(len(uwb_coordinates)):
 uwb = uwb[~(uwb==0).all(1)]
 aruco_uwb = aruco_uwb[~(aruco_uwb==0).all(1)]
 
+"""
 # VICON
 file_av = h5py.File("./aruco_vicon_output.hdf5", "r")
 vicon_coordinates = file_av['vicon_coordinates'][:]
@@ -67,6 +68,7 @@ for i in range(len(vicon_coordinates)):
 vicon = vicon[~(vicon==0).all(1)]
 aruco_vicon = aruco_vicon[~(aruco_vicon==0).all(1)]
 # END VICON
+"""
 
 #print('Max. difference: {0}'.format(max(abs(uwb[:,0] - aruco[:,0]))))
 
@@ -74,9 +76,11 @@ aruco_vicon = aruco_vicon[~(aruco_vicon==0).all(1)]
 mean_uwb = uwb[:,1:4].mean(0)
 mean_aruco = aruco_uwb[:,1:4].mean(0)
 
+"""
 # VICON
 mean_vicon = vicon[:,1:4].mean(0)
 # END VICON
+"""
 
 """
 aruco_x = aruco[:,1]
@@ -232,6 +236,7 @@ uwb_transf_y = uwb_transf_y30
 uwb_transf_z = uwb_transf_z30
 
 
+"""
 # VICON
 vicon_x = vicon[:,1]
 vicon_y = vicon[:,2]
@@ -257,6 +262,7 @@ vicon_transf_x = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
 vicon_transf_y = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
 vicon_transf_z = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
 # END VICON
+"""
 
 
 print('Aruco x difference: {0}m'.format(abs(max(aruco_x) - min(aruco_x))))
@@ -272,16 +278,18 @@ ax = fig.add_subplot(111, projection='3d')
 aruco_plt = ax.scatter(aruco_x, aruco_z, aruco_y, c='b', marker='x', label='Aruco')
 uwb_transf_plt = ax.scatter(uwb_transf_x, uwb_transf_z, uwb_transf_y, c='r', marker='o', label='UWB Transformed')
 
+"""
 # VICON
 vicon_transf_plt = ax.scatter(vicon_transf_x, vicon_transf_z, vicon_transf_y, c='y', marker='o', label='VICON Transformed')
 # END VICON
+"""
 #plt.legend(handles=[uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
-plt.legend(handles=[vicon_transf_plt, uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
+plt.legend(handles=[uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
 #plt.legend(handles=[uwb_plt])
 
-ax.set_xlabel('X')
-ax.set_ylabel('Z')
-ax.set_zlabel('Y')
+ax.set_xlabel('X (image plane)')
+ax.set_ylabel('Z (distance)')
+ax.set_zlabel('Y (image plane)')
 
 plt.axis('equal')
 plt.show()

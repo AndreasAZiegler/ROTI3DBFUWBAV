@@ -28,7 +28,7 @@ The \ac{UWB} system and the camera are mounted in a way, that the center of thei
 \end{figure}
 
 \section{Matching frames}
-The coordinate systems of the \ac{UWB} setup and the one of the camera are not the same, as sketched in \autoref{fig:coordinationsystem}. As the goal of this semester project is to fuse the locations provided by the \ac{UWB} system and by the vision tracker, the locations must be transformed from one to the other. To achieve this, the location of the object in 3D must be available from both systems (\ac{UWB} and vision).
+The coordinate systems of the \ac{UWB} setup and the one of the camera are not the same, as sketched in \autoref{fig:coordinationsystem}. As the goal of this semester project is to fuse the locations provided by the \ac{UWB} system and by the visual tracker, the locations must be transformed from one to the other. To achieve this, the location of the object in 3D must be available from both systems (\ac{UWB} and vision).
 
 For the vision system, the ArUco \cite{Aruco2014} library and an ArUco marker were used to get the 3D coordinates of the object, as explained in \autoref{subsec:aruco}.
 
@@ -51,9 +51,9 @@ To get 3D vision coordinates, an ArUco marker was mounted on the object, as show
 The Kabsch algorithm \cite{Kabsch:a12999} calculates the optimal rotation matrix and translation vector that minimizes the root mean squared deviation between two sets of corresponding points. In this semester project, the Kabsch algorithm determines the optimal rotation matrix and translation vector between the coordination systems of the \ac{UWB} system an the one of the camera.
 
 \subsection{Matching proceeder}\label{subsec:matching}
-For the matching proceeder, a Matlab script was written, shown in \autoref{lst:matching}, which calculates the mean of the \ac{UWB} and the vision (ArUco) coordinates, centralizes the coordinates of both, calculates the scale from the centralized coordinates, scales the vision (ArUco) coordinates and finally executes the Kabsch algorithm to calculate the rotation matrix $\textbf{U}$, the translation $\vec r$ and the least root mean squared error $\text{lrms}$.
+For the matching proceeder, a Matlab script was written, shown in \autoref{lst:matching}, which calculates the mean of the \ac{UWB} and the vision (ArUco) coordinates, centralizes the coordinates of both, calculates the scale from the centralized coordinates, scales the vision (ArUco) coordinates and finally executes the Kabsch algorithm to calculate the rotation matrix $\textbf{U}$, the translation $\vec r$ and the least root mean squared error $\mathit{lrms}$.
 
-To transform 3D points from the \ac{UWB} coordinate system to the vision coordinate system the translation $\vec r$ is applied to the 3D coordinate and the then rotation matrix $\textbf{U}$ and the scale is applied as shown in \autoref{eq:transformation}
+To transform 3D points from the \ac{UWB} coordinate system to the vision coordinate system the translation $\vec r$ is applied to the 3D coordinate and the then rotation matrix $\textbf{U}$ and the scale are applied as shown in \autoref{eq:transformation}
 
 \begin{equation}\label{eq:transformation}
 	\begin{bmatrix}
@@ -68,7 +68,7 @@ To transform 3D points from the \ac{UWB} coordinate system to the vision coordin
 	\end{bmatrix} - \vec r \Bigg)
 \end{equation}
 
-To transform the covariance matrix $\textbf{C}$ from the \ac{UWB} coordinate system to the vision coordinate system, a new rotation matrix $\textbf{U}' \in \mathbb{R}^{6x6}$ has to be applied to the covariance matrix in the \ac{UWB} coordinate system like
+To transform the covariance matrix $\textbf{C}$ from the \ac{UWB} coordinate system to the vision coordinate system, a new rotation matrix $\textbf{U}' \in \mathbb{R}^{6\times6}$ has to be applied to the covariance matrix in the \ac{UWB} coordinate system like
 
 \begin{equation}
 	\textbf{C}' = \frac{1}{\mathit{scale}^2} \textbf{U}' \textbf{C} \textbf{U}'^T
@@ -107,10 +107,11 @@ uwb_centred(3,:) = uwb(3,:) - ...
 	
 % calculate scale
 scale = norm(uwb_centred)/norm(aruco_centred);
+
+% Scale aruco	
+aruco = scale .* aruco;	
 	
-aruco = scale .* aruco;
-	
-	
+% Perform Kabsch
 [U, r, lrms] = Kabsch(aruco, uwb);
 \end{lstlisting}
 
@@ -126,12 +127,12 @@ In this semester project three different \ac{ROS} setups were used to perform th
 
 The first setup to record the video and the measurement of the \ac{UWB} system is described in \autoref{subsec:recording}.
 
-The setup to gain the required data to perform the matching proceeder explained in \autoref{subsec:matching}, is described in \autoref{subsec:kabsch}.
+The setup to gain the required data to perform the matching proceeder, explained in \autoref{subsec:matching}, is described in \autoref{subsec:kabsch}.
 
-The third and last \ac{ROS} setup that was used in this semester project, is the setup introduced in \autoref{subsec:tracking}, which is used for the main task, of object tracking.
+The third and last \ac{ROS} setup that was used in this semester project, is the setup introduced in \autoref{subsec:tracking}, which is used for the main task of object tracking.
 
 \subsection{Recording setup}\label{subsec:recording}
-In the recording setup, shown in \autoref{fig:recording}, a rosbag node records the messages from the two nodes publish\_image and uwb. The message "/camera/video" from the publish\_image node is the image stream from the camera. The node uwb sends the message "/uwb/tracker" which consists of the position and the velocity of the target as well as their covariances.
+In the recording setup, shown in \autoref{fig:recording}, a rosbag node records the messages from the two nodes publish\_image and uwb. The messages "/camera/video" from the publish\_image node is the image stream from the camera. The node uwb sends the messages "/uwb/tracker" which consists of the position and the velocity of the target as well as their covariances.
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=0.8\textwidth]{figures/blockdiagram_recording}

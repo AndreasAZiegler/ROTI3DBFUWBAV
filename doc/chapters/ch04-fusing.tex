@@ -1,6 +1,6 @@
 \chapter{Fusing of the two measurement sources}\label{ch:fusing}
 
-The position of the object is estimated with an \acf{EKF}, using a model of the system and the measurements from the \ac{UWB} as well as from the vision tracker. A block diagram of this pipeline is shown in \autoref{fig:block}.
+The position of the object is estimated with an \acf{EKF}, using a model of the system and the measurements from the \ac{UWB} system as well as from the visual tracker. A block diagram of this pipeline is shown in \autoref{fig:block}.
 
 \begin{figure}[h]\centering
 	\includegraphics[width=1.0\textwidth]{figures/blockdiagram_setup}
@@ -170,10 +170,10 @@ For more details as well as for the used parameters, please see \cite{Ziegler:20
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/state_track}
-	\caption{3D plot of the points measured by the \ac{UWB} (red), the points detected by the vision tracker (blue) and the fused positions (green).}\label{fig:statetrack}
+	\caption{3D plot of the points measured by the \ac{UWB} (red), the points detected by the visual tracker (blue) and the fused positions (green).}\label{fig:statetrack}
 \end{figure}
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/2d_output}
-	\caption{Recorded picture with the point measured by the \ac{UWB} (red), the point detected by the vision tracker (blue) and the fused position (green). The radii of the \ac{UWB} and \ac{EKF} circle indicate the covariances of the measured/estimated position.}\label{fig:statetrack2d}
+	\caption{Recorded picture with the point measured by the \ac{UWB} (red), the point detected by the visual tracker (blue) and the fused position (green). The radii of the \ac{UWB} and \ac{EKF} circle indicate the covariances of the measured/estimated position.}\label{fig:statetrack2d}
 \end{figure}

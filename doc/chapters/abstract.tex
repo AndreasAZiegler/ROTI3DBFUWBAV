@@ -1,14 +1,18 @@
 % !TEX root = ../thesis.tex
 
 \chapter*{Abstract}
+\paragraph*{Motivation}
 Object tracking is an important part for many applications especially for robotic systems interacting with humans.
 
+\paragraph*{Problem statement}
 \ac{UWB} systems as well as vision based object trackers are widely known and used. Both of the systems have their advantages and disadvantages. \ac{UWB} systems can provide the location of an object in 3D with an accuracy of approximate $10\textit{cm}$ whereas vision based object tracker can only provide the location of an object in 2D pixel coordinates but with a more precise accuracy than \ac{UWB} systems.
 
-So why not combine this two sources of information? Exactly this concept should be developed and evaluated in this semester project. The 3D position measured by the UWB system should be fused with the 2D pixel coordinates of a visual based object tracker with and \ac{EKF}.
+\paragraph*{Approach}
+So why not combine this two sources of information? Exactly this concept should be developed and evaluated in this semester project. The 3D position measured by the UWB system should be fused with the 2D pixel coordinates of a visual object tracker with an \ac{EKF}. To increase the usability as well as the stability of the system, a re-detection mechanism for the visual tracker should be implemented in addition.
 
-The proposed system shows a significantly better accuracy compared to the 3D position measured by the \ac{UWB} system. This proof of concept enables to apply this system to a wide range of applications and also allows further extensions.
-%\cleardoublepage
+\paragraph*{Result}
+The proposed system shows a significantly better accuracy compared to the 3D positions measured by the \ac{UWB} system. This proof of concept enables to apply this system to a wide range of applications and also allows further extensions.
+\cleardoublepage
 %\chapter*{Zusammenfassung}
 
 %Diese Arbeit beschäftigt sich mit der Entwicklung einer neuartigen Beispielausarbeitung. Wir untersuchen die Anforderungen, die sich für eine allgemeine Vorlage ergeben, die innerhalb der \LaTeX-Textverarbeitungsumgebung verwendet werden kann. (Und so weiter und so fort\dots) Die Zusammenfassung sollte nicht länger als eine halbe Textseite sein!

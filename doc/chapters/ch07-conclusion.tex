@@ -3,22 +3,20 @@
 \section{Conclusion}
 In this semester project I have explored the proposed approach of fusing \ac{UWB} and vision for a robust object tracking in 3D.
 
-The results show that the proposed method of fusing less accurate 3D coordinate measurements from the \ac{UWB} system with more precise 2D pixel coordinate measurements from the vision based tracker with an \acf{EKF} has a significantly improved accuracy compared to the coordinates measured solely by the \ac{UWB} system. The idea of combining these two sources has therefore proven to be beneficial.
+The results show that the proposed method of fusing less accurate 3D coordinate measurements from the \ac{UWB} system with more precise 2D pixel coordinate measurements from the vision based tracker with an \acf{EKF} has a significantly improved accuracy compared to the coordinates measured solely by the \ac{UWB} system. The idea of combining these two sources has therefore proven to be beneficial. The additionally implemented re-detection mechanism for the visual tracker also performs well under normal conditions.
 
 This semester project was meant to be a proof of concept. The proposed method could be applied in many applications in different fields as robotics, human-computer-interaction, entertainment, rescue, etc., to mention only a few.
 
 As part of this semester project I have also implemented the approach in a modular fashion within the \ac{ROS} environment and made it public accessible on GitHub\cite{Ziegler:2016}.
 
 \section{Limitations}
-The used visual based tracker allows target loss and can re-detect the object only if it passes the same location where the tracker lost it. Because of this limited re-detection functionality, target loss by the visual based tracker is possible if the object reenters the camera view at a different location as it left it or if the object moves to fast. In the case of a target loss, the \ac{EKF} receives position information only from the \ac{UWB} system and is not able to increase the accuracy.
-
 The current \ac{EKF} implementation does not consist of an outlier-detection. Since the standard \ac{EKF} is not robust to outliers, noisy input signals may result in an unstable state estimation. 
 
 
-\section{Outlook}\textsl{}
-The \ac{UWB} system used in this semester project runs with a frequency of approximately $80\mathit{Hz}$ as well as the implemented Extended Kalman Filter. If an \ac{UWB} system with a higher frequency would be used, the currently in python implemented Extended Kalman Filter won't be able to process all the measurements provided by the \ac{UWB} system and by the vision based tracker. To encounter this problem, a faster implementation in C++ would be conceivable.
+\section{Outlook}
+The \ac{UWB} system used in this semester project runs with a frequency of approximately $80\mathit{Hz}$ as well as the implemented \ac{EKF}. If an \ac{UWB} system with a higher frequency would be used, the currently in Python implemented \ac{EKF} won't be able to process all the measurements provided by the \ac{UWB} system and by the vision based tracker. To encounter this problem, a faster implementation in C++ would be conceivable.
 
-The proposed fusing method does not contain any sophisticated re-detection system for the cases when the object goes out of the camera view. A re-detection based on the 3D coordinate measurements of the \ac{UWB} system could improve the stability as well as the usability of the proposed method.\todo{(If redetection works somehow, adapt this part)}
+The proposed fusing method contains a re-detection mechanism for the cases when the object goes out of the camera view or moves to fast. The currently implemented re-detection mechanism is however dependent of the object and the environment and some detection parameters need to be adjusted to achieve good re-detection performance. A more sophisticated re-detection system could improve the stability as well as the usability of the proposed method.
 
 So far the used \ac{UWB} system has to be calibrated manually, for example with a motion capture system (VICON). With an ArUco marker and the ArUco library \cite{Aruco2014} an automated calibration proceeder for the \ac{UWB} system could be developed which would simplify the setup of the whole system. 
 

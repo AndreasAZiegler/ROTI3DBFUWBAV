@@ -40,8 +40,8 @@ minimum height=3em, minimum width=6em]
 		\node [point] (p2) [below= 0.8cm of p1]{};
 		
 		\node [block] (camera) [below = 1cm of uwb] {Camera};	
-		\node [block] (visionTracker) [right=3.5cm of camera] {Vision Tracker};
-		\node [point] (p3) [right = 2.35cm of visionTracker]{};
+		\node [block] (visualTracker) [right=3.5cm of camera] {Visual Tracker};
+		\node [point] (p3) [right = 2.35cm of visualTracker]{};
 		\node [point] (p4) [above = 0.8cm of p3]{};
 		
 		\node [block] (ekf) [below right =-0.04cm and 10cm of uwb] {EKF};
@@ -54,18 +54,18 @@ minimum height=3em, minimum width=6em]
 		\draw [-] (transformation) -- node[name=u, right= 0.5cm, above] {$[x_1, x_2, x_3, \dot{x}_1, \dot{x}_2, \dot{x}_3]^T$} (p1);
 		\draw [-] (p1) -- node[name=u] {} (p2);
 		
-		\draw [-] (visionTracker) -- node[name=u] {$[\frac{x_1}{x_3}, \frac{x_2}{x_3}]^T$} (p3);
+		\draw [-] (visualTracker) -- node[name=u] {$[\frac{x_1}{x_3}, \frac{x_2}{x_3}]^T$} (p3);
 		\draw [-] (p3) -- node[name=u] {} (p4);
 		
 		\draw [->] (p2) -- node[name=u] {} (p2-|ekf.west);
 		\draw [->] (p4) -- node[name=u] {} (p4-|ekf.west);
 		
-		\draw [->] (camera) -- node[name=u] {image} (visionTracker);
+		\draw [->] (camera) -- node[name=u] {image} (visualTracker);
 		
 		\draw [->] (ekf) -- node[name=u] {$\vec r_{\mathit{estimated}}, \dot{\vec r}_{\mathit{estimated}}$} (state);
 		\draw [-] (p5) -- node[name=u] {} (p6);
 		\draw [-] (p6) -- node[name=u] {} (p7);
-		\draw [->] (p7) -| node[name=u] {} (visionTracker);
+		\draw [->] (p7) -| node[name=u] {} (visualTracker);
 	
 	%\node [block, above right of=visionTracker, name=ekf , above right=0.7cm and 4cm of uwb] {EKF};
 %	

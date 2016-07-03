@@ -16,7 +16,7 @@ The current \ac{EKF} implementation does not consist of an outlier-detection. Si
 \section{Outlook}
 The \ac{UWB} system used in this semester project runs with a frequency of approximately $80\mathit{Hz}$ as well as the implemented \ac{EKF}. If an \ac{UWB} system with a higher frequency would be used, the currently in Python implemented \ac{EKF} won't be able to process all the measurements provided by the \ac{UWB} system and by the vision based tracker. To encounter this problem, a faster implementation in C++ would be conceivable.
 
-The proposed fusing method contains a re-detection mechanism for the cases when the object goes out of the camera view or moves to fast. The currently implemented re-detection mechanism is however dependent of the object and the environment and some detection parameters need to be adjusted to achieve good re-detection performance. A more sophisticated re-detection system could improve the stability as well as the usability of the proposed method.
+The proposed fusing method contains a re-detection mechanism for the cases, when the object goes out of the camera view or moves to fast. The currently implemented re-detection mechanism is however dependent of the object and the environment and some detection parameters need to be adjusted to achieve good re-detection performance. A more sophisticated re-detection system could improve the stability as well as the usability of the proposed method.
 
 So far the used \ac{UWB} system has to be calibrated manually, for example with a motion capture system (VICON). With an ArUco marker and the ArUco library \cite{Aruco2014} an automated calibration proceeder for the \ac{UWB} system could be developed which would simplify the setup of the whole system. 
 

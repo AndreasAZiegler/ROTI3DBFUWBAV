@@ -12,10 +12,10 @@ For the comparison between the accuracy of the \ac{UWB} system and the one of th
 and by the root mean squared error of only the $x$ and $y$ axis
 $$\textit{rmse}_{xy} = \sqrt{\frac{1}{N - 1} \sum_i^N \big( (x_{m,i} - x_{V,i})^2 + (y_{m,i} - y_{V,i})^2\big)}$$
 
-where the subfix $m$ stands for measurement and represents coordinates which either come from the \ac{UWB} system or from the \ac{EKF}. The subfix $V$ on the other hand stands for VICON which is the ground truth in this experiment. $N$ is, as common for $\textit{rmse}$, the number of points in the data set.
+where the subfix $m$ stands for measurement and represents coordinates which either come from the \ac{UWB} system or from the \ac{EKF}. The subfix $V$ on the other hand stands for VICON which is the ground truth in this experiments. $N$ is, as common for $\textit{rmse}$, the number of points in the data set.
 
 \section{Results}
-In several recorded experiments, the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the \ac{EKF} was significantly lower compared to the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the \ac{UWB} system. The results of some experiments are listed in \autoref{tab:results}. A 3D plot of the measured coordinates by the VICON system (ground truth), the \ac{UWB} system and the coordinates fused by the \ac{EKF} from the data set of experiment number 1 is shown in \autoref{fig:evaluation}. \autoref{fig:evaluation_redetect} shows the dataset of experiment number 5, where the visual tracker has to re-detect the object.
+In several recorded experiments, the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the \ac{EKF} were significantly lower compared with the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the \ac{UWB} system. The results of some experiments are listed in \autoref{tab:results}. A 3D plot of the measured coordinates by the VICON system (ground truth), the \ac{UWB} system and the coordinates fused by the \ac{EKF} from the data set of experiment number 1 is shown in \autoref{fig:evaluation}. \autoref{fig:evaluation_redetect} shows the dataset of experiment number 5, where the visual tracker has to re-detect the object.
 
 \begin{table}[ht!]
 \begin{center}
@@ -34,7 +34,7 @@ In several recorded experiments, the $\textit{rmse}$ and the $\textit{rmse}_{xy}
 \label{tab:results}
 \end{table}
 
-* In experiment number 5 the object goes several times out of camera view and therefore the visual tracker has to re-detect the object. During the periods in which the visual tracker has lost the object, the resulting position of the \ac{EKF} is not longer better than the positions measured by the \ac{UWB} system.
+* In experiment number 5 the object goes several times out of camera view and therefore the visual tracker has to re-detect the object. During the periods in which the visual tracker has lost the object, the resulting positions of the \ac{EKF} are not longer better than the positions measured by the \ac{UWB} system.
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/evaluation}

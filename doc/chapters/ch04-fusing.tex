@@ -1,6 +1,6 @@
 \chapter{Fusing of the two measurement sources}\label{ch:fusing}
 
-The position of the object is estimated with an \acf{EKF}, using a model of the system and the measurements from the \ac{UWB} system as well as from the visual tracker. A block diagram of this pipeline is shown in \autoref{fig:block}.
+The position of the object is estimated with an \acf{EKF}, using a model of the system and the measurements from the \ac{UWB} system and also from the visual tracker. A block diagram of this pipeline is shown in \autoref{fig:block}.
 
 \begin{figure}[h]\centering
 	\includegraphics[width=1.0\textwidth]{figures/blockdiagram_setup}
@@ -75,7 +75,7 @@ and
 where $\textbf{R}_2 \in \mathbb{R}^{2\times2}$ is the covariance of the camera measurement.
 
 \subsection{The Extended Kalman Filter steps}
-There are two steps which have to be performed in an iterative fashion when running the \ac{EKF}.
+There are two steps which have to be performed in an iterative fashion, when running the \ac{EKF}.
 
 \subsubsection{Step 1: Prior update/Prediction step}
 In the first step, a prediction for the mean of the states $\hat{\vec x}_p(k)$ and the co-variance matrix $\textbf{P}_p(k)$ is calculated from the linearized system model.
@@ -97,7 +97,7 @@ Therefore equation \ref{eq:ekf_s1} becomes
 $$\textbf{P}_p(k) = \textbf{B}(k-1)\textbf{P}_m(k-1)\textbf{B}^{T}(k-1) + \textbf{Q}$$
 
 \subsubsection{Step 2: A posteriori update/Measurement update step}
-In the second step, the information gained from the measurements are used to perform an a posteriori update, resulting in a updated mean of the states $\hat{\vec x}_m(k)$ and an updated co-variance matrix $\textbf{P}_m(k)$.
+In the second step, the information gained from the measurements is used to perform an a posteriori update, resulting in a updated mean of the states $\hat{\vec x}_m(k)$ and an updated co-variance matrix $\textbf{P}_m(k)$.
 \begin{align}
 	\textbf{K}(k) = \textbf{P}_p(k) \textbf{H}^T(k) \Big( \textbf{H}(k) \textbf{P}_p(k) \textbf{H}^T(k) + \textbf{M}(k) \textbf{R}(k) \textbf{M}^T(k)\Big)^{-1} \label{eq:ekf_s2}\\
 	\hat{\vec x}_m(k) = \hat{\vec x}_p(k) + \textbf{K}(k) \Big( \vec z(k) - \begin{bmatrix}

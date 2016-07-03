@@ -378,7 +378,7 @@ namespace cf_tracking
               // Activate redetection mode
               _pos = newPos;
               _PSR_ADDITIONAL_THRESHOLD = 10;
-              _RESPONSE_THRESHOLD = 0.3;
+              _RESPONSE_THRESHOLD = 0.2;
 
               /*
               _templateSzAdditional = static_cast<T>(1);

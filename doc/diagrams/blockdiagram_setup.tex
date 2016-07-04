@@ -50,7 +50,7 @@ minimum height=3em, minimum width=6em]
 		\node [point] (p6) [below = 2.0cm of p5] {};
 		\node [point] (p7) [left = 8.0cm of p6] {};
 		
-		\draw [-] (uwb) -- node[name=u] {UWB coordinates} (transformation);
+		\draw [->] (uwb) -- node[name=u] {UWB coordinates} (transformation);
 		\draw [-] (transformation) -- node[name=u, right= 0.5cm, above] {$[x_1, x_2, x_3, \dot{x}_1, \dot{x}_2, \dot{x}_3]^T$} (p1);
 		\draw [-] (p1) -- node[name=u] {} (p2);
 		

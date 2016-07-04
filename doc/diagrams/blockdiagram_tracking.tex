@@ -52,7 +52,7 @@ minimum height=3em, minimum width=6em]
 		
 		
 		\draw [-] (rosbag) -- node[name=u] {} (p3);
-		\draw [-] (p3) -- node[name=u] {/camera/video} (vision_tracker);
+		\draw [->] (p3) -- node[name=u] {/camera/video} (vision_tracker);
 		\draw [-] (p3) -- node[name=u] {} (p4);
 		\draw [-] (vision_tracker) -- node[name=u, right = 1cm, above] {/vision\_tracker/vision\_coordinates} (p1);
 		\draw [-] (p1) -- node[name=u] {} (p2);

@@ -152,7 +152,7 @@ The implementation of the \ac{EKF} was done in a Python script within the \ac{RO
 			\hline
 			vicon\_aruco &  vicon\_aruco\_node.py & \begin{tabular}[x]{@{}l@{}}Receives \ac{ROS} messages from the VICON\\system and publish\_image node, detects\\ArUco markers and saves the locations\\provided by both systems into a hdf5 file.\end{tabular} \\
 			\hline
-			vision\_tracker & vision\_tracker\_node & \begin{tabular}[x]{@{}l@{}}The \ac{KCF} tracker publishes the 2D pixel\\coordinates as \ac{ROS} message as well as\\boolean \ac{ROS} message which indicate,\\if the object is lost or not.\end{tabular}\\
+			vision\_tracker & vision\_tracker\_node & \begin{tabular}[x]{@{}l@{}}The \ac{KCF} tracker publishes the 2D pixel\\coordinates as \ac{ROS} messages as well as\\boolean \ac{ROS} messages which indicate,\\if the object is lost or not.\end{tabular}\\
 			\hline
 			fusing & fusing\_node.py & \begin{tabular}[x]{@{}l@{}}The \ac{EKF} receives \ac{ROS} messages from\\the vision\_tracker and uwb node and\\publishes the fused positions as \ac{ROS} messages.\end{tabular}\\
 			\hline

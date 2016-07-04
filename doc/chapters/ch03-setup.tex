@@ -10,7 +10,7 @@ The first part of this chapter describes how the different elements of the setup
 	\item How the camera and the \ac{UWB} system were mounted
 	\item The matching proceeder which matches the two coordination systems together
 \end{itemize}
-This part also explains with the help of which frameworks, the mentioned steps were done.
+This part also explains with the help of which frameworks the mentioned steps were done.
 
 In the second part of this chapter the \ac{ROS} setup (\ac{ROS} nodes and messages), which was used, is described. 
 
@@ -28,7 +28,7 @@ The \ac{UWB} system and the camera are mounted in a way, that the center of thei
 \end{figure}
 
 \section{Matching frames}
-The coordinate systems of the \ac{UWB} setup and the one of the camera are not the same, as sketched in \autoref{fig:coordinationsystem}. As the goal of this semester project is to fuse the locations provided by the \ac{UWB} system and by the visual tracker, the locations must be transformed from one to the other. To achieve this, the location of the object in 3D must be available from both systems (\ac{UWB} and vision).
+The coordinate system of the \ac{UWB} setup and the one of the camera are not the same, as sketched in \autoref{fig:coordinationsystem}. As the goal of this semester project is to fuse the locations provided by the \ac{UWB} system and by the visual tracker, the locations must be transformed from one to the other. To achieve this, the location of the object in 3D must be available from both systems (\ac{UWB} and vision).
 
 For the vision system the ArUco \cite{Aruco2014} library and an ArUco marker were used to get the 3D coordinates of the object, as explained in \autoref{subsec:aruco}.
 
@@ -155,7 +155,7 @@ To save the required data to perform the matching proceeder described in \autore
 \end{figure}
 
 \subsection{Tracking setup}\label{subsec:tracking}
-This \ac{ROS} setup, shown in \autoref{fig:tracking}, is used for the main task of tracking an object. In this setup, the node vision\_tracker performs the object tracking on the images it receives from the node rosbag in the messages "/camera/video". It also receives the fused positions in the messages "/fusing/coordinates" from the \ac{EKF} for the case, that the vision tracker loses the object and has to re-detect it. The node vision\_tracker then publishes the position of the tracked object in the messages "/vision\_tracker/vision\_coordinates". The node fusing receives the positions measured by the \ac{UWB} system in the messages "/uwb/tracker" as well as the positions of the object detected by the node vision\_tracker in the messages "/vision\_tracker/vision\_coordinates. With an Extended Kalman Filter (EKF), described in \autoref{ch:fusing}, the node fusing estimates the position of the tracked object.
+This \ac{ROS} setup, shown in \autoref{fig:tracking}, is used for the main task of tracking an object. In this setup, the node vision\_tracker performs the object tracking on the images it receives from the node rosbag in the messages "/camera/video". It also receives the fused positions in the messages "/fusing/coordinates" from the \ac{EKF} for the case, that the vision tracker loses the object and has to re-detect it. The node vision\_tracker then publishes the position of the tracked object in the messages "/vision\_tracker/vision\_coordinates". The node fusing receives the positions measured by the \ac{UWB} system in the messages "/uwb/tracker" as well as the positions of the object detected by the node vision\_tracker in the messages "/vision\_tracker/vision\_coordinates". With an \ac{EKF}, described in \autoref{ch:fusing}, the node fusing estimates the position of the tracked object.
 
 \begin{figure}[ht!]\centering
 	\includegraphics[width=1.0\textwidth]{figures/blockdiagram_tracking}

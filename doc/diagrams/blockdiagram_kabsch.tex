@@ -37,7 +37,7 @@ minimum height=3em, minimum width=6em]
 				
 		\node [block] (uwb_aruco) [right =6cm of rosbag] {uwb\_aruco};
 		
-		\draw [-] (rosbag) -- node[name=u] {/camera/video, /uwb/tracker} (uwb_aruco);
+		\draw [->] (rosbag) -- node[name=u] {/camera/video, /uwb/tracker} (uwb_aruco);
 
 			
 	%\node [block, above right of=visionTracker, name=ekf , above right=0.7cm and 4cm of uwb] {EKF};

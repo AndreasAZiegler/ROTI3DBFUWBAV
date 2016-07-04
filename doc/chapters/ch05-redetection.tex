@@ -10,7 +10,7 @@ As with our system the \acf{EKF} gets the location of the object measured by the
 This information feedback from the \ac{EKF} to the Visual Tracker is shown in \autoref{fig:block}.
 
 \section{Method}
-The re-detection mechanism works as follows. If the object can't be detected by the \ac{KCF} tracker, the re-detection mode is activated and the detection parameters (PSR and "response threshold") are adapted. The \ac{KCF} tracker now takes the 2D location provided by the \ac{EKF} and tries to detect the object, with the adapted detection parameters, at this new locations. The \ac{KCF} tracker needs to detect the object in five consecutive frames to deactivate the re-detection mode and to reset the detection parameters to the standard values. This ensures, that the visual tracker re-detects the object and not something else.
+The re-detection mechanism works as follows. If the object can't be detected by the \ac{KCF} tracker, the re-detection mode is activated and the detection parameters (PSR and "response threshold") are adapted. The \ac{KCF} tracker now takes the 2D location provided by the \ac{EKF} and tries to detect the object, with the adapted detection parameters, at these new locations. The \ac{KCF} tracker needs to detect the object in five consecutive frames to deactivate the re-detection mode and to reset the detection parameters to the standard values. This ensures, that the visual tracker re-detects the object and not something else.
 The whole mechanism is presented in the pseudo code \autoref{lst:redetection}.
 
 \begin{algorithm}

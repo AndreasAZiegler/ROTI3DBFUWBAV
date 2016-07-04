@@ -6,23 +6,25 @@
 \usepackage{varwidth}
 %\usepackage{enumitem}
 \usepackage{listings}
-
 \lstset{language=bash,
-		basicstyle=\ttfamily\scriptsize,		
-		keywordstyle=\color{blue}\ttfamily,
-		morekeywords={peter@kbpet},
-		alsoletter={:~$},
-		morekeywords=[2]{peter@kbpet:},
-		keywordstyle=[2]{\color{red}},
-		literate={\$}{{\textcolor{red}{\$}}}1 
-						 {:}{{\textcolor{red}{:}}}1
-						 {~}{{\textcolor{red}{\textasciitilde}}}1,
-		breaklines=true,
-		numbers=none,
-		numbersep=5pt,
-		stepnumber=1
+	basicstyle=\ttfamily\scriptsize,		
+	keywordstyle=\color{blue}\ttfamily,
+	morekeywords={peter@kbpet},
+	alsoletter={:~$},
+	morekeywords=[2]{peter@kbpet:},
+	keywordstyle=[2]{\color{red}},
+	literate={\$}{{\textcolor{red}{\$}}}1 
+	{:}{{\textcolor{red}{:}}}1
+	{~}{{\textcolor{red}{\textasciitilde}}}1,
+	breaklines=true,
+	numbers=none,
+	numbersep=5pt,
+	stepnumber=1
 }
- 
+
+%\usepackage{natbib}
+\bibliographystyle{apalike}
+
 \definecolor{kugreen}{RGB}{50,93,61}
 \definecolor{kugreenlys}{RGB}{132,158,139}
 \definecolor{kugreenlyslys}{RGB}{173,190,177}
@@ -35,114 +37,110 @@
 \mode<presentation>
 \usetheme[numbers,totalnumber,compress,sidebarshades]{PaloAlto}
 %\setbeamertemplate{footline}[frame number]
- 
-  \usecolortheme[named=kublue]{structure}
-  \useinnertheme{circles}
-  \usefonttheme[onlymath]{serif}
-  \setbeamercovered{transparent}
-  \setbeamertemplate{blocks}[rounded][shadow=true]
-  %\setbeamertemplate{bibliography item}[text] %default is an icon of an article
-  
- 
+
+\usecolortheme[named=kublue]{structure}
+\useinnertheme{circles}
+\usefonttheme[onlymath]{serif}
+\setbeamercovered{transparent}
+\setbeamertemplate{blocks}[rounded][shadow=true]
+
 \logo{\includegraphics[width=1.5cm]{gfx/eth_logo_kurz_pos}}
 \title{Semester Project}
 \subtitle{Mobile datalogger for recording decentrally captured dynamic motor vehicle data}
 \author{Andreas Ziegler}
-\institute{Institute for Microelectronics and Embedded Systems \\ Hochschule f�r Technik Rapperswil}
-\date{21 August 2013}
+\institute{Advanced Iteractive Technologies \\ ETH Zürich}
+\date{13th of July 2016}
 
 \newcommand{\setlistspacing}[2]{\def\@ld{#1}\expandafter\def\csname
-@list\romannumeral\@ld \endcsname{\leftmargin\csname
-leftmargin\romannumeral\@ld \endcsname
-              \topsep    #2
-              \parsep    0\p@   \@plus\p@
-              \itemsep   #2}}
+	@list\romannumeral\@ld \endcsname{\leftmargin\csname
+		leftmargin\romannumeral\@ld \endcsname
+		\topsep    #2
+		\parsep    0\p@   \@plus\p@
+		\itemsep   #2}}
 \makeatother
-
-\bibliographystyle{acmsiggraph}
 
 \begin{document}
 
 \frame { \frametitle{Semester Project}
-\begin{center}
+	\begin{center}
 	\LARGE Semester Project \\
 	- \\
 	Robust object tracking in 3D by fusing ultra-wideband and vision
-\end{center}
+	\end{center}
 }
 
 \frame { \frametitle{Contents}
-\tableofcontents
+	\tableofcontents
 }
 
-\frame { \frametitle{Motivation}
-\section{Motivation}
+\frame{ \frametitle{Motivation}
+	\section{Motivation}
 	%\subsection{Initial situation}
 	\begin{itemize}
-		\item Object tracking is an important building block
-		\item Most state-of-the-art robust approaches work with predefined objects $\rightarrow$ not engough flexible
-		\item Online visual tracking $\rightarrow$ limited labeled data
-		\item New approach: Fusion of Ultra-wideband and a visual tracker with an Extended Kalman Filter
-		\item Using a Kernelized correlation filter
+	\item Object tracking is an important building block
+	\item Most state-of-the-art robust approaches work with predefined objects $\rightarrow$ not engough flexible
+	\item Online visual tracking $\rightarrow$ limited labeled data
+	\item New approach: Fusion of Ultra-wideband and a visual tracker with an Extended Kalman Filter
+	\item Using a Kernelized correlation filter
 	\end{itemize}
 }
 
-\frame { \frametitle{Related work - UWB}
-\section{Related work}
+\frame{	\frametitle{Related work - UWB}
+	\section{Motivation}
 	\subsection{UWB}
 	\includegraphics[height=3.5cm]{gfx/system}
 	\begin{itemize}
-		\item Provides 3D position information
-		\item Accuracy of $\approx 10\textit{cm}$
+	\item Provides 3D position information
+	\item Accuracy of $\approx 10\textit{cm}$
 	\end{itemize}
 }
 
-\frame { \frametitle{Related work - Kernelized correlation filters (KCF)}
+\frame{	\frametitle{Related work - Kernelized correlation filters (KCF)}
 	\subsection{KCF}
 	\begin{center}
 	\includegraphics[width=0.5\linewidth]{gfx/circular-1}
 	\includegraphics[width=0.5\linewidth]{gfx/circular-2}\let\thefootnote\relax\footnote{Figures from Henriques et al. 2015. High-speed tracking with kernelized correlation filters}
 	\end{center}
 	\begin{itemize}
-		\item Translated and scaled patches are riddled with redundancies $\rightarrow$ can be represented as a circulant matrix
-		\item Circulant matrices can then be diagonalized with the Discrete Fourier Transform $\rightarrow$ reduces storage as well as computation
-		\item the KCF tracker can be implemented with
-		only a few lines of code.
-		\item 3 functions: "train", "detect" and "kernel\_correlation"
+	\item Translated and scaled patches are riddled with redundancies $\rightarrow$ can be represented as a circulant matrix
+	\item Circulant matrices can then be diagonalized with the Discrete Fourier Transform $\rightarrow$ reduces storage as well as computation
+	\item the KCF tracker can be implemented with
+	only a few lines of code.
+	\item 3 functions: "train", "detect" and "kernel\_correlation"
 	\end{itemize}	
 }
 
-\frame { \frametitle{Setup - Mounting}
+\frame{	\frametitle{Setup - Mounting}
 	\section{Setup}
 	\subsection{Mounting}
 	\begin{itemize}
-		\item Camera calibration
-		\item UWB and camera mounting
-		\begin{center}
-		\includegraphics[height=3.0cm]{gfx/Monitor_cut}
-		\end{center}
+	\item Camera calibration
+	\item UWB and camera mounting
+	\begin{center}
+	\includegraphics[height=3.0cm]{gfx/Monitor_cut}
+	\end{center}
 	\end{itemize}
 }
 
-\frame { \frametitle{Setup - Matching the two coordinate systems}
+\frame{	\frametitle{Setup - Matching the two coordinate systems}
 	\subsection{Matching}
 	\begin{itemize}
-		\item ArUco \cite{Aruco2014}
-		\begin{center}
-			\includegraphics[height=2.0cm]{gfx/Box_cut}
-		\end{center}
-		\item Kabsch
-	\end{itemize}
+	\item ArUco \cite{Aruco2014}
 	\begin{center}
-		\includegraphics[height=3.0cm]{gfx/coordination_system}
+	\includegraphics[height=2.0cm]{gfx/Box_cut}
 	\end{center}
+	\item Kabsch
+	\begin{center}
+	\includegraphics[height=3.0cm]{gfx/coordination_system}
+	\end{center}
+	\end{itemize}
 }
 
-\frame { \frametitle{Setup - Transform between the coordinate systems}
+\frame{	\frametitle{Setup - Transform between the coordinate systems}
 	\subsection{Transform}
 	Transform between the two coordinate systems
 	\begin{center}
-		\includegraphics[height=1.5cm]{gfx/coordination_system}
+	\includegraphics[height=1.5cm]{gfx/coordination_system}
 	\end{center}
 	Transform a point:
 	\begin{equation}\label{eq:transformation}
@@ -168,8 +166,12 @@ leftmargin\romannumeral\@ld \endcsname
 	\textbf{U} & \textbf{0} \\
 	\textbf{0} & \textbf{U}
 	\end{bmatrix}
-	\end{equation}
-		
+	\end{equation}		
 }
-%\bibliography{graphics}
+
+\frame{ \frametitle{References}
+	\section{References}
+	\bibliography{graphics}
+}
+
 \end{document}

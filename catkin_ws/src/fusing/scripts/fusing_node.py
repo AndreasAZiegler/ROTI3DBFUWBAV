@@ -178,9 +178,14 @@ class Fusing:
     #uwb_z = data.state[2] + 0.0038
 
     # uwb_30: video_uwb_30: lrms=0.0646
-    uwb_x = data.state[0] - 0.0297
-    uwb_y = data.state[1] + 0.0083
-    uwb_z = data.state[2] - 0.0568
+    #uwb_x = data.state[0] - 0.0297
+    #uwb_y = data.state[1] + 0.0083
+    #uwb_z = data.state[2] - 0.0568
+
+    # uwb_52: video_uwb_52: lrms=0.0579
+    uwb_x = data.state[0] - 0.0673
+    uwb_y = data.state[1] + 0.0129
+    uwb_z = data.state[2] - 0.1133
 
     uwb_vx = data.state[3]
     uwb_vy = data.state[4]
@@ -245,13 +250,18 @@ class Fusing:
     #self.uwb_vz_wc = 1.0339*( 0.9898*uwb_vx + 0.1209*uwb_vy - 0.0758*uwb_vz)
 
     # uwb_30: video_uwb_30: lrms=0.0646
-    self.uwb_x_wc = 1.0340*( 0.1203*uwb_x - 0.9910*uwb_y + 0.0595*uwb_z)
-    self.uwb_y_wc = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
-    self.uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0758*uwb_z)
+    #self.uwb_x_wc = 1.0340*( 0.1203*uwb_x - 0.9910*uwb_y + 0.0595*uwb_z)
+    #self.uwb_y_wc = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
+    #self.uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0758*uwb_z)
 
-    self.uwb_vx_wc = 1.0340*( 0.1203*uwb_vx - 0.9910*uwb_vy + 0.0595*uwb_vz)
-    self.uwb_vy_wc = 1.0340*(-0.0356*uwb_vx - 0.0642*uwb_vy - 0.9973*uwb_vz)
-    self.uwb_vz_wc = 1.0340*( 0.9921*uwb_vx + 0.1178*uwb_vy - 0.0758*uwb_vz)
+    # uwb_52: video_uwb_52: lrms=0.0579
+    self.uwb_x_wc = 1.0429*( 0.0842*uwb_x - 0.9964*uwb_y + 0.0130*uwb_z)
+    self.uwb_y_wc = 1.0429*(-0.1456*uwb_x - 0.0252*uwb_y - 0.9890*uwb_z)
+    self.uwb_z_wc = 1.0429*( 0.9857*uwb_x + 0.0814*uwb_y - 0.1472*uwb_z)
+
+    self.uwb_vx_wc = 1.0429*( 0.0842*uwb_vx - 0.9964*uwb_vy + 0.0130*uwb_vz)
+    self.uwb_vy_wc = 1.0429*(-0.1456*uwb_vx - 0.0252*uwb_vy - 0.9890*uwb_vz)
+    self.uwb_vz_wc = 1.0429*( 0.9857*uwb_vx + 0.0814*uwb_vy - 0.1472*uwb_vz)
 
     # Make 2D projection
     self.uwb_x_uv = 593.16120354*self.uwb_x_wc/self.uwb_z_wc + 308.67164248

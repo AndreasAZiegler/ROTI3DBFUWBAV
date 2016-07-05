@@ -47,9 +47,14 @@ uwb = uwb[~(uwb==0).all(1)]
 vicon = vicon[~(vicon==0).all(1)]
 
 # uwb_30: video_uwb_30: lrms=0.0632
-uwb_x = uwb[:, 1] - 0.0297
-uwb_y = uwb[:, 2] + 0.0083
-uwb_z = uwb[:, 3] - 0.0568
+#uwb_x = uwb[:, 1] - 0.0297
+#uwb_y = uwb[:, 2] + 0.0083
+#uwb_z = uwb[:, 3] - 0.0568
+
+# uwb_52: video_uwb_52: lrms=0.0579
+uwb_x = uwb[:, 1] - 0.0673
+uwb_y = uwb[:, 2] + 0.0129
+uwb_z = uwb[:, 3] - 0.1133
 
 """
 uwb_x = uwb_coordinates[:, 1] - 0.0297
@@ -57,9 +62,15 @@ uwb_y = uwb_coordinates[:, 2] + 0.0083
 uwb_z = uwb_coordinates[:, 3] - 0.0568
 """
 
-uwb_x_wc = 1.0340*( 0.1203*uwb_x - 0.9910*uwb_y + 0.0595*uwb_z)
-uwb_y_wc = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
-uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0430*uwb_z)
+# uwb_30: video_uwb_30: lrms=0.0632
+#uwb_x_wc = 1.0340*( 0.1203*uwb_x - 0.9910*uwb_y + 0.0595*uwb_z)
+#uwb_y_wc = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
+#uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0430*uwb_z)
+
+# uwb_52: video_uwb_52: lrms=0.0579
+uwb_x_wc = 1.0429*( 0.0842*uwb_x - 0.9964*uwb_y + 0.0130*uwb_z)
+uwb_y_wc = 1.0429*(-0.1456*uwb_x - 0.0252*uwb_y - 0.9890*uwb_z)
+uwb_z_wc = 1.0429*( 0.9857*uwb_x + 0.0814*uwb_y - 0.1472*uwb_z)
 
 # vicon_30: video_uwb_30: lrms=0.0336
 #vicon_x = vicon[:, 1] - 1.4663
@@ -67,9 +78,14 @@ uwb_z_wc = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0430*uwb_z)
 #vicon_z = vicon[:, 3] - 1.2332
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x = vicon[:, 1] - 1.1373
-vicon_y = vicon[:, 2] + 0.9085
-vicon_z = vicon[:, 3] - 1.2501
+#vicon_x = vicon[:, 1] - 1.1373
+#vicon_y = vicon[:, 2] + 0.9085
+#vicon_z = vicon[:, 3] - 1.2501
+
+# vicon_52: video_uwb_52: lrms=0.0376
+vicon_x = vicon[:, 1] - 1.8605
+vicon_y = vicon[:, 2] + 0.8850
+vicon_z = vicon[:, 3] - 1.2545
 
 # vicon_30: video_uwb_30: lrms=0.0336
 #vicon_x_wc = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
@@ -77,9 +93,14 @@ vicon_z = vicon[:, 3] - 1.2501
 #vicon_z_wc = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
-vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
-vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+#vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
+#vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
+#vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+
+# vicon_52: video_uwb_52: lrms=0.0376
+vicon_x_wc = 1.0529*(-0.0758*vicon_x + 0.9969*vicon_y - 0.0200*vicon_z)
+vicon_y_wc = 1.0529*( 0.0245*vicon_x - 0.0182*vicon_y - 0.9995*vicon_z)
+vicon_z_wc = 1.0529*(-0.9968*vicon_x + 0.0762*vicon_y - 0.0230*vicon_z)
 
 # Calculate rmse
 var_uwb = []
@@ -131,9 +152,14 @@ vicon = vicon[~(vicon==0).all(1)]
 #vicon_z = vicon[:, 3] - 1.2332
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x = vicon[:, 1] - 1.1373
-vicon_y = vicon[:, 2] + 0.9085
-vicon_z = vicon[:, 3] - 1.2501
+#vicon_x = vicon[:, 1] - 1.1373
+#vicon_y = vicon[:, 2] + 0.9085
+#vicon_z = vicon[:, 3] - 1.2501
+
+# vicon_52: video_uwb_52: lrms=0.0376
+vicon_x = vicon[:, 1] - 1.8605
+vicon_y = vicon[:, 2] + 0.8850
+vicon_z = vicon[:, 3] - 1.2545
 
 """
 vicon_x = vicon_coordinates[:, 1] - 1.4663
@@ -147,9 +173,14 @@ vicon_z = vicon_coordinates[:, 3] - 1.2332
 #vicon_z_wc = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
-vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
-vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+#vicon_x_wc = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
+#vicon_y_wc = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
+#vicon_z_wc = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+
+# vicon_52: video_uwb_52: lrms=0.0376
+vicon_x_wc = 1.0529*(-0.0758*vicon_x + 0.9969*vicon_y - 0.0200*vicon_z)
+vicon_y_wc = 1.0529*( 0.0245*vicon_x - 0.0182*vicon_y - 0.9995*vicon_z)
+vicon_z_wc = 1.0529*(-0.9968*vicon_x + 0.0762*vicon_y - 0.0230*vicon_z)
 
 # Calculate rmse
 var_ekf = []

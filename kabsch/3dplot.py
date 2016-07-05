@@ -36,7 +36,6 @@ for i in range(len(uwb_coordinates)):
 uwb = uwb[~(uwb==0).all(1)]
 aruco_uwb = aruco_uwb[~(aruco_uwb==0).all(1)]
 
-"""
 # VICON
 file_av = h5py.File("./aruco_vicon_output.hdf5", "r")
 vicon_coordinates = file_av['vicon_coordinates'][:]
@@ -69,6 +68,7 @@ vicon = vicon[~(vicon==0).all(1)]
 aruco_vicon = aruco_vicon[~(aruco_vicon==0).all(1)]
 # END VICON
 """
+"""
 
 #print('Max. difference: {0}'.format(max(abs(uwb[:,0] - aruco[:,0]))))
 
@@ -76,10 +76,10 @@ aruco_vicon = aruco_vicon[~(aruco_vicon==0).all(1)]
 mean_uwb = uwb[:,1:4].mean(0)
 mean_aruco = aruco_uwb[:,1:4].mean(0)
 
-"""
 # VICON
 mean_vicon = vicon[:,1:4].mean(0)
 # END VICON
+"""
 """
 
 """
@@ -169,10 +169,15 @@ uwb_x30 = uwb_x - 0.0297
 uwb_y30 = uwb_y + 0.0083
 uwb_z30 = uwb_z - 0.0568
 
+# uwb_52: video_uwb_52: lrms=0.0579
+uwb_x52 = uwb_x - 0.0673
+uwb_y52 = uwb_y + 0.0129
+uwb_z52 = uwb_z - 0.1133
 
-uwb_x = uwb_x30
-uwb_y = uwb_y30
-uwb_z = uwb_z30
+
+uwb_x = uwb_x52
+uwb_y = uwb_y52
+uwb_z = uwb_z52
 
 
 # uwb_1: video_uwb_1: lrms=0.1093
@@ -230,13 +235,17 @@ uwb_transf_x30 = 1.0340*( 0.1203*uwb_x - 0.9910*uwb_y + 0.0595*uwb_z)
 uwb_transf_y30 = 1.0340*(-0.0356*uwb_x - 0.0642*uwb_y - 0.9973*uwb_z)
 uwb_transf_z30 = 1.0340*( 0.9921*uwb_x + 0.1178*uwb_y - 0.0430*uwb_z)
 
+# uwb_52: video_uwb_52: lrms=0.0579
+uwb_transf_x52 = 1.0429*( 0.0842*uwb_x - 0.9964*uwb_y + 0.0130*uwb_z)
+uwb_transf_y52 = 1.0429*(-0.1456*uwb_x - 0.0252*uwb_y - 0.9890*uwb_z)
+uwb_transf_z52 = 1.0429*( 0.9857*uwb_x + 0.0814*uwb_y - 0.1472*uwb_z)
 
-uwb_transf_x = uwb_transf_x30
-uwb_transf_y = uwb_transf_y30
-uwb_transf_z = uwb_transf_z30
+
+uwb_transf_x = uwb_transf_x52
+uwb_transf_y = uwb_transf_y52
+uwb_transf_z = uwb_transf_z52
 
 
-"""
 # VICON
 vicon_x = vicon[:,1]
 vicon_y = vicon[:,2]
@@ -248,9 +257,14 @@ vicon_z = vicon[:,3]
 #vicon_z = vicon_z - 1.2332
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_x = vicon_x - 1.1373
-vicon_y = vicon_y + 0.9085
-vicon_z = vicon_z - 1.2501
+#vicon_x = vicon_x - 1.1373
+#vicon_y = vicon_y + 0.9085
+#vicon_z = vicon_z - 1.2501
+
+# vicon_52: video_uwb_52: lrms=0.0376
+vicon_x = vicon_x - 1.8605
+vicon_y = vicon_y + 0.8850
+vicon_z = vicon_z - 1.2545
 
 # vicon_30: video_uwb_30: lrms=0.0336
 #vicon_transf_x = 1.0662*(-0.0350*vicon_x + 0.9993*vicon_y - 0.0113*vicon_z)
@@ -258,10 +272,16 @@ vicon_z = vicon_z - 1.2501
 #vicon_transf_z = 1.0662*(-0.9977*vicon_x - 0.0356*vicon_y - 0.0575*vicon_z)
 
 # vicon_40: video_uwb_40: lrms=0.0365
-vicon_transf_x = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
-vicon_transf_y = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
-vicon_transf_z = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+#vicon_transf_x = 1.0444*( 0.0207*vicon_x + 0.9996*vicon_y - 0.0202*vicon_z)
+#vicon_transf_y = 1.0444*( 0.0281*vicon_x - 0.0208*vicon_y - 0.9994*vicon_z)
+#vicon_transf_z = 1.0444*(-0.9994*vicon_x + 0.0202*vicon_y - 0.0285*vicon_z)
+
+# vicon_52: video_uwb_52: lrms=0.0376
+vicon_transf_x = 1.0529*(-0.0758*vicon_x + 0.9969*vicon_y - 0.0200*vicon_z)
+vicon_transf_y = 1.0529*( 0.0245*vicon_x - 0.0182*vicon_y - 0.9995*vicon_z)
+vicon_transf_z = 1.0529*(-0.9968*vicon_x + 0.0762*vicon_y - 0.0230*vicon_z)
 # END VICON
+"""
 """
 
 
@@ -278,13 +298,13 @@ ax = fig.add_subplot(111, projection='3d')
 aruco_plt = ax.scatter(aruco_x, aruco_z, aruco_y, c='b', marker='x', label='Aruco')
 uwb_transf_plt = ax.scatter(uwb_transf_x, uwb_transf_z, uwb_transf_y, c='r', marker='o', label='UWB Transformed')
 
-"""
 # VICON
 vicon_transf_plt = ax.scatter(vicon_transf_x, vicon_transf_z, vicon_transf_y, c='y', marker='o', label='VICON Transformed')
 # END VICON
 """
+"""
 #plt.legend(handles=[uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
-plt.legend(handles=[uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
+plt.legend(handles=[vicon_transf_plt, uwb_transf_plt, aruco_plt])#, aruco_transf_plt, uwb_plt])
 #plt.legend(handles=[uwb_plt])
 
 ax.set_xlabel('X (image plane)')

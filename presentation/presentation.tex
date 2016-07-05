@@ -21,6 +21,7 @@
 	numbersep=5pt,
 	stepnumber=1
 }
+\usepackage{algorithm,algpseudocode}
 
 %\usepackage{natbib}
 \bibliographystyle{apalike}
@@ -46,9 +47,9 @@
 
 \logo{\includegraphics[width=1.5cm]{gfx/eth_logo_kurz_pos}}
 \title{Semester Project}
-\subtitle{Mobile datalogger for recording decentrally captured dynamic motor vehicle data}
+\subtitle{Robust object tracking in 3D by fusing ultra-wideband and vision}
 \author{Andreas Ziegler}
-\institute{Advanced Iteractive Technologies \\ ETH Zürich}
+\institute{AIT \\ ETH Zürich}
 \date{13th of July 2016}
 
 \newcommand{\setlistspacing}[2]{\def\@ld{#1}\expandafter\def\csname
@@ -65,7 +66,11 @@
 	\begin{center}
 	\LARGE Semester Project \\
 	- \\
-	Robust object tracking in 3D by fusing ultra-wideband and vision
+	Robust object tracking in 3D by fusing ultra-wideband and vision\\
+	- \\
+	\includegraphics*[height=0.6cm]{gfx/eth_logo_kurz_pos.eps} \hfill
+	\includegraphics*[height=0.6cm]{gfx/logo-ait} \hfill
+	\includegraphics*[height=0.6cm]{gfx/biwi_logo}
 	\end{center}
 }
 
@@ -93,6 +98,7 @@
 	\item Provides 3D position information
 	\item Accuracy of $\approx 10\textit{cm}$
 	\end{itemize}
+	\cite{Naegeli:2016}
 }
 
 \frame{	\frametitle{Related work - Kernelized correlation filters (KCF)}
@@ -102,12 +108,14 @@
 	\includegraphics[width=0.5\linewidth]{gfx/circular-2}\let\thefootnote\relax\footnote{Figures from Henriques et al. 2015. High-speed tracking with kernelized correlation filters}
 	\end{center}
 	\begin{itemize}
+	\small
 	\item Translated and scaled patches are riddled with redundancies $\rightarrow$ can be represented as a circulant matrix
 	\item Circulant matrices can then be diagonalized with the Discrete Fourier Transform $\rightarrow$ reduces storage as well as computation
 	\item the KCF tracker can be implemented with
 	only a few lines of code.
 	\item 3 functions: "train", "detect" and "kernel\_correlation"
-	\end{itemize}	
+	\end{itemize}
+	\cite{henriques2015tracking}
 }
 
 \frame{	\frametitle{Setup - Mounting}
@@ -167,6 +175,129 @@
 	\textbf{0} & \textbf{U}
 	\end{bmatrix}
 	\end{equation}		
+}
+
+\section{Fusing}
+\frame { \frametitle{Fusing with an Extended Kalman Filter (EKF)}
+	\includegraphics[width=\linewidth]{gfx/blockdiagram_setup}
+	
+	The state: $\vec x = [\vec r, \dot{\vec{r}}]^T$ with positon $\vec r$, velocity $\dot{\vec r} \in \mathbb{R}^3$\\
+	System model:
+	\begin{align*}
+	\vec x(k) = 
+	\begin{bmatrix}
+		\textbf{I}_3 & \Delta \textbf{T}\\
+		\textbf{0} & \textbf{I}_3
+	\end{bmatrix}\vec x(k-1) + \vec v(k-1))\\
+	\vec v(k-1) \sim \mathcal{N}(\vec 0, \textbf{Q})
+	\end{align*}
+}
+
+\frame { \frametitle{Fusing with an Extended Kalman Filter (EKF)}
+	Measurements:\\
+	\begin{itemize}
+	\item A direct measurement of the state $\vec x$ from ultra-wideband UWB multilateration:
+	\begin{align*}
+	\vec z_1(k) = \textbf{I}_6 \vec x(k) + \vec w_1(k)
+	\vec \omega_1(k) \sim \mathcal{N}(\vec 0, \textbf{R}_1)
+	\end{align*}
+	\item A projection of the position $\vec r$ as seen by a camera:
+	\begin{align*}
+	\vec z_2(k) = \begin{bmatrix}
+	x_1/x_3\\
+	x_2/x_3
+	\end{bmatrix} + \vec w_2(k))\\
+	\vec \omega_2(k) \sim \mathcal{N}(\vec 0, \textbf{R}_2)
+	\end{align*}
+	\end{itemize}
+}
+
+\frame { \frametitle{Fusing with an Extended Kalman Filter (EKF)}
+	\begin{itemize}
+	\item Step 1: A prediction for the mean of the states $\hat{\vec x}_p(k)$ and the co-variance matrix $\textbf{P}_p(k)$:
+	\item Step 2: The information gained from the measurements is used to perform an a posteriori update, resulting in a updated mean of the states $\hat{\vec x}_m(k)$ and an updated co-variance matrix $\textbf{P}_m(k)$.
+	\end{itemize}
+}
+
+\begin{frame}
+	\frametitle{Re-detection}
+	\section{Re-detection}
+	\includegraphics[width=\linewidth]{gfx/blockdiagram_setup}
+	\begin{algorithm}[H]
+	\tiny
+	\begin{algorithmic}[1]
+	\While{true}
+	\If{target not detected}
+	\State Adapt $\textit{PSR}$ and $\textit{response threshold}$
+	\State Set re-detection = true
+	\Else
+	\If{Object was detected in 5 consecutive frames}
+	\State Reset $\textit{PSR}$ and $\textit{response threshold}$
+	\State Set re-detection flag = false
+	\EndIf
+	\EndIf
+	\If{re-detection flag = true}
+	\State Take 2D position from EKF
+	\EndIf
+	\EndWhile
+	\end{algorithmic}
+	\end{algorithm}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Results}
+	\section{Results}
+	 The $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the EKF were significantly lower compared with the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the UWB system.
+	\tiny
+	\begin{table}
+		\begin{center}
+			\begin{tabular}{c|c|c|c|c}
+				Experiment number & $\textit{rmse}$ of UWB & $\textit{rmse}$ of EKF & $\textit{rmse}_{xy}$ of UWB & $\textit{rmse}_{xy}$ of EKF\\ 
+				\hline 
+				1 & 0.0667 & 0.0350 & 0.0621 & 0.0270 \\
+				2 & 0.0771 & 0.0364 & 0.0734 & 0.0260 \\
+				3 & 0.1304 & 0.0379 & 0.1275 & 0.0312 \\
+				4 & 0.1169 & 0.0344 & 0.1126 & 0.0265 \\
+				5* & 0.1273 & 0.1195 & 0.1159 & 0.1055
+				%\hline 
+			\end{tabular}
+		\end{center}
+	\end{table}
+	\normalsize
+	See demo video!
+\end{frame}
+
+\frame { \frametitle{Conclusion/Limitations/Outlook}
+	\section{Conclusion}
+	\subsection{Conclusion}
+	Conclusion:
+	\begin{itemize}
+	\item The proposed method of fusing UWB and visual tracker impoved the accuracy
+	\item The implemented re-detection mechanism performs well
+	\end{itemize}
+
+	\subsection{Limitations}
+	Limitations:
+	\begin{itemize}
+	\item The EKF does not consists of an outlier-detection
+	\end{itemize}
+	
+	\subsection{Outlook}
+	Outlook:
+	\begin{itemize}
+	\item C++ implementation for usage with higher frequency
+	\item More sophisticated re-detection
+	\item Calibration of the UWB system with the help of ArUco
+	\item Automatic target detection
+	\item Multi target tracking
+	\end{itemize}
+}
+
+\frame { \frametitle{Questions}
+	\section{Questions}
+	\begin{center}
+	\includegraphics[height=0.75\textheight]{gfx/q&a.jpg}
+	\end{center}
 }
 
 \frame{ \frametitle{References}

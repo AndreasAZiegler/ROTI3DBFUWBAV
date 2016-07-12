@@ -48,6 +48,7 @@
 \setbeamercovered{transparent}
 \setbeamertemplate{blocks}[rounded][shadow=true]
 %\setbeameroption{show notes on second screen}
+%\setbeameroption{show notes}
 
 \logo{\includegraphics[width=1.5cm]{gfx/eth_logo_kurz_pos}}
 \title{Semester Project}
@@ -105,7 +106,7 @@
 }
 \note[enumerate]
 {
-	\item for many interactive	systems, especially for robotic systems interacting with humans.
+	\item for many interactive systems, especially for robotic systems interacting with humans.
 	\item 
 	\item any such tracking approach has to balance plasticity versus drift, in particular when an object should be re-detected after loss of tracking.
 }
@@ -132,10 +133,10 @@
 	\end{center}
 	\begin{itemize}
 	\small
-	\item Translated and scaled patches are riddled with redundancies $\rightarrow$ Can be represented as a circulant matrix
+	\item Translated and scaled patches are riddled with redundancies $\rightarrow$ Can be represented as a circulant matrix in a compact way
 	}
 	\visible<2,3>{
-	\item Circulant matrices can then be diagonalized with the Discrete Fourier Transform $\rightarrow$ Reduces storage as well as computation
+	\item Circulant matrices can be diagonalized with the Discrete Fourier Transform $\rightarrow$ Reduces storage as well as computation
 	}
 	\visible<3>{
 	\item The KCF tracker can be implemented with
@@ -198,7 +199,7 @@
 	z_{\textit{UWB}}
 	\end{bmatrix} - \vec r \Bigg)
 	\end{equation}
-	Transform the covariance matrix:
+	Transform the covariance matrix of the position and the velocity:
 	\begin{equation}
 	\textbf{C}' = \frac{1}{\mathit{scale}^2} \textbf{U}' \textbf{C} \textbf{U}'^T
 	\end{equation}
@@ -215,9 +216,8 @@
 \section{Fusing}
 \frame{\tableofcontents[currentsection]}
 
-\frame { \frametitle{Fusing with an Extended Kalman Filter (EKF)}
-	\includegraphics[width=\linewidth]{gfx/blockdiagram_setup}
-	
+\frame { \frametitle{Fusing with an Extended Kalman Filter (EKF)}	
+	\visible<1,2>{
 	The states: $\vec x = [\vec r, \dot{\vec{r}}]^T$ with positon $\vec r \in \mathbb{R}^3$, velocity $\dot{\vec r} \in \mathbb{R}^3$\\
 	System model:
 	\begin{align*}
@@ -228,6 +228,11 @@
 	\end{bmatrix}\vec x(k-1) + \vec v(k-1))\\
 	\vec v(k-1) \sim \mathcal{N}(\vec 0, \textbf{Q})
 	\end{align*}
+	}
+	
+	\visible<2>{
+	\includegraphics[width=\linewidth]{gfx/blockdiagram_setup_ekf}
+	}
 }
 
 \note {
@@ -266,7 +271,7 @@
 \begin{frame}
 	\frametitle{Re-detection}
 	\visible<1,2>{
-	\includegraphics[width=\linewidth]{gfx/blockdiagram_setup}
+	\includegraphics[width=\linewidth]{gfx/blockdiagram_setup_redetect}
 	}
 	\visible<2>{
 	\begin{algorithm}[H]
@@ -296,7 +301,18 @@
 
 \begin{frame}
 	\frametitle{Results}
-	 The $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the EKF were significantly lower ($> 50\%$) compared with the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the UWB system (For the cases, where the visual tracker found the object).\\
+	\begin{itemize}
+	\pause
+	\item The measurements of a motion detection system (VICON) serve as ground truth
+	\pause
+	\item For comparison the $\textit{rmse}$ and the $\textit{rmse}_{xy}$ of the EKF and of the UWB system were calculated and compared
+	\pause
+	\item The accuracy of the EKF is at least doubled compared to the UWB system
+	\pause
+	\item For the cases, where the visual tracker found the object
+	\pause
+	\item Inaccuracies in the system are possible
+	\end{itemize}
 	%\tiny
 	%\begin{table}
 %		\begin{center}
@@ -342,6 +358,8 @@
 	\begin{itemize}
 	\pause
 	\item The EKF does not consists of an outlier-detection
+	\pause
+	\item Parameter tuning required for the re-detection mechanism
 	\end{itemize}
 }
 

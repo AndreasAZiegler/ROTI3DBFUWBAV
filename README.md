@@ -1,6 +1,10 @@
 # ROTI3DBFUWBAV 
 Robus	object tracking	in 3D	by fusing ultra-wideband and vision
 
+This project was a semester project I did at the Advanced Interactive Technology Lab (ait.ethz.ch) at the Swiss Federal Institute of Technology (ETH) durgin my master studies in Information Technology and Electrical Engineering.
+
+# Doc #
+
 # Contained scripts/ROS nodes #
 
 ##Scripts##

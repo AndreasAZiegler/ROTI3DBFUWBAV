@@ -1,0 +1,17 @@
+<launch>
+  <arg name="no_multi_range" default="false" />
+  <arg name="show_plots" default="false" />
+  <arg name="ignore_z_position" default="false" />
+  <arg name="tracker_frame" default="vicon/UWB_Monitor/UWB_Monitor" />
+  <arg name="target_frame" default="uwb/target" />
+  <include file="$(find uwb)/launch/uwb_multi_range_monitor.launch" unless="$(arg no_multi_range)" />
+  <node name="uwb_tracker_node" pkg="uwb" type="uwb_tracker_node.py" output="screen">
+    <param name="show_plots" value="$(arg show_plots)" />
+    <param name="ignore_z_position" value="$(arg ignore_z_position)" />
+    <param name="tracker_frame" value="$(arg tracker_frame)" />
+    <param name="target_frame" value="$(arg target_frame)" />
+    <param name="initial_guess_position_x" value="1" />
+    <param name="initial_guess_position_y" value="0" />
+    <param name="initial_guess_position_z" value="0" />
+  </node>
+</launch>

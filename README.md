@@ -3,7 +3,11 @@ Robus	object tracking	in 3D	by fusing ultra-wideband and vision
 
 This project was a semester project I did at the Advanced Interactive Technology Lab (ait.ethz.ch) at the Swiss Federal Institute of Technology (ETH) durgin my master studies in Information Technology and Electrical Engineering.
 
-# Doc #
+# Documentation #
+The report that I had to write for this semester project is written in LaTeX and located in the folder doc.
+
+# Presentation #j
+The presentation I gave is located in the folder presentation.
 
 # Contained scripts/ROS nodes #
 

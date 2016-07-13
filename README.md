@@ -6,7 +6,7 @@ This project was a semester project I did at the Advanced Interactive Technology
 # Documentation #
 The report that I had to write for this semester project is written in LaTeX and located in the folder doc.
 
-# Presentation #j
+# Presentation #
 The presentation I gave is located in the folder presentation.
 
 # Contained scripts/ROS nodes #

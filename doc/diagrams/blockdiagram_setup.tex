@@ -34,17 +34,17 @@ minimum height=3em, minimum width=6em]
 
 \begin{document}
 	\begin{tikzpicture}[auto, node distance=2cm,>=latex']
-		\node [block] (uwb) {UWB};
-		\node [block] (transformation) [right= 3.5cm of uwb] {$T \in \mathit{SE}(3)$};
+		\node [block] (uwb) {\textbf{UWB}};
+		\node [block] (transformation) [right= 3.5cm of uwb] {$\textbf{T} \in \mathit{\textbf{SE}}(3)$};
 		\node [point] (p1) [right= 2.72cm of transformation]{};
 		\node [point] (p2) [below= 0.8cm of p1]{};
 		
-		\node [block] (camera) [below = 1cm of uwb] {Camera};	
-		\node [block] (visualTracker) [right=3.5cm of camera] {Visual Tracker};
+		\node [block] (camera) [below = 1cm of uwb] {\textbf{Camera}};	
+		\node [block] (visualTracker) [right=3.5cm of camera] {\textbf{Visual Tracker}};
 		\node [point] (p3) [right = 2.35cm of visualTracker]{};
 		\node [point] (p4) [above = 0.8cm of p3]{};
 		
-		\node [block] (ekf) [below right =-0.04cm and 10cm of uwb] {EKF};
+		\node [block] (ekf) [below right =-0.04cm and 10cm of uwb] {\textbf{EKF}};
 		\node [point] (state) [right = 4.5cm of ekf] {};
 		\node [branch] (p5) [right = 1.0cm of ekf] {};
 		\node [point] (p6) [below = 2.0cm of p5] {};

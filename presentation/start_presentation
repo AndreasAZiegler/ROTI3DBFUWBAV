@@ -1,0 +1,1 @@
+pdfpc --duration=10 --notes=right presentation.pdf 
